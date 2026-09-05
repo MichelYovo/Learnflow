@@ -1,0 +1,50 @@
+import { colors as lightColors } from "./colors";
+
+export type AppPalette = { [K in keyof typeof lightColors]: string };
+
+/** Palette mode sombre raffinée — pas de noir pur */
+export const darkColors: AppPalette = {
+  primary: "#818CF8",
+  primaryDark: "#4F46E5",
+  secondary: "#34D399",
+  secondaryDark: "#10B981",
+  accent: "#FBBF24",
+  surface: "#0F172A",
+  surfaceAlt: "#1E293B",
+  danger: "#F87171",
+  textPrimary: "#F8FAFC",
+  textSecondary: "#94A3B8",
+  textMuted: "#64748B",
+  textDark: "#F1F5F9",
+  border: "#334155",
+  borderStrong: "#475569",
+  white: "#1E293B",
+  onPrimary: "#FFFFFF",
+  indigo: "#818CF8",
+  cyan: "#22D3EE",
+  violet: "#A78BFA",
+  orange: "#FB923C",
+  maths: "#60A5FA",
+  mathsBg: "#1E3A5F",
+  mathsBorder: "#334155",
+  svt: "#34D399",
+  svtBg: "#064E3B",
+  svtBorder: "#14532D",
+  pc: "#22D3EE",
+  pcBg: "#164E63",
+  pcBorder: "#155E75",
+  hg: "#FBBF24",
+  hgBg: "#78350F",
+  hgBorder: "#92400E",
+  fr: "#A78BFA",
+  frBg: "#4C1D95",
+  frBorder: "#5B21B6",
+  ang: "#F87171",
+  angBg: "#7F1D1D",
+  angBorder: "#991B1B",
+  edhc: "#FB923C",
+  edhcBg: "#7C2D12",
+  edhcBorder: "#9A3412",
+};
+
+export const palettes = { light: lightColors as AppPalette, dark: darkColors };
