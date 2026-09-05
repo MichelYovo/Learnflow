@@ -1,0 +1,39 @@
+{
+  "expo": {
+    "name": "LearnFlow",
+    "slug": "LearnFlow",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "scheme": "learnflow",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#070B14"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "tg.learnflow.app"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#07101C",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "package": "tg.learnflow.app",
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-sharing",
+      "expo-sqlite",
+      "expo-audio",
+      "expo-font"
+    ]
+  }
+}
