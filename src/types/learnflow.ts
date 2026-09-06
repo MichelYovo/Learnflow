@@ -160,7 +160,7 @@ export interface AnalogieSpiraData {
 export interface SectionCoursAPC {
   id: string;
   titre: string;
-  /** Paragraphes ; **mots** = cardinaux (lecture bionique). */
+  /** Paragraphes ; **mots** = termes cardinaux (gras bleu). */
   paragraphes: string[];
 }
 

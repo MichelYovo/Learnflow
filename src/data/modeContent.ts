@@ -241,16 +241,16 @@ export const CIRCULATION_QCM: QCMData[] = [
 ];
 
 export const NERVEUX_QCM: QCMData[] = [
-  q("n1", "Les dendrites servent surtout à…", ["Émettre l'influx", "Recevoir les messages", "Produire la myéline", "Filtrer le sang"], 1, "Arborisation réceptrice autour du corps cellulaire."),
-  q("n2", "L'axone est…", ["Toujours multiple", "La fibre unique qui conduit l'influx", "Le noyau", "Une valve du cœur"], 1, "Un neurone : un axone, plusieurs dendrites."),
-  q("n3", "La gaine de myéline…", ["Ralentit l'influx", "Accélère la conduction", "Digère les protéines", "Produit l'insuline"], 1, "Conduction saltatoire d'un nœud de Ranvier à l'autre."),
-  q("n4", "Un nœud de Ranvier est…", ["Un gap dans la myéline", "Le noyau", "Une synapse électrique uniquement", "Un os du crâne"], 0, "Interruption de gaine : relance du potentiel d'action."),
-  q("n5", "À la synapse, le message devient…", ["Uniquement électrique", "Chimique (neurotransmetteur)", "Lumineux", "Hormonal thyroïdien"], 1, "Vésicules → fente → récepteurs."),
-  q("n6", "Les vésicules synaptiques contiennent…", ["L'ADN", "Des neurotransmetteurs", "De la bile", "De l'urine"], 1, "Sacs d'exocytose dans le bouton présynaptique."),
-  q("n7", "Le cône d'implantation est…", ["La zone gâchette de l'axone", "Une pyramide du rein", "Une valve", "Un chromosome"], 0, "Naissance du potentiel d'action."),
-  q("n8", "Un récepteur ligand-dépendant s'ouvre quand…", ["On coupe l'axone", "Le neurotransmetteur se fixe", "Le sang est trop acide", "Il fait nuit"], 1, "Canal de la membrane postsynaptique."),
-  q("n9", "L'arc réflexe met en jeu…", ["Uniquement le cerveau conscient", "Récepteur, centre, effecteur", "Seulement les hormones", "Les reins seuls"], 1, "Circuit court, souvent médullaire."),
-  q("n10", "La fente synaptique est…", ["L'espace entre deux neurones", "Le noyau", "L'aorte", "Le bassinet"], 0, "L'influx n'y passe pas en continu : messager chimique."),
+  q("n1", "Les dendrites servent à…", ["Émettre l'influx", "Recevoir les messages", "Produire la myéline", "Filtrer le sang"], 1, "Entrée du neurone."),
+  q("n2", "L'axone est…", ["Toujours multiple", "La fibre unique qui conduit l'influx", "Le noyau", "Une valve du cœur"], 1, "Un neurone = un axone."),
+  q("n3", "La gaine de myéline…", ["Ralentit l'influx", "Accélère la conduction", "Digère les protéines", "Produit l'insuline"], 1, "L'influx saute d'un nœud à l'autre."),
+  q("n4", "Un nœud de Ranvier est…", ["Une interruption de la myéline", "Le noyau", "Une synapse", "Un os du crâne"], 0, "L'influx y est relancé."),
+  q("n5", "À la synapse, le message devient…", ["Uniquement électrique", "Chimique (neurotransmetteur)", "Lumineux", "Hormonal"], 1, "Vésicules → fente → récepteurs."),
+  q("n6", "Les vésicules synaptiques contiennent…", ["L'ADN", "Des neurotransmetteurs", "De la bile", "De l'urine"], 1, "Sacs dans le bouton."),
+  q("n7", "Le cône d'implantation est…", ["Là où l'influx naît", "Une pyramide du rein", "Une valve", "Un chromosome"], 0, "Départ de l'axone."),
+  q("n8", "Un récepteur s'ouvre quand…", ["On coupe l'axone", "Le neurotransmetteur se fixe", "Le sang est trop acide", "Il fait nuit"], 1, "Canal de la membrane du 2e neurone."),
+  q("n9", "Dans un neurone, le message circule…", ["Dans les deux sens", "Dendrites → axone → synapse", "Synapse → dendrites", "Uniquement dans le sang"], 1, "Un seul sens."),
+  q("n10", "La fente synaptique est…", ["L'espace entre deux neurones", "Le noyau", "L'aorte", "Le bassinet"], 0, "Le messager chimique la traverse."),
 ];
 
 export const EXCRETION_QCM: QCMData[] = [
@@ -510,6 +510,12 @@ export const CLOZE_BY_CHAPTER: Record<string, ClozeItem[]> = {
       before: "Le ",
       after: " est libéré dans la fente synaptique.",
       blank: { id: "p2", answer: "neurotransmetteur", options: ["neurotransmetteur", "glucose", "urine", "sebum"] },
+    },
+    {
+      id: "ne3",
+      before: "La conduction saltatoire se fait grâce à la ",
+      after: ".",
+      blank: { id: "p3", answer: "myéline", options: ["myéline", "bile", "aorte", "valve"] },
     },
   ],
   adn: [

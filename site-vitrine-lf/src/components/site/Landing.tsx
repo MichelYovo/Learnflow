@@ -104,7 +104,7 @@ export default function Landing() {
               Matière, thème, chapitre, leçons.
             </h2>
             <p className="mt-4 text-base font-medium leading-relaxed text-[#64748B]">
-              L’Essentiel en moins de 300 mots, En Détails selon l’APC, lecture bionique, mots masqués, analogie de
+              L’Essentiel en moins de 300 mots, En Détails selon l’APC, mots masqués, analogie de
               Spira. En SVT, cœur, ADN, neurone, synapse et rein ont un schéma 3D annoté.
             </p>
             <div className="mt-6 flex flex-wrap gap-2">

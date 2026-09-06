@@ -15,7 +15,6 @@ import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import Icon from "../../components/Icon";
 import Logo from "../../components/Logo";
 import SocialAuth from "../../components/SocialAuth";
-import { useLearnFlowStore } from "../../store/useLearnFlowStore";
 import { colors } from "../../theme/colors";
 import { useAppTheme } from "../../theme/useAppTheme";
 import type { AuthStackParamList } from "../../navigation/types";
@@ -24,7 +23,6 @@ import { isSupabaseConfigured, supabase } from "../../lib/supabase";
 type Props = NativeStackScreenProps<AuthStackParamList, "Login">;
 
 export default function LoginScreen({ navigation }: Props) {
-  const login = useLearnFlowStore((s) => s.login);
   const { colors } = useAppTheme();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -32,8 +30,17 @@ export default function LoginScreen({ navigation }: Props) {
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
 
-  const goApp = async () => {
+  const goOtp = () => {
     setError("");
+    navigation.navigate("OTP");
+  };
+
+  const goApp = async (provider?: "google" | "apple" | "facebook") => {
+    setError("");
+    if (provider) {
+      navigation.navigate("OTP");
+      return;
+    }
     if (isSupabaseConfigured && email.includes("@") && password.length >= 8) {
       setBusy(true);
       try {
@@ -46,17 +53,15 @@ export default function LoginScreen({ navigation }: Props) {
           setBusy(false);
           return;
         }
-        login();
+        navigation.navigate("OTP");
         return;
       } catch {
-        setError("Connexion cloud indisponible. Réessaie ou utilise un profil local.");
-        setBusy(false);
-        return;
+        setError("Connexion cloud indisponible. On continue en local.");
       } finally {
         setBusy(false);
       }
     }
-    login();
+    goOtp();
   };
 
   return (
@@ -111,7 +116,7 @@ export default function LoginScreen({ navigation }: Props) {
             </LinearGradient>
           </Pressable>
 
-          <SocialAuth mode="login" onProvider={goApp} />
+          <SocialAuth mode="login" onProvider={(p) => { void goApp(p); }} />
 
           <Pressable onPress={() => navigation.navigate("Profiles")}>
             <Text style={styles.linkCenter}>Choisir un profil local</Text>

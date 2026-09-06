@@ -10,6 +10,7 @@ import Icon from "../../components/Icon";
 import LeagueBadge from "../../components/league/LeagueBadge";
 import { useLearnFlowStore } from "../../store/useLearnFlowStore";
 import { classLabel } from "../../data/mock";
+import { openSystemFocusSettings } from "../../lib/focusMode";
 import { colors } from "../../theme/colors";
 import { useAppTheme } from "../../theme/useAppTheme";
 import type { MainTabParamList, RootStackParamList } from "../../navigation/types";
@@ -19,15 +20,21 @@ type Nav = CompositeNavigationProp<
   NativeStackNavigationProp<RootStackParamList>
 >;
 
-type SettingKey = "notifications" | "privacy" | "rate" | "about" | "switch" | "logout";
+type SettingKey = "focus" | "notifications" | "privacy" | "rate" | "about" | "switch" | "logout";
 
 const SETTINGS: {
   key: SettingKey;
-  icon: "bell" | "shield" | "star" | "compass" | "user" | "log-out";
+  icon: "moon" | "bell" | "shield" | "star" | "compass" | "user" | "log-out";
   label: string;
   getSub: (ctx: { notifOn: boolean; leagueVisible: boolean; rating: number | null }) => string;
   danger?: boolean;
 }[] = [
+  {
+    key: "focus",
+    icon: "moon",
+    label: "Mode concentration",
+    getSub: () => "Ne pas déranger · couper les réseaux",
+  },
   {
     key: "notifications",
     icon: "bell",
@@ -103,7 +110,13 @@ export default function ProfilScreen() {
   ];
 
   const onSetting = (key: SettingKey) => {
-    if (key === "notifications") nav.navigate("NotificationsSettings");
+    if (key === "focus") {
+      void openSystemFocusSettings().then((opened) => {
+        if (!opened) {
+          Alert.alert("Réglages", "Ouvre Ne pas déranger ou Concentration dans les réglages de ton téléphone.");
+        }
+      });
+    } else if (key === "notifications") nav.navigate("NotificationsSettings");
     else if (key === "privacy") nav.navigate("PrivacySettings");
     else if (key === "about") nav.navigate("About");
     else if (key === "rate") nav.navigate("RateApp");

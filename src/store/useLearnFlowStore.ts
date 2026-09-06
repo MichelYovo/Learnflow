@@ -32,6 +32,7 @@ import { defaultAvatarId, resolveAvatarId } from "../data/avatars";
 import { applySelfRating } from "../engine/spacedRepetition";
 import { xpAssimilation, xpBlitz } from "../engine/xp";
 import { createId, nowIso } from "../lib/ids";
+import { AI_DAILY_QUOTA, remainingAiQuota, todayIsoDate } from "../data/tutor";
 import { requestBackgroundSync } from "../lib/SyncManager";
 import {
   addXpToProfile,
@@ -46,6 +47,7 @@ import {
 interface LearnFlowState {
   isAuthenticated: boolean;
   onboardingCompleted: boolean;
+  focusPromptPending: boolean;
   profiles: ProfileEleve[];
   activeProfileId: string;
   leagueBoard: LeaguePlayer[];
@@ -54,6 +56,7 @@ interface LearnFlowState {
   flashcards: FlashcardData[];
   chapterProgress: Record<string, ChapterProgress>;
   aiQuotaRestant: number;
+  aiQuotaDay: string;
   lastSession: SessionRevision | null;
   pendingMode: ModeApprentissage | null;
   customTools: OutilRevisionId[];
@@ -65,6 +68,7 @@ interface LearnFlowState {
   login: () => void;
   logout: () => void;
   selectProfile: (id: string) => void;
+  dismissFocusPrompt: () => void;
   signUp: (data: {
     firstName: string;
     lastName: string;
@@ -99,6 +103,7 @@ interface LearnFlowState {
   recordBlitz: (score: number, answered: number, difficulte?: DifficulteFlash) => number;
   setBlitzDifficulte: (difficulte: DifficulteFlash) => void;
   consumeAiQuota: () => boolean;
+  getAiQuotaRestant: () => number;
   gelerLigue: (jours: number) => void;
   envoyerSMSFelicitation: (msg: string) => Promise<boolean>;
   settings: AppSettings;
@@ -137,6 +142,13 @@ export interface AppSettings {
   multiProfileEnabled: boolean;
 }
 
+const FALLBACK_PROFILE: ProfileEleve = {
+  ...PROFILES_DEMO[0],
+  compteId: LOCAL_PARENT_ID,
+  badgesDebloques: [],
+  hasPin: true,
+};
+
 const DEFAULT_SETTINGS: AppSettings = {
   notifications: {
     studyReminders: true,
@@ -171,6 +183,7 @@ export const useLearnFlowStore = create<LearnFlowState>()(
     (set, get) => ({
       isAuthenticated: false,
       onboardingCompleted: false,
+      focusPromptPending: true,
       profiles: PROFILES_DEMO.map((p) => ({
         ...p,
         compteId: LOCAL_PARENT_ID,
@@ -193,7 +206,8 @@ export const useLearnFlowStore = create<LearnFlowState>()(
       },
       flashcards: FLASHCARDS,
       chapterProgress: {},
-      aiQuotaRestant: 5,
+      aiQuotaRestant: AI_DAILY_QUOTA,
+      aiQuotaDay: todayIsoDate(),
       lastSession: null,
       pendingMode: null,
       customTools: ["fiche", "flashcards", "schema"],
@@ -204,13 +218,14 @@ export const useLearnFlowStore = create<LearnFlowState>()(
 
       getActiveProfile: () => {
         const s = get();
-        return s.profiles.find((p) => p.id === s.activeProfileId) ?? s.profiles[0];
+        return s.profiles.find((p) => p.id === s.activeProfileId) ?? s.profiles[0] ?? FALLBACK_PROFILE;
       },
 
-      login: () => set({ isAuthenticated: true }),
-      logout: () => set({ isAuthenticated: false }),
+      login: () => set({ isAuthenticated: true, focusPromptPending: true }),
+      logout: () => set({ isAuthenticated: false, focusPromptPending: true }),
 
-      selectProfile: (id) => set({ activeProfileId: id, isAuthenticated: true }),
+      selectProfile: (id) => set({ activeProfileId: id, isAuthenticated: true, focusPromptPending: true }),
+      dismissFocusPrompt: () => set({ focusPromptPending: false }),
 
       hydrateFromLocal: ({ profiles, activeProfileId }) => set({ profiles, activeProfileId }),
 
@@ -440,10 +455,16 @@ export const useLearnFlowStore = create<LearnFlowState>()(
         set({ settings: { ...get().settings, blitzDifficulte: difficulte } });
       },
 
+      getAiQuotaRestant: () => remainingAiQuota(get().aiQuotaRestant, get().aiQuotaDay),
+
       consumeAiQuota: () => {
-        const q = get().aiQuotaRestant;
-        if (q <= 0) return false;
-        set({ aiQuotaRestant: q - 1 });
+        const today = todayIsoDate();
+        const restant = remainingAiQuota(get().aiQuotaRestant, get().aiQuotaDay);
+        if (restant <= 0) {
+          if (get().aiQuotaDay !== today) set({ aiQuotaDay: today, aiQuotaRestant: 0 });
+          return false;
+        }
+        set({ aiQuotaDay: today, aiQuotaRestant: restant - 1 });
         return true;
       },
 
@@ -539,7 +560,8 @@ export const useLearnFlowStore = create<LearnFlowState>()(
         set({
           chapterProgress: {},
           lastSession: null,
-          aiQuotaRestant: 5,
+          aiQuotaRestant: AI_DAILY_QUOTA,
+          aiQuotaDay: todayIsoDate(),
           pendingMode: null,
         });
       },
@@ -587,40 +609,68 @@ export const useLearnFlowStore = create<LearnFlowState>()(
       name: "learnflow-store-v5",
       storage: createJSONStorage(() => AsyncStorage),
       merge: (persisted, current) => {
-        const p = (persisted ?? {}) as Partial<LearnFlowState>;
-        const demoById = new Map(PROFILES_DEMO.map((d) => [String(d.id), d]));
-        const profiles = (p.profiles ?? current.profiles).map((pr) => {
-          const demo = demoById.get(String(pr.id));
+        try {
+          const p = (persisted ?? {}) as Partial<LearnFlowState>;
+          const demoById = new Map(PROFILES_DEMO.map((d) => [String(d.id), d]));
+          const rawProfiles = Array.isArray(p.profiles) ? p.profiles : current.profiles;
+          const profiles = rawProfiles.map((pr) => {
+            const demo = demoById.get(String(pr.id));
+            return {
+              ...pr,
+              id: String(pr.id),
+              compteId: String(pr.compteId ?? "local-parent"),
+              avatarId: resolveAvatarId(pr.avatarId ?? defaultAvatarId(String(pr.id))),
+              hasPin: pr.hasPin ?? true,
+              ...(demo
+                ? {
+                    classe: demo.classe,
+                    gradeLabel: demo.gradeLabel,
+                  }
+                : {}),
+            };
+          });
+          const persistedCards = Array.isArray(p.flashcards) ? p.flashcards : current.flashcards;
+          const anyDue = persistedCards.some(
+            (c) => c.due || new Date(c.prochaineRevision).getTime() <= Date.now()
+          );
+          const baseCards = anyDue ? persistedCards : current.flashcards;
+          const have = new Set(baseCards.map((c) => c.id));
+          const extraCards = FLASHCARDS.filter((c) => !have.has(c.id));
+          const settingsPatch =
+            p.settings && typeof p.settings === "object" ? p.settings : ({} as Partial<AppSettings>);
           return {
-            ...pr,
-            id: String(pr.id),
-            compteId: String(pr.compteId ?? "local-parent"),
-            avatarId: resolveAvatarId(pr.avatarId ?? defaultAvatarId(String(pr.id))),
-            hasPin: pr.hasPin ?? true,
-            ...(demo
-              ? {
-                  classe: demo.classe,
-                  gradeLabel: demo.gradeLabel,
-                }
-              : {}),
+            ...current,
+            isAuthenticated: Boolean(p.isAuthenticated ?? current.isAuthenticated),
+            onboardingCompleted: Boolean(p.onboardingCompleted ?? current.onboardingCompleted),
+            profiles,
+            activeProfileId: String(p.activeProfileId ?? current.activeProfileId),
+            ligue: p.ligue ?? current.ligue,
+            suiviParental: p.suiviParental ?? current.suiviParental,
+            flashcards: extraCards.length ? [...baseCards, ...extraCards] : baseCards,
+            chapterProgress: p.chapterProgress ?? current.chapterProgress,
+            aiQuotaRestant: p.aiQuotaRestant ?? current.aiQuotaRestant,
+            aiQuotaDay: typeof p.aiQuotaDay === "string" ? p.aiQuotaDay : "",
+            customTools: p.customTools ?? current.customTools,
+            agendaSessions: Array.isArray(p.agendaSessions) ? p.agendaSessions : current.agendaSessions,
+            timetable: Array.isArray(p.timetable) ? p.timetable : current.timetable,
+            inbox: Array.isArray(p.inbox) ? p.inbox : current.inbox,
+            settings: {
+              ...DEFAULT_SETTINGS,
+              ...settingsPatch,
+              notifications: {
+                ...DEFAULT_SETTINGS.notifications,
+                ...(settingsPatch.notifications ?? {}),
+              },
+              privacy: {
+                ...DEFAULT_SETTINGS.privacy,
+                ...(settingsPatch.privacy ?? {}),
+              },
+            },
           };
-        });
-        const persistedCards = p.flashcards ?? current.flashcards;
-        const anyDue = persistedCards.some(
-          (c) => c.due || new Date(c.prochaineRevision).getTime() <= Date.now()
-        );
-        const baseCards = anyDue ? persistedCards : current.flashcards;
-        const have = new Set(baseCards.map((c) => c.id));
-        const extraCards = FLASHCARDS.filter((c) => !have.has(c.id));
-        return {
-          ...current,
-          ...p,
-          profiles,
-          activeProfileId: String(p.activeProfileId ?? current.activeProfileId),
-          settings: { ...DEFAULT_SETTINGS, ...p.settings },
-          inbox: Array.isArray(p.inbox) ? p.inbox : current.inbox,
-          flashcards: extraCards.length ? [...baseCards, ...extraCards] : baseCards,
-        };
+        } catch (error) {
+          console.warn("[LearnFlow] persist merge", error);
+          return current;
+        }
       },
       partialize: (s) => ({
         isAuthenticated: s.isAuthenticated,
@@ -632,6 +682,7 @@ export const useLearnFlowStore = create<LearnFlowState>()(
         flashcards: s.flashcards,
         chapterProgress: s.chapterProgress,
         aiQuotaRestant: s.aiQuotaRestant,
+        aiQuotaDay: s.aiQuotaDay,
         customTools: s.customTools,
         agendaSessions: s.agendaSessions,
         timetable: s.timetable,

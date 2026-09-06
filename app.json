@@ -2,16 +2,12 @@
   "expo": {
     "name": "LearnFlow",
     "slug": "LearnFlow",
+    "owner": "michelyovo",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
     "scheme": "learnflow",
-    "splash": {
-      "image": "./assets/splash-icon.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#070B14"
-    },
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "tg.learnflow.app"
@@ -24,7 +20,15 @@
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
       "package": "tg.learnflow.app",
-      "predictiveBackGestureEnabled": false
+      "versionCode": 1,
+      "predictiveBackGestureEnabled": false,
+      "softwareKeyboardLayoutMode": "resize",
+      "permissions": [
+        "android.permission.INTERNET",
+        "android.permission.ACCESS_NETWORK_STATE",
+        "android.permission.VIBRATE",
+        "android.permission.MODIFY_AUDIO_SETTINGS"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -32,8 +36,31 @@
     "plugins": [
       "expo-sharing",
       "expo-sqlite",
-      "expo-audio",
-      "expo-font"
-    ]
+      [
+        "expo-audio",
+        {
+          "microphonePermission": false,
+          "recordAudioAndroid": false,
+          "enableBackgroundRecording": false,
+          "enableBackgroundPlayback": false
+        }
+      ],
+      "expo-font",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "resizeMode": "contain",
+          "backgroundColor": "#070B14",
+          "imageWidth": 200
+        }
+      ],
+      "expo-asset"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "e5bb6541-860f-409f-83e9-04bc518a1e1f"
+      }
+    }
   }
 }

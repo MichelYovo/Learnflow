@@ -12,6 +12,7 @@
     "@supabase/supabase-js": "^2.115.0",
     "babel-preset-expo": "~57.0.0",
     "expo": "~57.0.20",
+    "expo-asset": "~57.0.16",
     "expo-audio": "~57.0.4",
     "expo-constants": "~57.0.17",
     "expo-crypto": "~57.0.2",
@@ -21,8 +22,10 @@
     "expo-linking": "~57.0.9",
     "expo-network": "~57.0.1",
     "expo-sharing": "~57.0.18",
+    "expo-splash-screen": "~57.0.8",
     "expo-sqlite": "~57.0.2",
     "expo-status-bar": "~57.0.1",
+    "expo-system-ui": "~57.0.3",
     "nativewind": "^4.2.6",
     "react": "19.2.3",
     "react-native": "0.86.3",
@@ -42,9 +45,12 @@
   },
   "scripts": {
     "start": "expo start",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
-    "web": "expo start --web"
+    "android": "expo run:android",
+    "ios": "expo run:ios",
+    "web": "expo start --web",
+    "prebuild": "expo prebuild --platform android --non-interactive",
+    "apk": "expo run:android --variant release --no-install",
+    "apk:eas": "eas build -p android --profile preview"
   },
   "private": true
 }

@@ -315,40 +315,37 @@ export const FICHES: Record<string, FicheCoursData> = {
     schema: "3d",
     motsClesMasques: ["neurone", "synapse", "myéline"],
     pucesEssentiel: [
-      "Le **neurone** est la cellule qui fabrique et conduit le **message nerveux**.",
-      "Les **dendrites** reçoivent ; l'**axone** envoie vers la **synapse**.",
-      "La **gaine de myéline** accélère l'influx (conduction saltatoire aux **nœuds de Ranvier**).",
-      "À la **synapse**, le message électrique devient **chimique** (neurotransmetteur).",
-      "Un **arc réflexe** : récepteur → centre nerveux → effecteur, sans passer par la volonté.",
+      "Le **neurone** conduit le **message nerveux** dans un seul sens.",
+      "**Dendrites** reçoivent → **corps cellulaire** → **axone** envoie.",
+      "La **myéline** accélère : l'influx saute aux **nœuds de Ranvier**.",
+      "À la **synapse**, l'électrique devient **chimique** (neurotransmetteur).",
     ],
     analogie: analogie(
-      "Imagine un fil électrique recouvert de gaine. Le neurone, c'est le fil. La myéline, c'est la gaine isolante : le courant va plus vite. La synapse, c'est la prise : on débranche l'électricité et on passe un petit colis chimique à la cellule d'à côté.",
+      "Le neurone, c'est un fil. La myéline, c'est la gaine : le courant va plus vite. La synapse, c'est la prise : on passe un colis chimique au neurone d'à côté.",
       "Message nerveux",
-      "Fil + gaine + prise : axone, myéline, synapse.",
+      "Fil, gaine, prise.",
     ),
     sectionsDetaillees: [
       {
         id: "competence",
         titre: "Compétence visée (APC)",
         paragraphes: [
-          "Expliquer comment le **neurone** commande un mouvement et légender le **modèle 3D** (corps cellulaire, axone, myéline, synapse).",
+          "Légender le **neurone** et expliquer le passage du message à la **synapse**.",
         ],
       },
       {
         id: "neurone",
         titre: "Savoirs — le neurone",
         paragraphes: [
-          "**Corps cellulaire** + **noyau** : intégration des messages.",
-          "**Dendrites** : réception. **Axone** : unique, parfois très long.",
-          "**Gaine de myéline** / cellule de Schwann : isolation. **Nœud de Ranvier** : l'influx saute.",
+          "**Dendrites** : entrée. **Axone** : une seule fibre de sortie.",
+          "**Myéline** : isolant. **Nœud de Ranvier** : l'influx saute, donc plus vite.",
         ],
       },
       {
         id: "synapse",
         titre: "Savoirs — la synapse",
         paragraphes: [
-          "L'influx ouvre des **vésicules** : libération du **neurotransmetteur** dans la **fente synaptique**.",
-          "Le messager se fixe sur un **récepteur** (canal ligand-dépendant) : potentiel postsynaptique.",
+          "L'influx n'enjambe pas le vide : **vésicules** → **neurotransmetteur** dans la **fente** → **récepteurs** du 2e neurone.",
         ],
       },
     ],
@@ -478,39 +475,37 @@ export const FICHES: Record<string, FicheCoursData> = {
     schema: "3d",
     motsClesMasques: ["potentiel d'action", "synapse", "myéline"],
     pucesEssentiel: [
-      "Le **neurone** code l'information en **potentiel d'action** (tout ou rien).",
-      "Naissance au **cône d'implantation** ; conduction le long de l'**axone**.",
+      "Le **potentiel d'action** est tout ou rien : il part ou il ne part pas.",
+      "Il naît au **cône d'implantation**, puis court le long de l'**axone**.",
       "La **myéline** rend la conduction **saltatoire** (nœuds de Ranvier).",
-      "À la **synapse**, vésicules → **neurotransmetteur** → récepteurs du neurone postsynaptique.",
-      "Un même neurone peut être excitateur ou inhibiteur selon le messager et le récepteur.",
+      "À la **synapse** : vésicules → **neurotransmetteur** → récepteurs.",
     ],
     analogie: analogie(
-      "Le potentiel d'action, c'est une rangée de dominos : ça part ou ça ne part pas, jamais à moitié. La myéline, c'est sauter trois dominos d'un coup. À la synapse, on arrête les dominos et on envoie un SMS chimique — le neurone d'en face décide s'il fait tomber les siens.",
+      "Le potentiel d'action, c'est des dominos : ça part ou ça ne part pas. À la synapse, on arrête les dominos et on envoie un SMS chimique au neurone d'en face.",
       "Potentiel d'action et synapse",
-      "Dominos (électrique) puis SMS (chimique).",
+      "Dominos, puis SMS.",
     ),
     sectionsDetaillees: [
       {
         id: "competence",
         titre: "Compétence visée (APC)",
         paragraphes: [
-          "Relier structure du **neurone** et **synapse** au fonctionnement du message nerveux (Terminale D).",
+          "Relier la structure du **neurone** au **potentiel d'action** et à la **synapse**.",
         ],
       },
       {
         id: "pa",
         titre: "Savoirs — potentiel d'action",
         paragraphes: [
-          "Dépolarisation (entrée de Na⁺) puis repolarisation (sortie de K⁺).",
-          "Conduction **saltatoire** : l'influx « saute » de nœud en nœud.",
+          "Na⁺ entre (dépolarisation), K⁺ sort (repolarisation).",
+          "**Myéline** : l'influx saute de nœud en nœud.",
         ],
       },
       {
         id: "syn",
         titre: "Savoirs — synapse chimique",
         paragraphes: [
-          "Arrivée de l'influx → Ca²⁺ → exocytose des **vésicules**.",
-          "Le **neurotransmetteur** se fixe ; le canal **ligand-dépendant** s'ouvre ; potentiel postsynaptique.",
+          "Influx → Ca²⁺ → exocytose des **vésicules** → **fente** → **récepteur** → potentiel postsynaptique.",
         ],
       },
     ],

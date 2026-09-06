@@ -32,6 +32,7 @@ const MAP: Record<string, keyof typeof Ionicons.glyphMap> = {
   "eye-off": "eye-off-outline",
   bell: "notifications-outline",
   "bell-fill": "notifications",
+  "bell-off": "notifications-off-outline",
   settings: "settings-outline",
   "chevron-right": "chevron-forward",
   "chevron-down": "chevron-down",

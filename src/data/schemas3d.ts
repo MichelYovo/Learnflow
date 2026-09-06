@@ -53,32 +53,32 @@ const ADN: Schema3DModel = {
 const NEURONE: Schema3DModel = {
   id: "neurone",
   title: "Neurone",
-  subtitle: "Cellule nerveuse · conduction du message",
+  subtitle: "Cellule nerveuse · l'influx va dans un seul sens",
   image: require("../../assets/schemas/neurone.jpg"),
   parts: [
-    { id: "dendrites", label: "Dendrites", role: "Reçoivent les messages des autres neurones.", x: 22, y: 16 },
-    { id: "noyau", label: "Noyau", role: "Centre de commande de la cellule nerveuse.", x: 28, y: 28 },
-    { id: "corps", label: "Corps cellulaire", role: "Intègre les messages reçus avant de décider de « tirer ».", x: 34, y: 36 },
-    { id: "cone", label: "Cône d'implantation", role: "Zone gâchette : naissance du potentiel d'action.", x: 42, y: 46 },
-    { id: "axone", label: "Axone", role: "Fibre unique qui conduit l'influx vers les terminaisons.", x: 50, y: 54 },
-    { id: "myeline", label: "Gaine de myéline", role: "Isolant (cellules de Schwann) : accélère la conduction.", x: 58, y: 62 },
-    { id: "ranvier", label: "Nœud de Ranvier", role: "Interruption de myéline : l'influx « saute » (saltatoire).", x: 66, y: 70 },
-    { id: "terminaison", label: "Terminaison axonale", role: "Boutons synaptiques : contact avec la cellule suivante.", x: 84, y: 84 },
+    { id: "dendrites", label: "Dendrites", role: "Reçoivent les messages.", x: 20, y: 18 },
+    { id: "noyau", label: "Noyau", role: "Centre de la cellule.", x: 28, y: 32 },
+    { id: "corps", label: "Corps cellulaire", role: "Fait le total des messages reçus.", x: 36, y: 40 },
+    { id: "cone", label: "Cône d'implantation", role: "L'influx part d'ici.", x: 44, y: 48 },
+    { id: "axone", label: "Axone", role: "Fibre unique : conduit l'influx.", x: 52, y: 56 },
+    { id: "myeline", label: "Gaine de myéline", role: "Isolant : l'influx va plus vite.", x: 62, y: 64 },
+    { id: "ranvier", label: "Nœud de Ranvier", role: "L'influx saute d'un nœud à l'autre.", x: 70, y: 72 },
+    { id: "terminaison", label: "Terminaison axonale", role: "Arrive à la synapse.", x: 84, y: 84 },
   ],
 };
 
 const SYNAPSE: Schema3DModel = {
   id: "synapse",
   title: "Synapse neuronale",
-  subtitle: "Transmission chimique du message nerveux",
+  subtitle: "L'électrique devient chimique, puis redevient électrique",
   image: require("../../assets/schemas/synapse.jpg"),
   parts: [
-    { id: "axone-pre", label: "Axone présynaptique", role: "L'influx arrive ici, dans le bouton terminal.", x: 50, y: 10 },
-    { id: "vesicules", label: "Vésicules synaptiques", role: "Sacs de neurotransmetteurs prêts à être libérés.", x: 48, y: 30 },
-    { id: "nt", label: "Neurotransmetteur", role: "Messager chimique libéré dans la fente synaptique.", x: 62, y: 42 },
-    { id: "fente", label: "Fente synaptique", role: "Espace entre les deux neurones : le message devient chimique.", x: 50, y: 52 },
-    { id: "recepteur", label: "Récepteur / canal", role: "S'ouvre quand le neurotransmetteur se fixe : ions qui passent.", x: 38, y: 68 },
-    { id: "post", label: "Neurone postsynaptique", role: "Naissance d'un potentiel postsynaptique, excitateur ou inhibiteur.", x: 50, y: 86 },
+    { id: "impulsion", label: "Impulsion nerveuse", role: "L'influx arrive dans le bouton.", x: 56, y: 10 },
+    { id: "vesicules", label: "Vésicules synaptiques", role: "Sacs de neurotransmetteurs.", x: 46, y: 30 },
+    { id: "nt", label: "Neurotransmetteur", role: "Messager chimique libéré.", x: 64, y: 44 },
+    { id: "fente", label: "Fente synaptique", role: "Espace entre les deux neurones.", x: 50, y: 54 },
+    { id: "recepteur", label: "Récepteur / canal", role: "S'ouvre quand le messager se fixe.", x: 38, y: 70 },
+    { id: "pps", label: "Potentiel postsynaptique", role: "Nouveau message dans le 2e neurone.", x: 52, y: 86 },
   ],
 };
 

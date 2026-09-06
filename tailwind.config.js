@@ -26,12 +26,12 @@ module.exports = {
         },
       },
       fontFamily: {
-        sans: ["Poppins_400Regular"],
-        medium: ["Poppins_500Medium"],
-        semibold: ["Poppins_600SemiBold"],
-        bold: ["Poppins_700Bold"],
-        extrabold: ["Poppins_800ExtraBold"],
-        black: ["Poppins_900Black"],
+        sans: ["System"],
+        medium: ["System"],
+        semibold: ["System"],
+        bold: ["System"],
+        extrabold: ["System"],
+        black: ["System"],
       },
       borderRadius: {
         "2xl": "16px",

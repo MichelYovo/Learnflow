@@ -1,13 +1,12 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { View } from "react-native";
 import { DarkTheme, DefaultTheme, NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { useLearnFlowStore } from "../store/useLearnFlowStore";
 import LearnFlowTabBar from "../components/TabBar";
-import FloatingChatbot from "../components/FloatingChatbot";
 import { useAppTheme } from "../theme/useAppTheme";
-import { poppinsNavFonts } from "../theme/typography";
+import { appNavFonts } from "../theme/typography";
 import type { AuthStackParamList, MainTabParamList, RootStackParamList } from "./types";
 
 import SplashScreen from "../screens/auth/SplashScreen";
@@ -17,6 +16,7 @@ import SignUpScreen from "../screens/auth/SignUpScreen";
 import LoginScreen from "../screens/auth/LoginScreen";
 import OTPScreen from "../screens/auth/OTPScreen";
 import SuccessScreen from "../screens/auth/SuccessScreen";
+import FocusModeScreen from "../screens/auth/FocusModeScreen";
 
 import HomeScreen from "../screens/tabs/HomeScreen";
 import ApprendreScreen from "../screens/tabs/ApprendreScreen";
@@ -50,9 +50,36 @@ const AuthStack = createNativeStackNavigator<AuthStackParamList>();
 const Tab = createBottomTabNavigator<MainTabParamList>();
 const RootStack = createNativeStackNavigator<RootStackParamList>();
 
+function usePersistedStoreReady() {
+  const persistApi = useLearnFlowStore.persist;
+  const [ready, setReady] = useState(() => {
+    try {
+      return persistApi?.hasHydrated() ?? true;
+    } catch {
+      return true;
+    }
+  });
+
+  useEffect(() => {
+    if (ready || !persistApi?.onFinishHydration) return;
+    const unsub = persistApi.onFinishHydration(() => setReady(true));
+    const t = setTimeout(() => setReady(true), 1200);
+    return () => {
+      unsub?.();
+      clearTimeout(t);
+    };
+  }, [ready, persistApi]);
+
+  return ready;
+}
+
 function AuthNavigator() {
+  const onboardingCompleted = useLearnFlowStore((s) => s.onboardingCompleted);
   return (
-    <AuthStack.Navigator screenOptions={{ headerShown: false }} initialRouteName="Onboarding">
+    <AuthStack.Navigator
+      screenOptions={{ headerShown: false }}
+      initialRouteName={onboardingCompleted ? "Splash" : "Onboarding"}
+    >
       <AuthStack.Screen name="Onboarding" component={OnboardingScreen} />
       <AuthStack.Screen name="Splash" component={SplashScreen} />
       <AuthStack.Screen name="Profiles" component={ProfilesScreen} />
@@ -66,33 +93,32 @@ function AuthNavigator() {
 
 function MainTabs() {
   return (
-    <View style={{ flex: 1 }}>
-      <Tab.Navigator
-        tabBar={(props) => <LearnFlowTabBar {...props} />}
-        screenOptions={{
-          headerShown: false,
-          tabBarHideOnKeyboard: true,
-          tabBarStyle: {
-            backgroundColor: "transparent",
-            borderTopWidth: 0,
-            elevation: 0,
-            width: "100%",
-            overflow: "visible",
-          },
-        }}
-      >
-        <Tab.Screen name="Accueil" component={HomeScreen} />
-        <Tab.Screen name="Cours" component={ApprendreScreen} />
-        <Tab.Screen name="Ligue" component={LigueScreen} />
-        <Tab.Screen name="Profil" component={ProfilScreen} />
-      </Tab.Navigator>
-      <FloatingChatbot />
-    </View>
+    <Tab.Navigator
+      tabBar={(props) => <LearnFlowTabBar {...props} />}
+      screenOptions={{
+        headerShown: false,
+        tabBarHideOnKeyboard: true,
+        tabBarStyle: {
+          backgroundColor: "transparent",
+          borderTopWidth: 0,
+          elevation: 0,
+          width: "100%",
+          overflow: "visible",
+        },
+      }}
+    >
+      <Tab.Screen name="Accueil" component={HomeScreen} />
+      <Tab.Screen name="Cours" component={ApprendreScreen} />
+      <Tab.Screen name="Ligue" component={LigueScreen} />
+      <Tab.Screen name="Profil" component={ProfilScreen} />
+    </Tab.Navigator>
   );
 }
 
 export default function RootNavigator() {
+  const storeReady = usePersistedStoreReady();
   const isAuthenticated = useLearnFlowStore((s) => s.isAuthenticated);
+  const focusPromptPending = useLearnFlowStore((s) => s.focusPromptPending);
   const { darkMode, colors } = useAppTheme();
   const navTheme = darkMode
     ? {
@@ -105,7 +131,7 @@ export default function RootNavigator() {
           border: colors.border,
           primary: colors.primary,
         },
-        fonts: poppinsNavFonts,
+        fonts: appNavFonts,
       }
     : {
         ...DefaultTheme,
@@ -117,14 +143,20 @@ export default function RootNavigator() {
           border: colors.border,
           primary: colors.primary,
         },
-        fonts: poppinsNavFonts,
+        fonts: appNavFonts,
       };
+
+  if (!storeReady) {
+    return <View style={{ flex: 1, backgroundColor: colors.surface }} />;
+  }
 
   return (
     <NavigationContainer theme={navTheme}>
       <RootStack.Navigator screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.surface } }}>
         {!isAuthenticated ? (
           <RootStack.Screen name="Auth" component={AuthNavigator} />
+        ) : focusPromptPending ? (
+          <RootStack.Screen name="FocusMode" component={FocusModeScreen} />
         ) : (
           <>
             <RootStack.Screen name="Main" component={MainTabs} />

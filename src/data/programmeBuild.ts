@@ -11,11 +11,11 @@ export const L = (
 export const SUBJECT_STYLE = {
   maths: { name: "Mathématiques", icon: "calculator", color: "#1677FF", bg: "#E6F4FF", border: "#BAE0FF" },
   svt: { name: "SVT", icon: "leaf", color: "#10B981", bg: "#ECFDF5", border: "#A7F3D0" },
-  pc: { name: "Physique-Chimie", icon: "flask", color: "#06B6D4", bg: "#ECFEFF", border: "#A5F3FC" },
+  pc: { name: "PCT", icon: "flask", color: "#06B6D4", bg: "#ECFEFF", border: "#A5F3FC" },
   hg: { name: "Histoire-Géographie", icon: "globe", color: "#F59E0B", bg: "#FFFBEB", border: "#FDE68A" },
   fr: { name: "Français", icon: "book", color: "#8B5CF6", bg: "#F5F3FF", border: "#DDD6FE" },
   ang: { name: "Anglais", icon: "chatbubble", color: "#EF4444", bg: "#FEF2F2", border: "#FECACA" },
-  edhc: { name: "EDHC", icon: "heart", color: "#F97316", bg: "#FFF7ED", border: "#FED7AA" },
+  edhc: { name: "ECM", icon: "heart", color: "#F97316", bg: "#FFF7ED", border: "#FED7AA" },
 } as const;
 
 export type SubjectId = keyof typeof SUBJECT_STYLE;
