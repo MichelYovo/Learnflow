@@ -1,11 +1,12 @@
-import React, { useEffect } from "react";
-import { StyleSheet, View } from "react-native";
+import React, { useCallback, useEffect, useRef } from "react";
+import { StyleSheet } from "react-native";
 import Animated, {
   Easing,
   runOnJS,
   useAnimatedStyle,
   useSharedValue,
   withDelay,
+  withSequence,
   withTiming,
 } from "react-native-reanimated";
 import Logo from "./Logo";
@@ -15,27 +16,48 @@ type Props = {
   onFinish: () => void;
 };
 
-/** Splash animé — fade-in + scale-up, hold 2s, fade-out */
+/** Logo plus grand et plus haut au départ, puis il redescend et s’installe. */
 export default function AnimatedSplash({ onFinish }: Props) {
-  const { colors, darkMode } = useAppTheme();
+  const { darkMode } = useAppTheme();
   const opacity = useSharedValue(0);
-  const scale = useSharedValue(0.82);
+  const scale = useSharedValue(1.38);
+  const translateY = useSharedValue(-92);
   const screenOpacity = useSharedValue(1);
+  const onFinishRef = useRef(onFinish);
+  const finished = useRef(false);
+
+  onFinishRef.current = onFinish;
+
+  const done = useCallback(() => {
+    if (finished.current) return;
+    finished.current = true;
+    onFinishRef.current();
+  }, []);
 
   useEffect(() => {
-    opacity.value = withTiming(1, { duration: 650, easing: Easing.out(Easing.cubic) });
-    scale.value = withTiming(1, { duration: 700, easing: Easing.out(Easing.cubic) });
+    opacity.value = withTiming(1, { duration: 280, easing: Easing.out(Easing.cubic) });
+    scale.value = withSequence(
+      withTiming(1.38, { duration: 1 }),
+      withTiming(1, { duration: 820, easing: Easing.out(Easing.cubic) })
+    );
+    translateY.value = withSequence(
+      withTiming(-92, { duration: 1 }),
+      withTiming(8, { duration: 820, easing: Easing.out(Easing.cubic) })
+    );
     screenOpacity.value = withDelay(
-      2000,
-      withTiming(0, { duration: 420 }, (finished) => {
-        if (finished) runOnJS(onFinish)();
+      2100,
+      withTiming(0, { duration: 420 }, (ok) => {
+        if (ok) runOnJS(done)();
       })
     );
-  }, [onFinish, opacity, scale, screenOpacity]);
+    const fallback = setTimeout(done, 2700);
+    return () => clearTimeout(fallback);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const logoStyle = useAnimatedStyle(() => ({
     opacity: opacity.value,
-    transform: [{ scale: scale.value }],
+    transform: [{ translateY: translateY.value }, { scale: scale.value }],
   }));
 
   const wrapStyle = useAnimatedStyle(() => ({
@@ -50,18 +72,16 @@ export default function AnimatedSplash({ onFinish }: Props) {
         { backgroundColor: darkMode ? "#0F172A" : "#FAFAF9" },
         wrapStyle,
       ]}
-      pointerEvents="none"
+      pointerEvents="auto"
     >
       <Animated.View style={[styles.logoBox, logoStyle]}>
-        <Logo height={108} variant={darkMode ? "onDark" : "onLight"} />
-        <View style={[styles.dot, { backgroundColor: colors.primary }]} />
+        <Logo height={132} variant={darkMode ? "onDark" : "onLight"} />
       </Animated.View>
     </Animated.View>
   );
 }
 
 const styles = StyleSheet.create({
-  wrap: { zIndex: 999, alignItems: "center", justifyContent: "center" },
-  logoBox: { alignItems: "center", gap: 20 },
-  dot: { width: 8, height: 8, borderRadius: 4, opacity: 0.85 },
+  wrap: { zIndex: 999, alignItems: "center", justifyContent: "flex-start", paddingTop: 88 },
+  logoBox: { alignItems: "center" },
 });

@@ -2,6 +2,7 @@ import React from "react";
 import { StyleSheet, Text, View } from "react-native";
 import type { AnalogieSpiraData } from "../types/learnflow";
 import { colors } from "../theme/colors";
+import { appFont } from "../theme/typography";
 import Spira from "./Spira";
 
 type Props = {
@@ -43,9 +44,10 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
   },
   speech: {
+    fontFamily: appFont,
     fontSize: 16,
     lineHeight: 24,
-    fontWeight: "600",
+    fontWeight: "500",
     color: colors.textDark,
   },
 });

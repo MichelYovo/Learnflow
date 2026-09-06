@@ -65,9 +65,14 @@ export default function SignUpScreen({ navigation, route }: Props) {
       }
     }
     if (!classe) {
-      setError("Choisis ta classe avant de continuer.");
-      return;
+      if (provider !== "email") {
+        setClasse("3eme");
+      } else {
+        setError("Choisis ta classe avant de continuer.");
+        return;
+      }
     }
+    const chosenClasse = classe || "3eme";
     if (multiProfileOn) {
       if (!/^\d{4}$/.test(pin)) {
         setError("Choisis un code PIN à 4 chiffres pour ce profil.");
@@ -83,7 +88,7 @@ export default function SignUpScreen({ navigation, route }: Props) {
       firstName: firstName.trim() || "Élève",
       lastName: lastName.trim() || provider,
       email: email.trim() || `${provider}@learnflow.tg`,
-      classe,
+      classe: chosenClasse,
       pin: multiProfileOn ? pin : undefined,
       multiProfile: multiProfileOn,
       provider,
@@ -91,8 +96,7 @@ export default function SignUpScreen({ navigation, route }: Props) {
     if (isSupabaseConfigured && provider === "email") {
       void supabase.auth.signUp({ email: email.trim(), password });
     }
-    if (provider === "email") navigation.navigate("OTP");
-    else navigation.navigate("Success");
+    navigation.navigate("OTP");
   };
 
   return (
@@ -187,7 +191,6 @@ export default function SignUpScreen({ navigation, route }: Props) {
 
           <Pressable
             onPress={() => {
-              if (requirePin) return;
               setMultiProfileOn((v) => {
                 const next = !v;
                 if (!next) {
@@ -204,15 +207,17 @@ export default function SignUpScreen({ navigation, route }: Props) {
             ]}
             accessibilityRole="button"
             accessibilityState={{ selected: multiProfileOn }}
-            accessibilityLabel="Activer le multi-profil"
+            accessibilityLabel="Activer plusieurs profils sur cet appareil"
           >
             <View style={[styles.multiIcon, { backgroundColor: colors.mathsBg }]}>
               <Icon name="people" size={20} color={colors.primary} />
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={[styles.multiTitle, { color: colors.textDark }]}>Multi-profil</Text>
+              <Text style={[styles.multiTitle, { color: colors.textDark }]}>
+                Plusieurs élèves sur ce téléphone ?
+              </Text>
               <Text style={[styles.multiSub, { color: colors.textMuted }]}>
-                Plusieurs élèves sur cet appareil. Un PIN protège chaque profil.
+                Active le multi-profil. Un PIN protège ce compte ; les autres s’ajoutent ensuite.
               </Text>
             </View>
             <View
@@ -222,7 +227,7 @@ export default function SignUpScreen({ navigation, route }: Props) {
               ]}
             >
               <Text style={[styles.multiBadgeText, { color: multiProfileOn ? colors.onPrimary : colors.textMuted }]}>
-                {multiProfileOn ? "Activé" : "Activer"}
+                {multiProfileOn ? "Oui" : "Non"}
               </Text>
             </View>
           </Pressable>
@@ -230,7 +235,7 @@ export default function SignUpScreen({ navigation, route }: Props) {
           {multiProfileOn ? (
             <>
               <View style={styles.field}>
-                <Text style={[styles.label, { color: colors.textDark }]}>Code PIN local (4 chiffres)</Text>
+                <Text style={[styles.label, { color: colors.textDark }]}>Code PIN de ce profil (4 chiffres)</Text>
                 <TextInput
                   style={[styles.input, { backgroundColor: colors.surfaceAlt, borderColor: colors.border, color: colors.textDark, letterSpacing: 8, textAlign: "center" }]}
                   placeholder="••••"

@@ -7,6 +7,7 @@ export type MainTabParamList = {
 
 export type RootStackParamList = {
   Auth: undefined;
+  FocusMode: undefined;
   Main: { screen?: keyof MainTabParamList } | undefined;
   Agenda: undefined;
   QuizHub: undefined;

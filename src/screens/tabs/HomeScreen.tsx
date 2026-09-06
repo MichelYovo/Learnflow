@@ -11,7 +11,7 @@ import NotificationBell from "../../components/NotificationBell";
 import LeagueBadge from "../../components/league/LeagueBadge";
 import MesMatieres from "../../components/MesMatieres";
 import ModeWorkSelector from "../../components/ModeWorkSelector";
-import Spira from "../../components/Spira";
+import FloatingChatbot from "../../components/FloatingChatbot";
 import { HomeSkeleton } from "../../components/ui";
 import { WEEK_BARS } from "../../data/mock";
 import { continueLessonForClass, programmeForClass, subjectShortcutsForClass } from "../../data/programme";
@@ -151,23 +151,20 @@ export default function HomeScreen() {
       </View>
 
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-        <View style={styles.continueBlock}>
-          <Spira scene="tab.home" size={96} message="" />
-          <Pressable onPress={() => nav.navigate("Course", { chapterId: continueLesson.chapterId })} accessibilityRole="button" accessibilityLabel="Continuer la leçon">
-            <LinearGradient colors={[colors.primary, "#00B8F4"]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.hero}>
-              <View style={{ flex: 1, paddingRight: 12 }}>
-                <Text style={styles.heroTitle}>{continueLesson.title}</Text>
-                <Text style={styles.heroSub}>{continueLesson.lessonLabel}</Text>
-                <View style={styles.heroTrack}>
-                  <View style={[styles.heroFill, { width: `${continueLesson.progress}%` }]} />
-                </View>
+        <Pressable onPress={() => nav.navigate("Course", { chapterId: continueLesson.chapterId })} accessibilityRole="button" accessibilityLabel="Continuer la leçon">
+          <LinearGradient colors={[colors.primary, "#00B8F4"]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.hero}>
+            <View style={{ flex: 1, paddingRight: 12 }}>
+              <Text style={styles.heroTitle}>{continueLesson.title}</Text>
+              <Text style={styles.heroSub}>{continueLesson.lessonLabel}</Text>
+              <View style={styles.heroTrack}>
+                <View style={[styles.heroFill, { width: `${continueLesson.progress}%` }]} />
               </View>
-              <View style={styles.heroPlay}>
-                <Text style={styles.heroCta}>Continuer</Text>
-              </View>
-            </LinearGradient>
-          </Pressable>
-        </View>
+            </View>
+            <View style={styles.heroPlay}>
+              <Text style={styles.heroCta}>Continuer</Text>
+            </View>
+          </LinearGradient>
+        </Pressable>
 
         <ModeWorkSelector
           selectedMode={selectedMode}
@@ -292,6 +289,8 @@ export default function HomeScreen() {
           <Icon name="chevron-right" size={20} color="#D97706" />
         </Pressable>
       </ScrollView>
+
+      <FloatingChatbot />
     </SafeAreaView>
   );
 }
@@ -323,8 +322,7 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   pillText: { fontSize: 14, fontWeight: "800", color: "#D97706" },
-  scroll: { padding: 24, paddingBottom: 40, gap: 28 },
-  continueBlock: { alignItems: "center", gap: 16 },
+  scroll: { padding: 20, paddingBottom: 96, gap: 20 },
   sectionTitle: { fontSize: 18, fontWeight: "800", color: colors.textDark },
   todayCard: {
     backgroundColor: colors.white,

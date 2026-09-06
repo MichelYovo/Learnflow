@@ -234,10 +234,18 @@ export async function updateProfileName(id: string, name: string): Promise<void>
 }
 
 export async function validateLocalPin(profileId: string, pin: string): Promise<boolean> {
-  const profile = await getProfileById(profileId);
-  if (!profile) return false;
-  if (!isPinConfigured(profile.local_pin_code)) return true;
-  return verifyPin(pin, profileId, profile.local_pin_code);
+  try {
+    const profile = await getProfileById(profileId);
+    if (!profile) {
+      // SQLite pas encore prêt : PIN démo Kofi / Ama
+      return (profileId === "1" || profileId === "2") && pin === "1234";
+    }
+    if (!isPinConfigured(profile.local_pin_code)) return true;
+    return verifyPin(pin, profileId, profile.local_pin_code);
+  } catch (error) {
+    console.warn("[LearnFlow] validateLocalPin", error);
+    return (profileId === "1" || profileId === "2") && pin === "1234";
+  }
 }
 
 export async function updateLocalPin(profileId: string, pin: string): Promise<void> {

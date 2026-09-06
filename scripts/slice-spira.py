@@ -1,7 +1,7 @@
-"""Slice the 10 Spira mascots from the sprite sheet.
+"""Slice the 10 Spira mascots from the 5x2 sprite sheet.
 
-Keeps the full character + mood props, drops the French labels under
-each one, and letterboxes into a square without stretching.
+Drops French labels and dashed frames, keeps the character + mood props,
+and letterboxes into a square without stretching.
 """
 from __future__ import annotations
 
@@ -14,36 +14,32 @@ from PIL import Image, ImageFilter
 SRC = Path(
     r"C:\Users\Bright\.cursor\projects\c-LF\assets"
     r"\c__Users_Bright_AppData_Roaming_Cursor_User_workspaceStorage_"
-    r"07ca7622d538560fa082ddce5afc7665_images_image-6561db9f-525a-4777-9846-339ca831a8d5.jpg"
+    r"07ca7622d538560fa082ddce5afc7665_images_image-ea90e1cb-1a5a-4dde-a674-3510ae0ced2b.jpg"
 )
 OUT = Path(r"c:\LF\LearnFlow\assets\spira")
 SIZE = 512
-PAD_RATIO = 0.16
+PAD_RATIO = 0.12
 
-# Exclusive cells: midpoints between neighbors, above the label bands.
-# Top labels sit ~333–353; bottom labels ~608–628.
+# Inset inside dashed frames, cropped above the label band.
 CELLS: list[tuple[str, int, int, int, int]] = [
-    ("joyeux", 0, 72, 189, 328),
-    ("calme", 189, 72, 362, 328),
-    ("confiant", 362, 72, 528, 328),
-    ("triste", 528, 72, 689, 328),
-    ("enerve", 689, 72, 852, 328),
-    ("timide", 852, 72, 1024, 328),
-    ("surpris", 90, 368, 295, 604),
-    ("neutre", 295, 368, 487, 604),
-    ("determine", 487, 368, 691, 604),
-    ("fatigue", 691, 368, 920, 604),
+    ("joyeux", 34, 44, 196, 286),
+    ("calme", 234, 44, 400, 286),
+    ("confiant", 440, 44, 594, 286),
+    ("triste", 634, 44, 794, 286),
+    ("enerve", 833, 44, 990, 286),
+    ("timide", 34, 364, 196, 606),
+    ("surpris", 234, 364, 400, 606),
+    ("neutre", 440, 364, 594, 606),
+    ("determine", 634, 364, 794, 606),
+    ("fatigue", 833, 364, 990, 606),
 ]
-
-NAVY = np.array([9.0, 21.0, 37.0])
 
 
 def background_mask(rgb: np.ndarray) -> np.ndarray:
-    """Navy sheet pixels — not enclosed dark faces, not gray fatigue body."""
-    dist = np.sqrt(((rgb.astype(np.float32) - NAVY) ** 2).sum(axis=2))
-    blue_bias = rgb[:, :, 2].astype(np.int16) - rgb[:, :, 0].astype(np.int16)
+    """Near-white, low-chroma paper / faint checkerboard — not body or props."""
+    lum = rgb.mean(axis=2)
     chroma = rgb.max(axis=2) - rgb.min(axis=2)
-    return (dist < 30) & (blue_bias > 8) & (chroma < 55)
+    return (lum >= 238) & (chroma <= 16)
 
 
 def flood_from_edges(is_bg: np.ndarray) -> np.ndarray:
@@ -52,7 +48,7 @@ def flood_from_edges(is_bg: np.ndarray) -> np.ndarray:
     q: deque[tuple[int, int]] = deque()
 
     def seed(y: int, x: int) -> None:
-        if not visited[y, x] and is_bg[y, x]:
+        if 0 <= y < h and 0 <= x < w and not visited[y, x] and is_bg[y, x]:
             visited[y, x] = True
             q.append((y, x))
 
@@ -65,45 +61,48 @@ def flood_from_edges(is_bg: np.ndarray) -> np.ndarray:
 
     while q:
         y, x = q.popleft()
-        if y > 0 and not visited[y - 1, x] and is_bg[y - 1, x]:
-            visited[y - 1, x] = True
-            q.append((y - 1, x))
-        if y + 1 < h and not visited[y + 1, x] and is_bg[y + 1, x]:
-            visited[y + 1, x] = True
-            q.append((y + 1, x))
-        if x > 0 and not visited[y, x - 1] and is_bg[y, x - 1]:
-            visited[y, x - 1] = True
-            q.append((y, x - 1))
-        if x + 1 < w and not visited[y, x + 1] and is_bg[y, x + 1]:
-            visited[y, x + 1] = True
-            q.append((y, x + 1))
+        seed(y - 1, x)
+        seed(y + 1, x)
+        seed(y, x - 1)
+        seed(y, x + 1)
     return visited
+
+
+def morph_close(mask: np.ndarray, radius: int = 2) -> np.ndarray:
+    img = Image.fromarray((mask.astype(np.uint8) * 255), "L")
+    k = radius * 2 + 1
+    img = img.filter(ImageFilter.MaxFilter(k))
+    img = img.filter(ImageFilter.MinFilter(k))
+    return np.asarray(img) > 127
+
+
+def fill_holes(keep: np.ndarray) -> np.ndarray:
+    """Fill enclosed transparent pockets (glossy highlights that leaked)."""
+    exterior = flood_from_edges(~keep)
+    return keep | ~exterior
 
 
 def extract(cell: np.ndarray) -> Image.Image:
     is_bg = background_mask(cell)
     sheet = flood_from_edges(is_bg)
-    keep = ~sheet
+    keep = fill_holes(morph_close(~sheet, radius=2))
 
     alpha = (keep.astype(np.uint8) * 255)
     alpha_img = Image.fromarray(alpha, "L")
-    # Grow 1px so outlines aren't eaten, then feather JPEG ringing.
     alpha_img = alpha_img.filter(ImageFilter.MaxFilter(3))
-    alpha_img = alpha_img.filter(ImageFilter.GaussianBlur(radius=0.7))
+    alpha_img = alpha_img.filter(ImageFilter.GaussianBlur(radius=0.55))
 
     rgba = np.dstack([cell, np.asarray(alpha_img)])
     img = Image.fromarray(rgba, "RGBA")
 
-    ys, xs = np.where(np.asarray(alpha_img) > 24)
-    bbox = None if len(xs) == 0 else (int(xs.min()), int(ys.min()), int(xs.max()) + 1, int(ys.max()) + 1)
-    if bbox is None:
+    ys, xs = np.where(np.asarray(alpha_img) > 28)
+    if len(xs) == 0:
         return img
-    left, top, right, bottom = bbox
-    pad = 10
-    left = max(0, left - pad)
-    top = max(0, top - pad)
-    right = min(img.width, right + pad)
-    bottom = min(img.height, bottom + pad)
+    pad = 6
+    left = max(0, int(xs.min()) - pad)
+    top = max(0, int(ys.min()) - pad)
+    right = min(img.width, int(xs.max()) + 1 + pad)
+    bottom = min(img.height, int(ys.max()) + 1 + pad)
     return img.crop((left, top, right, bottom))
 
 

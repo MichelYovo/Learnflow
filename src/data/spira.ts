@@ -105,6 +105,7 @@ export type SpiraScene =
   | "onboarding.league"
   | "onboarding.offline"
   | "auth.success"
+  | "auth.focus"
   | "tab.home"
   | "tab.cours"
   | "tab.ligue"
@@ -167,6 +168,10 @@ export const SPIRA_SCENE: Record<SpiraScene, SpiraSceneDef> = {
     message: "Et tout marche même sans réseau. Programme APC Togo, collège et lycée.",
   },
   "auth.success": { mood: "joyeux", message: "Compte prêt — on y va !" },
+  "auth.focus": {
+    mood: "determine",
+    message: "Coupe les notifs. Les réseaux peuvent attendre — on révise.",
+  },
   "tab.home": { mood: "joyeux" },
   "tab.cours": { mood: "calme" },
   "tab.ligue": { mood: "confiant" },

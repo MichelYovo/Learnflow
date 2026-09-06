@@ -60,7 +60,7 @@ LearnFlow vise la **maîtrise**, pas le survol : un chapitre n’est validé qu�
 Spira (mascotte) accompagne chaque écran. Le tuteur IA est un canal distinct, avec quota cloud.
 
 **Classes** : 6e → Terminale D (`6eme` … `Tle`). Démo : **Kofi (3ème)** et **Ama (Tle D)**.  
-**Matières** : Mathématiques, SVT, Physique-Chimie, Histoire-Géo, Français, Anglais, EDHC.  
+**Matières** : Mathématiques, SVT, PCT, Histoire-Géo, Français, Anglais, ECM.  
 Les cours affichés dépendent de la classe. En SVT, les chapitres cœur, ADN, neurone, synapse et rein ont un **modèle 3D** annoté.
 
 ---
@@ -303,7 +303,7 @@ LearnFlow/
 
 ## Thème
 
-- Police **Poppins** (Regular → Black). Primary `#1677FF` (Figma). Accents matière : maths bleu, SVT vert, PC cyan, HG ambre, FR violet, ANG rouge, EDHC orange.
+- Police **Poppins** (Regular → Black). Primary `#1677FF` (Figma). Accents matière : maths bleu, SVT vert, PCT cyan, HG ambre, FR violet, ANG rouge, ECM orange.
 - Mode sombre : surfaces `#0F172A` / `#1E293B`, jamais de noir pur. `onPrimary` reste blanc.
 - `userInterfaceStyle: automatic` ; le switch Profil pilote NativeWind + StatusBar.
 

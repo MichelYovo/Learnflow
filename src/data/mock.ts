@@ -72,7 +72,7 @@ export const INITIAL_INBOX: InboxNotification[] = [
 export const INITIAL_AGENDA: AgendaSession[] = [
   { id: "1", subject: "Maths", subjectColor: "#1677FF", subjectBg: "#E6F4FF", mode: "guide", day: TODAY_IDX, hour: 18, minute: 0, duration: 45, reminderMin: 15 },
   { id: "2", subject: "SVT", subjectColor: "#10B981", subjectBg: "#ECFDF5", mode: "libre", day: TODAY_IDX, hour: 19, minute: 30, duration: 30, reminderMin: 15 },
-  { id: "3", subject: "Physique-Chimie", subjectColor: "#06B6D4", subjectBg: "#ECFEFF", mode: "cramming", day: (TODAY_IDX + 1) % 7, hour: 17, minute: 0, duration: 60, reminderMin: 30 },
+  { id: "3", subject: "PCT", subjectColor: "#06B6D4", subjectBg: "#ECFEFF", mode: "cramming", day: (TODAY_IDX + 1) % 7, hour: 17, minute: 0, duration: 60, reminderMin: 30 },
 ];
 
 export const INITIAL_TIMETABLE: SchoolClass[] = [
@@ -82,20 +82,20 @@ export const INITIAL_TIMETABLE: SchoolClass[] = [
   { id: "t4", subject: "Anglais", subjectColor: "#EF4444", subjectBg: "#FEF2F2", day: 1, startHour: 8, startMinute: 0, endHour: 9, endMinute: 0, teacher: "Mme Grace", room: "Salle 3" },
   { id: "t5", subject: "Mathématiques", subjectColor: "#1677FF", subjectBg: "#E6F4FF", day: 1, startHour: 10, startMinute: 0, endHour: 11, endMinute: 0, teacher: "M. Kokou", room: "Salle 12" },
   { id: "t6", subject: "Histoire-Géo", subjectColor: "#F59E0B", subjectBg: "#FFFBEB", day: 2, startHour: 8, startMinute: 0, endHour: 9, endMinute: 0, teacher: "M. Edem", room: "Salle 10" },
-  { id: "t7", subject: "Physique-Chimie", subjectColor: "#06B6D4", subjectBg: "#ECFEFF", day: 2, startHour: 9, startMinute: 0, endHour: 10, endMinute: 30, teacher: "Mme Esso", room: "Labo 2" },
+  { id: "t7", subject: "PCT", subjectColor: "#06B6D4", subjectBg: "#ECFEFF", day: 2, startHour: 9, startMinute: 0, endHour: 10, endMinute: 30, teacher: "Mme Esso", room: "Labo 2" },
   { id: "t8", subject: "SVT", subjectColor: "#10B981", subjectBg: "#ECFDF5", day: 3, startHour: 8, startMinute: 0, endHour: 9, endMinute: 30, teacher: "M. Komlan", room: "Salle 5" },
   { id: "t9", subject: "Français", subjectColor: "#8B5CF6", subjectBg: "#F5F3FF", day: 4, startHour: 10, startMinute: 0, endHour: 11, endMinute: 0, teacher: "Mme Afua", room: "Salle 8" },
-  { id: "t10", subject: "EDHC", subjectColor: "#F97316", subjectBg: "#FFF7ED", day: 4, startHour: 11, startMinute: 0, endHour: 12, endMinute: 0, teacher: "M. Senam", room: "Salle 1" },
+  { id: "t10", subject: "ECM", subjectColor: "#F97316", subjectBg: "#FFF7ED", day: 4, startHour: 11, startMinute: 0, endHour: 12, endMinute: 0, teacher: "M. Senam", room: "Salle 1" },
 ];
 
 export const SUBJECTS = [
   { id: "maths", abbrev: "Maths", name: "Mathématiques", icon: "calculator" as const, color: "#1677FF", bg: "#E6F4FF", border: "#BAE0FF", done: 12, total: 32 },
-  { id: "pc", abbrev: "PC", name: "Physique-Chimie", icon: "atom" as const, color: "#06B6D4", bg: "#ECFEFF", border: "#A5F3FC", done: 5, total: 24 },
+  { id: "pc", abbrev: "PCT", name: "PCT", icon: "atom" as const, color: "#06B6D4", bg: "#ECFEFF", border: "#A5F3FC", done: 5, total: 24 },
   { id: "svt", abbrev: "SVT", name: "SVT", icon: "microscope" as const, color: "#10B981", bg: "#ECFDF5", border: "#A7F3D0", done: 8, total: 20 },
   { id: "hg", abbrev: "H-G", name: "Histoire-Géo", icon: "globe" as const, color: "#F59E0B", bg: "#FFFBEB", border: "#FDE68A", done: 6, total: 18 },
   { id: "fr", abbrev: "Français", name: "Français", icon: "quill" as const, color: "#8B5CF6", bg: "#F5F3FF", border: "#DDD6FE", done: 9, total: 22 },
   { id: "ang", abbrev: "Anglais", name: "Anglais", icon: "chatbubble" as const, color: "#EF4444", bg: "#FEF2F2", border: "#FECACA", done: 4, total: 16 },
-  { id: "edhc", abbrev: "EDHC", name: "EDHC", icon: "heart" as const, color: "#F97316", bg: "#FFF7ED", border: "#FED7AA", done: 2, total: 12 },
+  { id: "edhc", abbrev: "ECM", name: "ECM", icon: "heart" as const, color: "#F97316", bg: "#FFF7ED", border: "#FED7AA", done: 2, total: 12 },
 ];
 
 const SHORTCUT_ICONS: Record<string, string> = {
@@ -366,7 +366,7 @@ export const FLASHCARDS: FlashcardData[] = [
   {
     id: "f9",
     recto: "Rôle de la gaine de myéline ?",
-    verso: "Isoler l'axone et accélérer l'influx (conduction saltatoire).",
+    verso: "Isoler l'axone : l'influx saute et va plus vite.",
     intervalleRepetJ: 1,
     prochaineRevision: hoursAgo(2),
     difficulte: "Moyen",
@@ -377,12 +377,45 @@ export const FLASHCARDS: FlashcardData[] = [
   {
     id: "f10",
     recto: "À la synapse, le message nerveux devient…",
-    verso: "Chimique : neurotransmetteur libéré dans la fente synaptique.",
+    verso: "Chimique : un neurotransmetteur traverse la fente.",
     intervalleRepetJ: 0,
     prochaineRevision: hoursAgo(1),
     difficulte: "Moyen",
     due: true,
     chapitreId: "neurones",
+    matiere: "SVT",
+  },
+  {
+    id: "f12",
+    recto: "Dans un neurone, le message va…",
+    verso: "Dendrites → corps cellulaire → axone → synapse.",
+    intervalleRepetJ: 0,
+    prochaineRevision: hoursAgo(3),
+    difficulte: "Facile",
+    due: true,
+    chapitreId: "nerveux",
+    matiere: "SVT",
+  },
+  {
+    id: "f13",
+    recto: "Rôle de la gaine de myéline ?",
+    verso: "Isoler l'axone : l'influx saute et va plus vite.",
+    intervalleRepetJ: 1,
+    prochaineRevision: hoursAgo(2),
+    difficulte: "Moyen",
+    due: true,
+    chapitreId: "nerveux",
+    matiere: "SVT",
+  },
+  {
+    id: "f14",
+    recto: "À la synapse, le message devient…",
+    verso: "Chimique : un neurotransmetteur traverse la fente.",
+    intervalleRepetJ: 0,
+    prochaineRevision: hoursAgo(1),
+    difficulte: "Moyen",
+    due: true,
+    chapitreId: "nerveux",
     matiere: "SVT",
   },
   {
@@ -401,12 +434,12 @@ export const FLASHCARDS: FlashcardData[] = [
 export const BLITZ_QCM: QCMData[] = [
   { id: "bf1", enonceQuestion: "b² − 4ac est la formule du ?", optionsProposees: ["Discriminant", "Périmètre", "Volume", "Gradient"], indexReponseCorrecte: 0, explicationPedagogique: "", matiere: "Maths", difficulte: "Facile" },
   { id: "bf2", enonceQuestion: "La mitose produit combien de cellules filles ?", optionsProposees: ["1", "2", "4", "8"], indexReponseCorrecte: 1, explicationPedagogique: "", matiere: "SVT", difficulte: "Facile" },
-  { id: "bf3", enonceQuestion: "H₂O est la formule chimique de ?", optionsProposees: ["CO₂", "L'eau", "L'acide", "Le sel"], indexReponseCorrecte: 1, explicationPedagogique: "", matiere: "PC", difficulte: "Facile" },
+  { id: "bf3", enonceQuestion: "H₂O est la formule chimique de ?", optionsProposees: ["CO₂", "L'eau", "L'acide", "Le sel"], indexReponseCorrecte: 1, explicationPedagogique: "", matiere: "PCT", difficulte: "Facile" },
   { id: "bf4", enonceQuestion: "La photosynthèse libère quel gaz ?", optionsProposees: ["CO₂", "H₂", "O₂", "N₂"], indexReponseCorrecte: 2, explicationPedagogique: "", matiere: "SVT", difficulte: "Facile" },
   { id: "bf5", enonceQuestion: "cos²(x) + sin²(x) = ?", optionsProposees: ["0", "2", "1", "π"], indexReponseCorrecte: 2, explicationPedagogique: "", matiere: "Maths", difficulte: "Facile" },
   { id: "bf6", enonceQuestion: "Capitale du Togo ?", optionsProposees: ["Kara", "Lomé", "Sokodé", "Atakpamé"], indexReponseCorrecte: 1, explicationPedagogique: "", matiere: "H-G", difficulte: "Facile" },
   { id: "bf7", enonceQuestion: "Past simple de « go » ?", optionsProposees: ["goed", "gone", "went", "going"], indexReponseCorrecte: 2, explicationPedagogique: "", matiere: "Anglais", difficulte: "Facile" },
-  { id: "bf8", enonceQuestion: "Un acide a un pH…", optionsProposees: ["= 7", "> 7", "< 7", "= 14"], indexReponseCorrecte: 2, explicationPedagogique: "", matiere: "PC", difficulte: "Facile" },
+  { id: "bf8", enonceQuestion: "Un acide a un pH…", optionsProposees: ["= 7", "> 7", "< 7", "= 14"], indexReponseCorrecte: 2, explicationPedagogique: "", matiere: "PCT", difficulte: "Facile" },
 
   { id: "bm1", enonceQuestion: "'Present Perfect' = ?", optionsProposees: ["I go", "I have gone", "I went", "I going"], indexReponseCorrecte: 1, explicationPedagogique: "", matiere: "Anglais", difficulte: "Moyen" },
   { id: "bm2", enonceQuestion: "L'indépendance du Togo : quelle année ?", optionsProposees: ["1958", "1960", "1962", "1965"], indexReponseCorrecte: 1, explicationPedagogique: "", matiere: "H-G", difficulte: "Moyen" },
@@ -414,7 +447,7 @@ export const BLITZ_QCM: QCMData[] = [
   { id: "bm4", enonceQuestion: "La méiose produit combien de cellules ?", optionsProposees: ["2", "3", "4", "8"], indexReponseCorrecte: 2, explicationPedagogique: "", matiere: "SVT", difficulte: "Moyen" },
   { id: "bm5", enonceQuestion: "Somme des racines (Viète) ?", optionsProposees: ["c/a", "−b/a", "b/a", "−c/a"], indexReponseCorrecte: 1, explicationPedagogique: "", matiere: "Maths", difficulte: "Moyen" },
   { id: "bm6", enonceQuestion: "Quel organe produit la bile ?", optionsProposees: ["Pancréas", "Foie", "Estomac", "Rate"], indexReponseCorrecte: 1, explicationPedagogique: "", matiere: "SVT", difficulte: "Moyen" },
-  { id: "bm7", enonceQuestion: "H₂O₂ est…", optionsProposees: ["L'eau", "L'eau oxygénée", "Le dioxyde", "L'ozone"], indexReponseCorrecte: 1, explicationPedagogique: "", matiere: "PC", difficulte: "Moyen" },
+  { id: "bm7", enonceQuestion: "H₂O₂ est…", optionsProposees: ["L'eau", "L'eau oxygénée", "Le dioxyde", "L'ozone"], indexReponseCorrecte: 1, explicationPedagogique: "", matiere: "PCT", difficulte: "Moyen" },
   { id: "bm8", enonceQuestion: "Where does digestion of starch start?", optionsProposees: ["Stomach", "Mouth", "Liver", "Colon"], indexReponseCorrecte: 1, explicationPedagogique: "", matiere: "Anglais", difficulte: "Moyen" },
 
   { id: "bd1", enonceQuestion: "Si Δ = 0, l'équation a…", optionsProposees: ["0 racine", "1 racine double", "2 racines", "∞ racines"], indexReponseCorrecte: 1, explicationPedagogique: "", matiere: "Maths", difficulte: "Difficile" },
@@ -422,7 +455,7 @@ export const BLITZ_QCM: QCMData[] = [
   { id: "bd3", enonceQuestion: "Gaz consommé par la photosynthèse ?", optionsProposees: ["O₂", "N₂", "CO₂", "H₂"], indexReponseCorrecte: 2, explicationPedagogique: "", matiere: "SVT", difficulte: "Difficile" },
   { id: "bd4", enonceQuestion: "Si Δ < 0, les racines réelles sont…", optionsProposees: ["Deux", "Une", "Aucune", "Complexes seulement"], indexReponseCorrecte: 2, explicationPedagogique: "", matiere: "Maths", difficulte: "Difficile" },
   { id: "bd5", enonceQuestion: "Le Togo a d'abord été colonie…", optionsProposees: ["Anglaise", "Allemande", "Portugaise", "Belge"], indexReponseCorrecte: 1, explicationPedagogique: "", matiere: "H-G", difficulte: "Difficile" },
-  { id: "bd6", enonceQuestion: "pH = −log[H₃O⁺]. Si [H₃O⁺] = 10⁻³, pH = ?", optionsProposees: ["3", "7", "11", "−3"], indexReponseCorrecte: 0, explicationPedagogique: "", matiere: "PC", difficulte: "Difficile" },
+  { id: "bd6", enonceQuestion: "pH = −log[H₃O⁺]. Si [H₃O⁺] = 10⁻³, pH = ?", optionsProposees: ["3", "7", "11", "−3"], indexReponseCorrecte: 0, explicationPedagogique: "", matiere: "PCT", difficulte: "Difficile" },
   { id: "bd7", enonceQuestion: "Present Perfect vs preterite : action with present result?", optionsProposees: ["I saw him", "I have seen him", "I seeing him", "I seen him"], indexReponseCorrecte: 1, explicationPedagogique: "", matiere: "Anglais", difficulte: "Difficile" },
   { id: "bd8", enonceQuestion: "L'absorption des nutriments se fait surtout dans…", optionsProposees: ["L'estomac", "Le gros intestin", "L'intestin grêle", "La bouche"], indexReponseCorrecte: 2, explicationPedagogique: "", matiere: "SVT", difficulte: "Difficile" },
   { id: "bd9", enonceQuestion: "La paroi la plus épaisse du cœur est celle du…", optionsProposees: ["Ventricule droit", "Ventricule gauche", "Oreillette droite", "Oreillette gauche"], indexReponseCorrecte: 1, explicationPedagogique: "", matiere: "SVT", difficulte: "Difficile" },
@@ -545,7 +578,7 @@ export const PROFILES_DEMO = [
 export const PARENT_NOTES: ParentNote[] = [
   { matiere: "Mathématiques", score: 14 },
   { matiere: "SVT", score: 16 },
-  { matiere: "Physique-Chimie", score: 12 },
+  { matiere: "PCT", score: 12 },
   { matiere: "Français", score: 13 },
   { matiere: "Anglais", score: 15 },
 ];
@@ -569,9 +602,14 @@ export const AI_FAQ: AiFaqItem[] = [
     a: "Double hélice : A face à T, G face à C. C'est le support des caractères héréditaires. Le modèle 3D du chapitre ADN montre les paires de bases.",
   },
   {
+    q: "C'est quoi un neurone ?",
+    keywords: ["neurone", "dendrite", "axone", "myéline"],
+    a: "Cellule nerveuse. Dendrites reçoivent, axone envoie. La myéline accélère. À la synapse, le message devient chimique. Ouvre le modèle 3D Neurone.",
+  },
+  {
     q: "C'est quoi une synapse ?",
     keywords: ["synapse", "neurone", "neurotransmetteur", "myéline"],
-    a: "Contact entre deux neurones. L'influx électrique devient chimique : vésicules, neurotransmetteur, fente, récepteurs. La myéline accélère l'influx le long de l'axone.",
+    a: "Contact entre deux neurones. L'influx électrique devient chimique : vésicules → neurotransmetteur → fente → récepteurs. Ouvre le modèle 3D Neurone / Synapse.",
   },
   {
     q: "Comment réviser efficacement ?",
@@ -579,9 +617,14 @@ export const AI_FAQ: AiFaqItem[] = [
     a: "Alterne Mode Guidé (cartes dues) et courtes sessions Blitz. La règle 10/10 garantit la maîtrise avant le Grand Quizz.",
   },
   {
+    q: "C'est quoi le tuteur ?",
+    keywords: ["tuteur", "chatbot", "ia", "assistant", "faq"],
+    a: "Je suis un assistant distinct de Spira. Je vulgarise les notions. Les questions courantes passent par la FAQ hors ligne (illimitée) ; les autres comptent dans tes 5 questions cloud du jour.",
+  },
+  {
     q: "Que fait Spira ?",
     keywords: ["spira"],
-    a: "Spira illustre les notions avec des analogies. Le tuteur (moi) répond à tes questions depuis le bouton en bas à droite.",
+    a: "Spira est la mascotte : elle illustre les notions avec des analogies. Moi je suis le tuteur, un chatbot à part — le gros bouton rond en bas à droite de l'Accueil.",
   },
   {
     q: "C'est quoi le Mode Guidé ?",
@@ -625,5 +668,5 @@ export function findAiFaq(query: string): AiFaqItem | undefined {
 export function replyAsLocalTutor(query: string): string {
   const faq = findAiFaq(query);
   if (faq) return faq.a;
-  return "Je n'ai que des réponses locales pour l'instant. Essaie : discriminant, Spira, Mode Guidé, Blitz, 10/10, flashcards ou ligue.";
+  return "Je n'ai que des réponses locales pour l'instant. Essaie : discriminant, cœur, ADN, synapse, Spira, Mode Guidé, Blitz, 10/10, flashcards ou ligue.";
 }

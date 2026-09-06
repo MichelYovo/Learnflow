@@ -299,7 +299,7 @@ export function CourseMock() {
           ].map((line, i) => (
             <li key={i} className="flex items-start gap-3">
               <span className="mt-[11px] h-1.5 w-1.5 shrink-0 rounded-full bg-[#1677FF]" />
-              <p className="text-[16px] font-normal leading-[26px] tracking-[0.01em] text-[#1C1917]">{line}</p>
+              <p className="text-[16px] font-medium leading-6 text-[#1C1917]">{line}</p>
             </li>
           ))}
         </ul>
@@ -307,7 +307,7 @@ export function CourseMock() {
           <img src="/spira/confiant.png" alt="" className="h-12 w-12 shrink-0 object-contain" />
           <div>
             <p className="text-[11px] font-extrabold uppercase tracking-wide text-[#1677FF]">Analogie de Spira</p>
-            <p className="mt-0.5 text-[13px] font-normal leading-[19px] text-[#44403C]">
+            <p className="mt-0.5 text-[13px] font-medium leading-[19px] text-[#44403C]">
               Le neurone, c’est un fil. La myéline, c’est la gaine : le courant va plus vite.
             </p>
           </div>

@@ -4,7 +4,6 @@ import { LinearGradient } from "expo-linear-gradient";
 import { SafeAreaView } from "react-native-safe-area-context";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import Logo from "../../components/Logo";
-import Spira from "../../components/Spira";
 import { useAppTheme } from "../../theme/useAppTheme";
 import type { AuthStackParamList } from "../../navigation/types";
 
@@ -13,11 +12,13 @@ type Props = NativeStackScreenProps<AuthStackParamList, "Splash">;
 export default function SplashScreen({ navigation }: Props) {
   const { colors } = useAppTheme();
   return (
-    <SafeAreaView style={[styles.safe, { backgroundColor: colors.surface }]}>
+    <SafeAreaView style={[styles.safe, { backgroundColor: colors.surface }]} edges={["top", "bottom"]}>
       <View style={styles.content}>
-        <Logo height={108} />
-        <Spira scene="splash" size={88} />
+        <Logo height={88} />
         <Text style={[styles.tag, { color: colors.primary }]}>Programme APC Togo</Text>
+        <Text style={[styles.lead, { color: colors.textSecondary }]}>
+          Fiches, quiz 10/10 et ligues — collège et lycée, même hors ligne.
+        </Text>
       </View>
       <View style={styles.actions}>
         <Pressable onPress={() => navigation.navigate("SignUp")} style={styles.primaryWrap}>
@@ -41,9 +42,9 @@ export default function SplashScreen({ navigation }: Props) {
 
 const styles = StyleSheet.create({
   safe: { flex: 1, paddingHorizontal: 24 },
-  content: { flex: 1, justifyContent: "center", alignItems: "center", gap: 16 },
+  content: { flex: 1, justifyContent: "center", alignItems: "center", gap: 12 },
   tag: { fontSize: 16, fontWeight: "700" },
-  sub: { fontSize: 14, textAlign: "center", lineHeight: 20, marginTop: 4 },
+  lead: { fontSize: 15, textAlign: "center", lineHeight: 22, paddingHorizontal: 12, fontWeight: "500" },
   actions: { gap: 12, paddingBottom: 24 },
   primaryWrap: { borderRadius: 18, overflow: "hidden" },
   primary: { paddingVertical: 16, alignItems: "center" },

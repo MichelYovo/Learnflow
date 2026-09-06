@@ -19,6 +19,7 @@ type Props = NativeStackScreenProps<AuthStackParamList, "Profiles">;
 export default function ProfilesScreen({ navigation }: Props) {
   const selectProfile = useLearnFlowStore((s) => s.selectProfile);
   const profiles = useLearnFlowStore((s) => s.profiles);
+  const multiOn = useLearnFlowStore((s) => s.settings.multiProfileEnabled);
   const { colors } = useAppTheme();
   const [pending, setPending] = useState<ProfileEleve | null>(null);
   const [pinError, setPinError] = useState<string | null>(null);
@@ -100,7 +101,7 @@ export default function ProfilesScreen({ navigation }: Props) {
             </Pressable>
           ))}
 
-          <Pressable style={[styles.addCard, { backgroundColor: colors.mathsBg, borderColor: colors.mathsBorder }]} onPress={() => navigation.navigate("SignUp", { requirePin: true })}>
+          <Pressable style={[styles.addCard, { backgroundColor: colors.mathsBg, borderColor: colors.mathsBorder }]} onPress={() => navigation.navigate("SignUp", { requirePin: multiOn })}>
             <View style={styles.addAvatar}>
               <Icon name="user" size={22} color={colors.primary} />
             </View>
@@ -113,7 +114,8 @@ export default function ProfilesScreen({ navigation }: Props) {
           <View style={styles.infoBanner}>
             <Icon name="lightbulb" size={16} color={colors.accent} />
             <Text style={styles.infoText}>
-              Les profils et le PIN (si le multi-profil est activé) sont <Text style={styles.infoBold}>stockés localement</Text> — aucun réseau n'est requis pour changer d'élève.
+              Profils démo (Kofi, Ama) : PIN <Text style={styles.infoBold}>1234</Text>. Les profils restent{" "}
+              <Text style={styles.infoBold}>locaux</Text> — aucun réseau n'est requis.
             </Text>
           </View>
         </View>

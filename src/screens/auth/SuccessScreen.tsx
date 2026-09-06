@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
-import { StyleSheet, Text } from "react-native";
+import { Pressable, StyleSheet, Text } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
 import { SafeAreaView } from "react-native-safe-area-context";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import Logo from "../../components/Logo";
@@ -16,7 +17,7 @@ export default function SuccessScreen({}: Props) {
   const { colors } = useAppTheme();
 
   useEffect(() => {
-    const t = setTimeout(() => login(), 1400);
+    const t = setTimeout(() => login(), 900);
     return () => clearTimeout(t);
   }, [login]);
 
@@ -25,7 +26,12 @@ export default function SuccessScreen({}: Props) {
       <Logo height={96} />
       <Spira scene="auth.success" size={112} message="" />
       <Text style={[styles.title, { color: colors.secondary }]}>Bienvenue !</Text>
-      <Text style={[styles.sub, { color: colors.textMuted }]}>Préparation de ton espace élève…</Text>
+      <Text style={[styles.sub, { color: colors.textMuted }]}>Ton espace élève est prêt.</Text>
+      <Pressable onPress={login} style={styles.btnWrap}>
+        <LinearGradient colors={[colors.primary, colors.primaryDark]} style={styles.btn}>
+          <Text style={styles.btnText}>Entrer dans LearnFlow</Text>
+        </LinearGradient>
+      </Pressable>
     </SafeAreaView>
   );
 }
@@ -40,5 +46,8 @@ const styles = StyleSheet.create({
     padding: 24,
   },
   title: { fontSize: 28, fontWeight: "800", color: colors.secondary, marginTop: 12 },
-  sub: { color: colors.textMuted, fontWeight: "500" },
+  sub: { color: colors.textMuted, fontWeight: "500", marginBottom: 8 },
+  btnWrap: { borderRadius: 16, overflow: "hidden", alignSelf: "stretch", marginTop: 8 },
+  btn: { paddingVertical: 16, alignItems: "center" },
+  btnText: { color: colors.white, fontWeight: "800", fontSize: 16 },
 });
