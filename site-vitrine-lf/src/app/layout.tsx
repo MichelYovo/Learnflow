@@ -34,8 +34,12 @@ export const metadata: Metadata = {
     description: "App collège-lycée APC Togo. Offline-first. Règle du 10/10.",
   },
   icons: {
-    icon: "/favicon.png",
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/favicon.png", type: "image/png" },
+    ],
     apple: "/icon.png",
+    shortcut: "/favicon.ico",
   },
 };
 
