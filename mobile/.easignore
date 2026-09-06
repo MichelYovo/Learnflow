@@ -23,11 +23,6 @@ yarn-error.*
 /ios
 /android
 
-# Not part of the mobile APK
-admin/
-learnflow-web/
-site-vitrine-lf/
-.claude/
 *.md
 !README.md
 scripts/*.py
