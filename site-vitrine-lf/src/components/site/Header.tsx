@@ -19,9 +19,16 @@ export default function Header() {
 
   return (
     <header className="sticky top-0 z-50 border-b border-[#F0EFEE]/80 bg-[#FAFAF9]/85 backdrop-blur-xl">
-      <div className="mx-auto flex h-[72px] max-w-6xl items-center justify-between px-5">
-        <Link href="/" className="flex items-center" aria-label="LearnFlow — accueil">
-          <Image src="/brand/logo-light.png" alt="LearnFlow" width={168} height={40} priority className="h-9 w-auto" />
+      <div className="mx-auto flex h-[88px] max-w-6xl items-center justify-between px-5">
+        <Link href="/" className="flex shrink-0 items-center" aria-label="LearnFlow — accueil">
+          <Image
+            src="/brand/logo-light.png"
+            alt="LearnFlow"
+            width={280}
+            height={76}
+            priority
+            className="h-14 w-auto sm:h-16"
+          />
         </Link>
         <nav className="hidden items-center gap-7 md:flex" aria-label="Sections">
           {LINKS.map((l) => (

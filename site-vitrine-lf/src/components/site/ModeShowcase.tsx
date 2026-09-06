@@ -36,8 +36,8 @@ export default function ModeShowcase() {
               }}
             >
               <div className="mb-3 flex items-center justify-between">
-                <span className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-[18px] bg-white">
-                  <img src={`/spira/${m.spira}.png`} alt="" className="h-10 w-10 object-contain" />
+                <span className="flex h-14 w-14 items-center justify-center overflow-hidden rounded-[18px] bg-white">
+                  <img src={`/spira/${m.spira}.png`} alt="" className="h-12 w-12 object-contain" />
                 </span>
                 {on ? (
                   <span className="text-[11px] font-extrabold uppercase tracking-wide" style={{ color: m.color }}>

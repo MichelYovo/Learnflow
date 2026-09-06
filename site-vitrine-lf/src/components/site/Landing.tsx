@@ -15,7 +15,7 @@ export default function Landing() {
         <div className="relative mx-auto grid max-w-6xl items-center gap-10 px-5 pb-16 pt-10 lg:grid-cols-[1.05fr_.95fr] lg:pb-24 lg:pt-14">
           <div>
             <p className="inline-flex items-center gap-2 rounded-full border-2 border-[#BAE0FF] bg-[#E6F4FF] px-3 py-1 text-xs font-extrabold uppercase tracking-wider text-[#1677FF]">
-              <Image src="/brand/logo-mark.png" alt="" width={18} height={18} />
+              <Image src="/brand/logo-mark.png" alt="" width={28} height={28} className="h-7 w-7 object-contain" />
               Togo · APC · Offline-first
             </p>
             <h1 className="mt-5 max-w-xl text-4xl font-black leading-[1.1] tracking-tight text-[#1C1917] sm:text-5xl lg:text-[56px]">
@@ -159,8 +159,8 @@ export default function Landing() {
           </p>
           <div className="mt-10 grid grid-cols-2 gap-4 sm:grid-cols-5">
             {SPIRA_MOODS.map((m) => (
-              <figure key={m.id} className="rounded-[20px] border-2 border-[#F0EFEE] bg-[#FAFAF9] p-4 text-center">
-                <img src={`/spira/${m.id}.png`} alt={m.label} className="mx-auto h-20 w-20 object-contain" />
+              <figure key={m.id} className="rounded-[20px] border-2 border-[#F0EFEE] bg-[#FAFAF9] p-5 text-center">
+                <img src={`/spira/${m.id}.png`} alt={m.label} className="mx-auto h-28 w-28 object-contain sm:h-32 sm:w-32" />
                 <figcaption className="mt-2 text-sm font-extrabold text-[#1C1917]">{m.label}</figcaption>
                 <p className="mt-1 text-[11px] font-medium leading-snug text-[#64748B]">{m.role}</p>
               </figure>
@@ -223,7 +223,7 @@ export default function Landing() {
               { t: "À la récré", d: "Blitz 60 s et code défi WhatsApp, même en 2G.", s: "enerve" },
             ].map((c) => (
               <article key={c.t} className="rounded-[24px] border-2 border-[#F0EFEE] bg-[#FAFAF9] p-6">
-                <img src={`/spira/${c.s}.png`} alt="" className="h-16 w-16 object-contain" />
+                <img src={`/spira/${c.s}.png`} alt="" className="h-20 w-20 object-contain" />
                 <h3 className="mt-4 text-lg font-extrabold text-[#1C1917]">{c.t}</h3>
                 <p className="mt-2 text-sm font-medium text-[#64748B]">{c.d}</p>
               </article>
@@ -244,7 +244,7 @@ export default function Landing() {
 
       <section className="px-5 pb-20">
         <div className="mx-auto max-w-6xl overflow-hidden rounded-[32px] bg-[linear-gradient(135deg,#1677FF_0%,#155EEF_45%,#0F766E_100%)] px-8 py-14 text-center text-white">
-          <img src="/spira/joyeux.png" alt="" className="mx-auto h-24 w-24 object-contain" />
+          <img src="/spira/joyeux.png" alt="" className="mx-auto h-32 w-32 object-contain" />
           <h2 className="mt-4 text-3xl font-black sm:text-4xl">Prêt à viser 10/10 ?</h2>
           <p className="mx-auto mt-3 max-w-lg text-base font-medium text-white/90">
             Collège et lycée, programme APC Togo. LearnFlow tourne même hors ligne.

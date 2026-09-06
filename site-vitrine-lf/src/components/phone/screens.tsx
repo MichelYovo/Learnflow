@@ -52,8 +52,8 @@ export function HomeMock() {
               className="min-h-[118px] rounded-3xl p-4"
               style={{ background: m.bg, border: `2px solid ${m.border}` }}
             >
-              <div className="mb-3 flex h-[52px] w-[52px] items-center justify-center overflow-hidden rounded-[18px] bg-white">
-                <img src={`/spira/${m.spira}.png`} alt="" className="h-10 w-10 object-contain" />
+              <div className="mb-3 flex h-[56px] w-[56px] items-center justify-center overflow-hidden rounded-[18px] bg-white">
+                <img src={`/spira/${m.spira}.png`} alt="" className="h-12 w-12 object-contain" />
               </div>
               <p className="text-[16px] font-extrabold" style={{ color: m.color }}>
                 {m.label}
@@ -124,7 +124,7 @@ export function ResultMock() {
     <div className="flex h-full flex-col bg-[#FAFAF9]">
       <div className="bg-[linear-gradient(180deg,#10B981_0%,#059669_100%)] px-6 pb-8 pt-2 text-center text-white">
         <StatusBar light />
-        <img src="/spira/joyeux.png" alt="" className="mx-auto h-[88px] w-[88px] object-contain" />
+        <img src="/spira/joyeux.png" alt="" className="mx-auto h-[104px] w-[104px] object-contain" />
         <p className="mt-2 text-[28px] font-extrabold">Parfait !</p>
         <p className="mt-1 text-[13px] text-white/90">Règle du 10/10 validée · +375 XP · Badge CHALLENGER</p>
       </div>

@@ -7,7 +7,7 @@ export default function Footer() {
     <footer className="border-t border-[#F0EFEE] bg-white">
       <div className="mx-auto grid max-w-6xl gap-10 px-5 py-12 md:grid-cols-[1.4fr_1fr_1fr]">
         <div>
-          <Image src="/brand/logo-light.png" alt="LearnFlow" width={160} height={38} className="h-9 w-auto" />
+          <Image src="/brand/logo-light.png" alt="LearnFlow" width={260} height={70} className="h-14 w-auto" />
           <p className="mt-4 max-w-sm text-sm font-medium leading-relaxed text-[#64748B]">
             Application mobile d’apprentissage pour collégiens et lycéens du Togo. Programme APC, règle du 10/10,
             offline-first.
