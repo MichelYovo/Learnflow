@@ -6,8 +6,10 @@ import Logo from "@/components/Logo";
 import ParentPhoneField from "@/components/ParentPhoneField";
 import { AuthStage, Page, PrimaryButton } from "@/components/ui";
 import { CLASSES, classLabel } from "@/data/mock";
-import { ensureBeginnerLeague, trackActivity, upsertStudentProfile } from "@/lib/cloud";
+import { ensureBeginnerLeague, fetchOwnStudentProfile, trackActivity, upsertStudentProfile } from "@/lib/cloud";
+import { isProfileComplete } from "@/lib/cloudTypes";
 import { isValidTogoLocal, toTogoE164 } from "@/lib/phoneTogo";
+import { notifySecureLogin } from "@/lib/secureAuth";
 import { getBrowserSupabase } from "@/lib/supabase";
 import { useLearnFlowStore } from "@/store/useLearnFlowStore";
 import { useAppTheme } from "@/theme/useAppTheme";
@@ -32,10 +34,31 @@ export default function CompleteProfilePage() {
       router.replace("/login?error=config");
       return;
     }
-    void supabase.auth.getSession().then(({ data }) => {
+    void supabase.auth.getSession().then(async ({ data }) => {
       const user = data.session?.user;
       if (!user) {
         router.replace("/login");
+        return;
+      }
+      const existing = await fetchOwnStudentProfile();
+      if (isProfileComplete(existing)) {
+        applyCloudUser(
+          {
+            id: user.id,
+            email: user.email ?? existing?.email ?? "",
+            nom: existing?.name ?? String(user.user_metadata?.full_name ?? "Élève"),
+            classe: existing?.class_level ?? "3eme",
+            parentPhone: existing?.parent_phone ?? "",
+            xpTotale: existing?.total_xp ?? 0,
+            streak: existing?.streak ?? 0,
+            lessonsDone: existing?.lessons_done ?? 0,
+            avatarId: existing?.avatar_id ?? undefined,
+          },
+          { fresh: (existing?.total_xp ?? 0) === 0, authenticate: false },
+        );
+        void trackActivity("login", { provider: "google" });
+        void notifySecureLogin("login");
+        router.replace("/success");
         return;
       }
       setUserId(user.id);
@@ -44,27 +67,23 @@ export default function CompleteProfilePage() {
       setDisplayName(metaName || user.email?.split("@")[0] || "Élève");
       setReady(true);
     });
-  }, [router]);
+  }, [applyCloudUser, router]);
 
   const submit = async () => {
     if (!classe) {
       setError("Choisis ta classe.");
       return;
     }
-    if (!isValidTogoLocal(parentLocal)) {
-      setError("Indique le numéro parent togolais (8 chiffres après +228).");
-      return;
-    }
+    const phone = isValidTogoLocal(parentLocal) ? toTogoE164(parentLocal) : undefined;
     setError("");
     setBusy(true);
-    const phone = toTogoE164(parentLocal);
     const result = await upsertStudentProfile({
       id: userId,
       parent_id: userId,
       name: displayName,
       email,
       class_level: classe,
-      parent_phone: phone,
+      parent_phone: phone ?? null,
       platform: "web",
       total_xp: 0,
       streak: 0,
@@ -85,10 +104,11 @@ export default function CompleteProfilePage() {
       streak: 0,
       lessonsDone: 0,
       rang: 1,
-    }, { fresh: true });
+    }, { fresh: true, authenticate: false });
     void ensureBeginnerLeague(userId);
     void trackActivity("profile_complete", { classe, platform: "web" });
-    router.replace("/focus");
+    void notifySecureLogin(phone ? "parent_linked" : "profile_complete");
+    router.replace("/success");
   };
 
   if (!ready) {
@@ -110,7 +130,7 @@ export default function CompleteProfilePage() {
             Dernière étape
           </h1>
           <p className="mt-1 text-sm font-semibold" style={{ color: colors.textSecondary }}>
-            Compte Google : {email || displayName}. Indique ta classe et le numéro d’un parent.
+            Compte Google : {email || displayName}. Choisis ta classe pour continuer.
           </p>
         </div>
 
@@ -141,6 +161,9 @@ export default function CompleteProfilePage() {
         </label>
 
         <ParentPhoneField value={parentLocal} onChange={setParentLocal} className="mt-4" />
+        <p className="mt-2 text-[11px] font-semibold" style={{ color: colors.textMuted }}>
+          Numéro parent facultatif. S’il est renseigné, un WhatsApp LearnFlow part aux parents à chaque connexion.
+        </p>
 
         {error ? <p className="mt-3 text-xs font-bold text-red-500">{error}</p> : null}
 

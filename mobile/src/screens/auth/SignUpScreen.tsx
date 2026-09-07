@@ -18,7 +18,6 @@ import ParentPhoneField from "../../components/ParentPhoneField";
 import SocialAuth from "../../components/SocialAuth";
 import { CLASSES } from "../../data/mock";
 import { signInWithGoogle } from "../../lib/googleAuth";
-import { advanceFromSession } from "../../lib/advanceAuth";
 import { isValidTogoLocal, toTogoE164 } from "../../lib/phoneTogo";
 import { savePendingAuth } from "../../lib/pendingAuth";
 import { useLearnFlowStore } from "../../store/useLearnFlowStore";
@@ -32,7 +31,6 @@ type Props = NativeStackScreenProps<AuthStackParamList, "SignUp">;
 
 export default function SignUpScreen({ navigation }: Props) {
   const signUp = useLearnFlowStore((s) => s.signUp);
-  const applyCloudUser = useLearnFlowStore((s) => s.applyCloudUser);
   const { colors } = useAppTheme();
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -61,10 +59,9 @@ export default function SignUpScreen({ navigation }: Props) {
         setError("Impossible de lire l’email Google.");
         return;
       }
-      await savePendingAuth({ email: nextEmail, flow: "google" });
-      const settled = await advanceFromSession(navigation, applyCloudUser);
+      await savePendingAuth({ email: nextEmail, flow: "google", emailOtpVerified: false });
+      navigation.replace("OTP", { email: nextEmail, flow: "google" });
       setBusy(false);
-      if (settled.error) setError(settled.error);
       return;
     }
     if (provider !== "email") {
@@ -129,8 +126,9 @@ export default function SignUpScreen({ navigation }: Props) {
       classe: chosenClasse,
       parentPhone: toTogoE164(parentLocal),
       password,
+      emailOtpVerified: false,
     });
-    const { data, error: signUpError } = await supabase.auth.signUp({
+    const { error: signUpError } = await supabase.auth.signUp({
       email: email.trim().toLowerCase(),
       password,
       options: {
@@ -151,13 +149,8 @@ export default function SignUpScreen({ navigation }: Props) {
       setError(signUpError.message);
       return;
     }
-    if (data.session) {
-      const settled = await advanceFromSession(navigation, applyCloudUser);
-      setBusy(false);
-      if (settled.error) setError(settled.error);
-      return;
-    }
     navigation.navigate("OTP", { email: email.trim().toLowerCase(), flow: "signup" });
+    setBusy(false);
   };
 
   return (

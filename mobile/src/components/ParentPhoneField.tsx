@@ -14,7 +14,9 @@ export default function ParentPhoneField({
   return (
     <View style={styles.field}>
       <Text style={[styles.label, { color: colors.textDark }]}>Numéro parent</Text>
-      <Text style={[styles.hint, { color: colors.textMuted }]}>Togo uniquement. L’indicatif +228 est verrouillé.</Text>
+      <Text style={[styles.hint, { color: colors.textMuted }]}>
+        Togo uniquement. Un message WhatsApp LearnFlow sera envoyé à ce numéro à chaque connexion.
+      </Text>
       <View style={[styles.row, { borderColor: colors.border }]}>
         <View style={[styles.prefix, { backgroundColor: colors.surfaceAlt }]}>
           <Text style={[styles.prefixText, { color: colors.textDark }]}>{TOGO_PREFIX}</Text>

@@ -9,7 +9,6 @@ import ParentPhoneField from "@/components/ParentPhoneField";
 import SocialAuth from "@/components/SocialAuth";
 import { AuthStage, Page, PrimaryButton } from "@/components/ui";
 import { CLASSES } from "@/data/mock";
-import { advanceFromSession } from "@/lib/advanceAuth";
 import { isValidTogoLocal, toTogoE164 } from "@/lib/phoneTogo";
 import { savePendingAuth } from "@/lib/pendingAuth";
 import { getBrowserSupabase } from "@/lib/supabase";
@@ -21,7 +20,6 @@ export default function SignUpPage() {
   const { colors } = useAppTheme();
   const router = useRouter();
   const signUp = useLearnFlowStore((s) => s.signUp);
-  const applyCloudUser = useLearnFlowStore((s) => s.applyCloudUser);
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
@@ -82,6 +80,7 @@ export default function SignUpPage() {
       classe: chosenClasse,
       parentPhone: phone,
       password,
+      emailOtpVerified: false,
     });
     const supabase = getBrowserSupabase();
     if (!supabase) {
@@ -89,7 +88,7 @@ export default function SignUpPage() {
       setError("Supabase n’est pas configuré. Ajoute les clés puis réessaie.");
       return;
     }
-    const { data, error: signUpError } = await supabase.auth.signUp({
+    const { error: signUpError } = await supabase.auth.signUp({
       email: email.trim().toLowerCase(),
       password,
       options: {
@@ -110,11 +109,7 @@ export default function SignUpPage() {
       setError(signUpError.message);
       return;
     }
-    if (data.session) {
-      await advanceFromSession(applyCloudUser, (path) => router.replace(path));
-      return;
-    }
-    router.push(`/otp?email=${encodeURIComponent(email.trim().toLowerCase())}`);
+    router.replace(`/otp?email=${encodeURIComponent(email.trim().toLowerCase())}&flow=signup`);
   };
 
   return (

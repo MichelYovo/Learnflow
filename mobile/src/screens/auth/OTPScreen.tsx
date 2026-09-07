@@ -5,9 +5,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import Logo from "../../components/Logo";
 import { advanceFromSession } from "../../lib/advanceAuth";
-import { sendEmailOtp, verifyEmailOtp } from "../../lib/emailOtp";
-import { loadPendingAuth } from "../../lib/pendingAuth";
-import { isSupabaseConfigured, supabase } from "../../lib/supabase";
+import { sendSecureEmailOtp, verifySecureEmailOtp } from "../../lib/secureAuth";
+import { loadPendingAuth, savePendingAuth } from "../../lib/pendingAuth";
 import { useLearnFlowStore } from "../../store/useLearnFlowStore";
 import { colors } from "../../theme/colors";
 import { useAppTheme } from "../../theme/useAppTheme";
@@ -19,6 +18,7 @@ export default function OTPScreen({ navigation, route }: Props) {
   const { colors } = useAppTheme();
   const applyCloudUser = useLearnFlowStore((s) => s.applyCloudUser);
   const [email, setEmail] = useState(route.params?.email ?? "");
+  const [flow, setFlow] = useState(route.params?.flow ?? "login");
   const [code, setCode] = useState("");
   const [error, setError] = useState("");
   const [info, setInfo] = useState("Envoi du code…");
@@ -30,39 +30,38 @@ export default function OTPScreen({ navigation, route }: Props) {
     void (async () => {
       const pending = await loadPendingAuth();
       const nextEmail = (route.params?.email || pending?.email || "").trim().toLowerCase();
+      const nextFlow = route.params?.flow || pending?.flow || "login";
       if (cancelled) return;
       setEmail(nextEmail);
+      setFlow(nextFlow);
       if (!nextEmail.includes("@")) {
         setInfo("");
         setError("Adresse email manquante. Repars de la connexion.");
         return;
       }
-      if (isSupabaseConfigured) {
-        const { data } = await supabase.auth.getSession();
-        if (cancelled) return;
-        if (data.session?.user) {
-          setInfo("Compte déjà vérifié, on continue…");
-          const settled = await advanceFromSession(navigation, applyCloudUser);
-          if (settled.error && !cancelled) {
-            setError(settled.error);
-            setInfo("");
-          }
-          return;
-        }
-      }
-      const result = await sendEmailOtp(nextEmail, { shouldCreateUser: pending?.flow === "signup" });
+      const result = await sendSecureEmailOtp(nextEmail, { shouldCreateUser: nextFlow === "signup" });
       if (cancelled) return;
       if (result.error) {
         setError(result.error);
         setInfo("");
         return;
       }
-      setInfo(`Un code à 6 chiffres a été envoyé à ${nextEmail}. Regarde aussi les spams.`);
+      const account =
+        nextFlow === "google"
+          ? `Compte Google sélectionné : ${nextEmail}.`
+          : `Un code à 6 chiffres a été envoyé à ${nextEmail}.`;
+      setInfo(`${account} Regarde aussi les spams.`);
     })();
     return () => {
       cancelled = true;
     };
-  }, [applyCloudUser, navigation, route.params?.email]);
+  }, [route.params?.email, route.params?.flow]);
+
+  const markVerified = async () => {
+    const pending = await loadPendingAuth();
+    if (pending) await savePendingAuth({ ...pending, emailOtpVerified: true });
+    else if (email.includes("@")) await savePendingAuth({ email, flow, emailOtpVerified: true });
+  };
 
   const submit = async (value: string) => {
     if (sent.current || busy) return;
@@ -77,13 +76,14 @@ export default function OTPScreen({ navigation, route }: Props) {
     sent.current = true;
     setBusy(true);
     setError("");
-    const result = await verifyEmailOtp(email, value);
+    const result = await verifySecureEmailOtp(email, value);
     if (result.error) {
       sent.current = false;
       setBusy(false);
       setError(result.error);
       return;
     }
+    await markVerified();
     const settled = await advanceFromSession(navigation, applyCloudUser);
     if (settled.error) {
       sent.current = false;
@@ -97,7 +97,10 @@ export default function OTPScreen({ navigation, route }: Props) {
     setError("");
     setBusy(true);
     const pending = await loadPendingAuth();
-    const result = await sendEmailOtp(email, { shouldCreateUser: pending?.flow === "signup", force: true });
+    const result = await sendSecureEmailOtp(email, {
+      shouldCreateUser: (pending?.flow ?? flow) === "signup",
+      force: true,
+    });
     setBusy(false);
     if (result.error) {
       setError(result.error);
@@ -109,7 +112,7 @@ export default function OTPScreen({ navigation, route }: Props) {
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: colors.surface }]} edges={["top", "bottom"]}>
       <Logo height={76} style={{ alignSelf: "center", marginBottom: 16 }} />
-      <Text style={[styles.title, { color: colors.textDark }]}>Vérification</Text>
+      <Text style={[styles.title, { color: colors.textDark }]}>Vérification LearnFlow</Text>
       <Text style={[styles.sub, { color: colors.textMuted }]}>
         {info || "Entre le code à 6 chiffres reçu par email."}
       </Text>

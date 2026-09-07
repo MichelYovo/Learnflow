@@ -7,10 +7,8 @@ import Icon from "@/components/Icon";
 import Logo from "@/components/Logo";
 import SocialAuth from "@/components/SocialAuth";
 import { AuthStage, Page, PrimaryButton } from "@/components/ui";
-import { advanceFromSession } from "@/lib/advanceAuth";
 import { savePendingAuth } from "@/lib/pendingAuth";
 import { getBrowserSupabase } from "@/lib/supabase";
-import { useLearnFlowStore } from "@/store/useLearnFlowStore";
 import { useAppTheme } from "@/theme/useAppTheme";
 
 function LoginInner() {
@@ -23,7 +21,6 @@ function LoginInner() {
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const googleError = params.get("error");
-  const applyCloudUser = useLearnFlowStore((s) => s.applyCloudUser);
 
   const goApp = async () => {
     setError("");
@@ -50,8 +47,8 @@ function LoginInner() {
       setError("Email ou mot de passe incorrect.");
       return;
     }
-    savePendingAuth({ email: email.trim().toLowerCase(), flow: "login" });
-    await advanceFromSession(applyCloudUser, (path) => router.replace(path));
+    savePendingAuth({ email: email.trim().toLowerCase(), flow: "login", emailOtpVerified: false });
+    router.replace(`/otp?email=${encodeURIComponent(email.trim().toLowerCase())}&flow=login`);
   };
 
   return (

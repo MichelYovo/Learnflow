@@ -24,7 +24,9 @@ npm start
 
 ## Connexion
 
-Inscription ou connexion **Google** (ou email). Le compte est enregistré dans Supabase (`student_profiles`, `league_scores`, activité). Pas de profils de simulation.
+Inscription ou connexion **Google** (ou email). Après le choix du compte, un **code à 6 chiffres** part sur l’email. Si le profil existe déjà, l’élève entre sans redonner son numéro. Premier compte : classe (numéro parent facultatif). Le compte est enregistré dans Supabase (`student_profiles`, `league_scores`, activité).
+
+Les alertes « connecté à LearnFlow » (email) et WhatsApp parents passent par `/api/auth/secure` — voir `supabase/README.md` (clés `SUPABASE_SECRET_KEY`, `RESEND_API_KEY`).
 
 ## Parcours
 

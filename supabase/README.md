@@ -53,6 +53,8 @@ Pour vérifier : menu **Table Editor** → tu dois voir au moins :
 - `student_profiles` (avec colonne `progress`)
 - `league_scores`
 - `activity_events`
+- `email_challenges` (codes 2FA hashés)
+- `login_notices` (alertes email / WhatsApp)
 
 ---
 
@@ -229,17 +231,53 @@ Redémarre `npm run dev` dans `admin` (port 3001).
 
 ---
 
-## Étape 6b — Email (inscription seulement)
+## Étape 6b — Emails LearnFlow (code à 6 chiffres + alerte connexion)
 
-Google et le mot de passe n’envoient **plus** de second code : la session suffit.
+Après Google (ou un mot de passe), **un code à 6 chiffres est toujours envoyé à l’email du compte**. On ne redemande plus le numéro de téléphone pour entrer : si le profil existe déjà (classe renseignée), ça passe après le code.
 
-Pour l’inscription par email, désactive **Confirm email** (Authentication → Providers → Email) : le compte s’ouvre tout de suite, sans attendre un mail.
+### 1. Modèles Supabase (obligatoire pour le code)
 
-Si tu laisses la confirmation activée :
+1. **Authentication → Email Templates**.
+2. Ouvre **Magic Link**, colle le HTML de `supabase/email-templates/magic-link.html`.
+3. Ouvre **Confirm signup**, colle `supabase/email-templates/confirm-signup.html`.
+4. Le code à 6 chiffres est `{{ .Token }}` — ne l’enlève pas.
+5. Subject, par exemple : `LearnFlow — ton code à 6 chiffres`.
+6. Active le fournisseur **Email** (Authentication → Providers).
 
-1. **Authentication** → **Email Templates** → **Magic Link**.
-2. Ajoute `{{ .Token }}` dans le mail (code à 6 chiffres).
-3. Vérifie aussi les **spams**. L’email par défaut de Supabase est souvent filtré.
+L’expéditeur par défaut de Supabase est souvent en spam. Mieux : **Project Settings → Authentication → SMTP** avec un domaine à toi (Resend, etc.), et le nom d’expéditeur **LearnFlow**.
+
+### 2. Alerte « connecté à LearnFlow » + WhatsApp parents
+
+Après le code, LearnFlow envoie :
+
+- un email à l’élève : *connexion à LearnFlow, date, heure (Togo), web ou mobile*
+- un WhatsApp au numéro parent s’il est enregistré : *l’élève X s’est connecté avec votre numéro pour le suivi*
+
+Ces envois passent par `learnflow-web` (`POST /api/auth/secure`). Ajoute dans `learnflow-web/.env.local` :
+
+```
+SUPABASE_SECRET_KEY=…
+RESEND_API_KEY=re_…
+RESEND_FROM=LearnFlow <noreply@ton-domaine.tg>
+```
+
+Puis **relance le SQL** (`schema.sql`) pour créer `email_challenges` et `login_notices` (codes hashés, pas de lecture élève).
+
+WhatsApp — un des trois :
+
+- **Twilio** : `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_WHATSAPP_FROM`
+- **WhatsApp Cloud API** : `WHATSAPP_TOKEN`, `WHATSAPP_PHONE_NUMBER_ID` (et un modèle `WHATSAPP_TEMPLATE_NAME` si Meta l’exige)
+- **Webhook** : `PARENT_NOTIFY_WEBHOOK_URL`
+
+Mobile : dans `mobile/.env`, pointe vers le web :
+
+```
+EXPO_PUBLIC_LEARNFLOW_API_URL=http://localhost:3002
+```
+
+Sur un téléphone réel, utilise l’IP du PC (`http://192.168.x.x:3002`), pas `localhost`. En production : l’URL Vercel du web.
+
+Sans Resend / WhatsApp, **le code à 6 chiffres continue de partir via les modèles Supabase**. Seules les alertes « connecté » / parents sont sautées.
 
 ---
 
@@ -247,9 +285,11 @@ Si tu laisses la confirmation activée :
 
 1. Web : `http://localhost:3002` → Connexion → **Continuer avec Google**.
 2. Google doit demander **quel compte** utiliser (même si tu es déjà connecté).
-3. Premier compte : écran **classe + numéro parent (+228)** — **pas** d’écran code email.
-4. L’élève démarre en **ligue Bronze**, stats à **0**, cours de sa classe sans progression.
-5. Admin `http://localhost:3001` : l’élève et l’activité apparaissent (source « Supabase »).
+3. Premier compte Google : écran **code à 6 chiffres** (email Google), puis **classe** si le profil n’existe pas encore. Le numéro parent est **facultatif**.
+4. Compte déjà dans LearnFlow : Google → code email → entrée, **sans** redemander le téléphone.
+5. Après le code : email « connecté à LearnFlow » + WhatsApp parent si un numéro est enregistré.
+6. L’élève démarre en **ligue Bronze**, stats à **0**, cours de sa classe sans progression.
+7. Admin `http://localhost:3001` : l’élève et l’activité apparaissent (source « Supabase »).
 
 ### Classement réel (après le SQL)
 
@@ -271,7 +311,8 @@ Il faut `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY`. Un nouvel élève sans XP 
 | Message / symptôme | Cause fréquente |
 |---|---|
 | « Google n’est pas encore configuré » | `.env.local` web manquant, ou serveur pas redémarré |
-| Code email qui n’arrive pas | Google / mot de passe n’ont plus besoin de code. Pour l’inscription : désactive **Confirm email** |
+| Code email qui n’arrive pas | Vérifie les modèles **Magic Link** (`{{ .Token }}`), le fournisseur Email, et les **spams**. Configure un SMTP LearnFlow. |
+| Pas d’alerte « connecté » / WhatsApp | `RESEND_API_KEY` / clés WhatsApp absentes, ou `EXPO_PUBLIC_LEARNFLOW_API_URL` mobile manquant |
 | Redirect mismatch / `redirect_uri_mismatch` | L’URI `https://xxxx.supabase.co/auth/v1/callback` n’est pas dans Google Cloud |
 | Écran Google « app not verified » / accès bloqué | Ajoute ton Gmail en **Test user** (étape 3a) |
 | SQL `uuid = text` | Ancien `schema.sql` — relance la version actuelle |

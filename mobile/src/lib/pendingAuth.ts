@@ -10,6 +10,7 @@ export type PendingAuth = {
   classe?: string;
   parentPhone?: string;
   password?: string;
+  emailOtpVerified?: boolean;
 };
 
 const KEY = "learnflow-pending-auth";

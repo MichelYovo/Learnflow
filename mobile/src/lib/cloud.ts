@@ -66,11 +66,9 @@ export type StudentCloudProfile = {
   progress_updated_at?: string | null;
 };
 
-export function isProfileComplete(row: Pick<StudentCloudProfile, "class_level" | "parent_phone"> | null): boolean {
+export function isProfileComplete(row: Pick<StudentCloudProfile, "class_level"> | null): boolean {
   if (!row) return false;
-  const classe = (row.class_level ?? "").trim();
-  const phone = (row.parent_phone ?? "").replace(/\D/g, "");
-  return classe.length > 0 && phone.length >= 11;
+  return (row.class_level ?? "").trim().length > 0;
 }
 
 export async function fetchOwnStudentProfile(): Promise<StudentCloudProfile | null> {

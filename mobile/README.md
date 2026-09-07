@@ -71,8 +71,15 @@ Les cours affichés dépendent de la classe. En SVT, les chapitres cœur, ADN, n
 
 1. **Onboarding** — Spira présente la règle 10/10, les 4 modes, les ligues, l’offline.
 2. **Splash** — intro LearnFlow.
-3. **Inscription / Google** — le compte est enregistré dans Supabase (profil + ligue Bronze).
-4. **Connexion** → **OTP** email si besoin → **Succès**.
+3. **Inscription / Google** — le compte Google est reconnu tout de suite. Pas de numéro obligatoire si le profil existe déjà.
+4. **Code à 6 chiffres** envoyé à l’email du compte (2FA), puis **Succès**. Premier compte : classe seulement (numéro parent facultatif).
+5. Après le code : email « connecté à LearnFlow ». WhatsApp parent si un numéro est enregistré.
+
+Pour les alertes connexion, ajoute aussi :
+
+```
+EXPO_PUBLIC_LEARNFLOW_API_URL=http://localhost:3002
+```
 
 Le store `isAuthenticated` bascule ensuite vers l’app principale.
 

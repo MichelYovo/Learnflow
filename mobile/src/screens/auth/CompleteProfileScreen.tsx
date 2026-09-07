@@ -8,6 +8,7 @@ import ParentPhoneField from "../../components/ParentPhoneField";
 import { CLASSES, classLabel } from "../../data/mock";
 import { ensureBeginnerLeague, fetchOwnStudentProfile, isProfileComplete, trackActivity, upsertStudentProfile } from "../../lib/cloud";
 import { isValidTogoLocal, toTogoE164 } from "../../lib/phoneTogo";
+import { notifySecureLogin } from "../../lib/secureAuth";
 import { isSupabaseConfigured, supabase } from "../../lib/supabase";
 import { useLearnFlowStore } from "../../store/useLearnFlowStore";
 import { colors } from "../../theme/colors";
@@ -54,9 +55,11 @@ export default function CompleteProfileScreen({ navigation }: Props) {
             lessonsDone: existing?.lessons_done ?? 0,
             avatarId: existing?.avatar_id ?? undefined,
           },
-          { fresh: (existing?.total_xp ?? 0) === 0 }
+          { fresh: (existing?.total_xp ?? 0) === 0, authenticate: false },
         );
         void trackActivity("login", { provider: "google" });
+        void notifySecureLogin("login");
+        navigation.replace("Success");
         return;
       }
       setUserId(user.id);
@@ -71,20 +74,16 @@ export default function CompleteProfileScreen({ navigation }: Props) {
       setError("Choisis ta classe.");
       return;
     }
-    if (!isValidTogoLocal(parentLocal)) {
-      setError("Indique le numéro parent togolais (8 chiffres après +228).");
-      return;
-    }
+    const phone = isValidTogoLocal(parentLocal) ? toTogoE164(parentLocal) : undefined;
     setError("");
     setBusy(true);
-    const phone = toTogoE164(parentLocal);
     const result = await upsertStudentProfile({
       id: userId,
       parent_id: userId,
       name: displayName,
       email,
       class_level: classe,
-      parent_phone: phone,
+      parent_phone: phone ?? null,
       platform: "mobile",
       total_xp: 0,
       streak: 0,
@@ -107,10 +106,12 @@ export default function CompleteProfileScreen({ navigation }: Props) {
         lessonsDone: 0,
         rang: 1,
       },
-      { fresh: true }
+      { fresh: true, authenticate: false },
     );
     void ensureBeginnerLeague(userId);
     void trackActivity("profile_complete", { classe, platform: "mobile" });
+    void notifySecureLogin(phone ? "parent_linked" : "profile_complete");
+    navigation.replace("Success");
   };
 
   return (
@@ -119,7 +120,7 @@ export default function CompleteProfileScreen({ navigation }: Props) {
         <Logo height={76} style={{ alignSelf: "center" }} />
         <Text style={styles.title}>Dernière étape</Text>
         <Text style={[styles.sub, { color: colors.textSecondary }]}>
-          Compte Google : {email || displayName}. Indique ta classe et le numéro d’un parent.
+          Compte Google : {email || displayName}. Choisis ta classe pour continuer.
         </Text>
         <Text style={[styles.label, { color: colors.textDark }]}>Ma classe</Text>
         <View style={styles.classGrid}>
@@ -137,6 +138,9 @@ export default function CompleteProfileScreen({ navigation }: Props) {
           })}
         </View>
         <ParentPhoneField value={parentLocal} onChange={setParentLocal} />
+        <Text style={[styles.optional, { color: colors.textMuted }]}>
+          Numéro parent facultatif. S’il est renseigné, un WhatsApp LearnFlow part aux parents à chaque connexion.
+        </Text>
         {error ? <Text style={styles.error}>{error}</Text> : null}
         {classe ? (
           <Text style={[styles.hint, { color: colors.textMuted }]}>Classe : {classLabel(classe)}</Text>
@@ -166,6 +170,7 @@ const styles = StyleSheet.create({
   },
   classText: { fontSize: 13, fontWeight: "800" },
   classTextOn: { color: colors.primary },
+  optional: { fontSize: 11, fontWeight: "600", marginTop: -4 },
   error: { color: colors.danger, fontSize: 12, fontWeight: "700" },
   hint: { fontSize: 11, fontWeight: "600", textAlign: "center" },
   btnWrap: { borderRadius: 16, overflow: "hidden", marginTop: 8 },

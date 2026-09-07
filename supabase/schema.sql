@@ -231,3 +231,43 @@ create policy schema_models_select_public
 
 grant select on public.published_lessons to anon, authenticated;
 grant select on public.schema_models to anon, authenticated;
+
+-- ─────────────────────────────────────────────────────────────
+-- Auth sécurisée : codes email (hashés) + journal des alertes.
+-- Aucun accès client (anon / authenticated) : service_role only.
+-- ─────────────────────────────────────────────────────────────
+
+create table if not exists public.email_challenges (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users (id) on delete cascade,
+  email text not null,
+  code_hash text not null,
+  attempts integer not null default 0,
+  expires_at timestamptz not null,
+  consumed_at timestamptz,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists email_challenges_user_created_idx
+  on public.email_challenges (user_id, created_at desc);
+
+create table if not exists public.login_notices (
+  id uuid primary key default gen_random_uuid(),
+  student_id uuid not null references auth.users (id) on delete cascade,
+  channel text not null,
+  event text not null default 'login',
+  status text not null,
+  detail text,
+  created_at timestamptz not null default now(),
+  constraint login_notices_channel_check check (channel in ('email', 'whatsapp')),
+  constraint login_notices_status_check check (status in ('sent', 'skipped', 'error'))
+);
+
+create index if not exists login_notices_student_created_idx
+  on public.login_notices (student_id, created_at desc);
+
+alter table public.email_challenges enable row level security;
+alter table public.login_notices enable row level security;
+
+revoke all on public.email_challenges from anon, authenticated, public;
+revoke all on public.login_notices from anon, authenticated, public;

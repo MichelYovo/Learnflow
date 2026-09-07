@@ -19,7 +19,7 @@ export default function ParentPhoneField({
         Numéro parent
       </span>
       <span className="mt-0.5 block text-[11px] font-semibold" style={{ color: colors.textMuted }}>
-        Togo uniquement. L’indicatif +228 est verrouillé.
+        Togo uniquement. Un message WhatsApp LearnFlow sera envoyé à ce numéro à chaque connexion.
       </span>
       <div className="mt-1.5 flex overflow-hidden rounded-2xl border-2" style={{ borderColor: colors.border }}>
         <span

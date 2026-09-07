@@ -5,9 +5,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Logo from "@/components/Logo";
 import { AuthStage, Page, PrimaryButton } from "@/components/ui";
 import { advanceFromSession } from "@/lib/advanceAuth";
-import { sendEmailOtp, verifyEmailOtp } from "@/lib/emailOtp";
-import { loadPendingAuth } from "@/lib/pendingAuth";
-import { getBrowserSupabase } from "@/lib/supabase";
+import { loadPendingAuth, savePendingAuth, type AuthFlow } from "@/lib/pendingAuth";
+import { sendSecureEmailOtp, verifySecureEmailOtp } from "@/lib/secureAuth";
 import { useLearnFlowStore } from "@/store/useLearnFlowStore";
 import { useAppTheme } from "@/theme/useAppTheme";
 
@@ -17,6 +16,7 @@ function OTPInner() {
   const params = useSearchParams();
   const applyCloudUser = useLearnFlowStore((s) => s.applyCloudUser);
   const [email, setEmail] = useState("");
+  const [flow, setFlow] = useState<AuthFlow>("login");
   const [code, setCode] = useState("");
   const [error, setError] = useState("");
   const [info, setInfo] = useState("Envoi du code…");
@@ -26,26 +26,18 @@ function OTPInner() {
   useEffect(() => {
     const pending = loadPendingAuth();
     const nextEmail = (params.get("email") || pending?.email || "").trim().toLowerCase();
+    const nextFlow = (params.get("flow") as AuthFlow | null) || pending?.flow || "login";
     setEmail(nextEmail);
+    setFlow(nextFlow);
     if (!nextEmail.includes("@")) {
       setInfo("");
       setError("Adresse email manquante. Repars de la connexion.");
       return;
     }
 
-    const supabase = getBrowserSupabase();
     void (async () => {
-      if (supabase) {
-        const { data } = await supabase.auth.getSession();
-        if (data.session?.user) {
-          setInfo("Compte déjà vérifié, on continue…");
-          await advanceFromSession(applyCloudUser, (path) => router.replace(path));
-          return;
-        }
-      }
-      const shouldCreate = pending?.flow === "signup";
-      const result = await sendEmailOtp(nextEmail, {
-        shouldCreateUser: shouldCreate,
+      const result = await sendSecureEmailOtp(nextEmail, {
+        shouldCreateUser: nextFlow === "signup",
         data: pending?.firstName
           ? {
               first_name: pending.firstName,
@@ -59,11 +51,19 @@ function OTPInner() {
         setInfo("");
         return;
       }
-      setInfo(`Un code à 6 chiffres a été envoyé à ${nextEmail}. Regarde aussi les spams.`);
+      const account =
+        nextFlow === "google"
+          ? `Compte Google sélectionné : ${nextEmail}.`
+          : `Un code à 6 chiffres a été envoyé à ${nextEmail}.`;
+      setInfo(`${account} Regarde aussi les spams.`);
     })();
-  }, [applyCloudUser, params, router]);
+  }, [params]);
 
-  const afterVerify = () => advanceFromSession(applyCloudUser, (path) => router.replace(path));
+  const markVerified = () => {
+    const pending = loadPendingAuth();
+    if (pending) savePendingAuth({ ...pending, emailOtpVerified: true });
+    else if (email.includes("@")) savePendingAuth({ email, flow, emailOtpVerified: true });
+  };
 
   const submit = async (value: string) => {
     if (sent.current || busy) return;
@@ -78,14 +78,15 @@ function OTPInner() {
     sent.current = true;
     setBusy(true);
     setError("");
-    const result = await verifyEmailOtp(email, value);
+    const result = await verifySecureEmailOtp(email, value);
     if (result.error) {
       sent.current = false;
       setBusy(false);
       setError(result.error);
       return;
     }
-    await afterVerify();
+    markVerified();
+    await advanceFromSession(applyCloudUser, (path) => router.replace(path));
   };
 
   const resend = async () => {
@@ -93,7 +94,10 @@ function OTPInner() {
     setError("");
     setBusy(true);
     const pending = loadPendingAuth();
-    const result = await sendEmailOtp(email, { shouldCreateUser: pending?.flow === "signup", force: true });
+    const result = await sendSecureEmailOtp(email, {
+      shouldCreateUser: (pending?.flow ?? flow) === "signup",
+      force: true,
+    });
     setBusy(false);
     if (result.error) {
       setError(result.error);
@@ -109,7 +113,7 @@ function OTPInner() {
           <div className="mb-4 flex justify-center">
             <Logo height="auth" />
           </div>
-          <h1 className="text-center text-2xl font-extrabold">Vérification</h1>
+          <h1 className="text-center text-2xl font-extrabold">Vérification LearnFlow</h1>
           <p className="mt-2 mb-6 text-center text-sm font-semibold" style={{ color: colors.textMuted }}>
             {info || "Entre le code à 6 chiffres reçu par email."}
           </p>

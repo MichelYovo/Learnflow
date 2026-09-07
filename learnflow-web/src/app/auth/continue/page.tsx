@@ -4,15 +4,12 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Logo from "@/components/Logo";
 import { Page } from "@/components/ui";
-import { advanceFromSession } from "@/lib/advanceAuth";
 import { savePendingAuth } from "@/lib/pendingAuth";
 import { getBrowserSupabase } from "@/lib/supabase";
-import { useLearnFlowStore } from "@/store/useLearnFlowStore";
 
 export default function AuthContinuePage() {
   const router = useRouter();
-  const applyCloudUser = useLearnFlowStore((s) => s.applyCloudUser);
-  const [message, setMessage] = useState("Connexion Google…");
+  const [message, setMessage] = useState("Compte Google reconnu…");
 
   useEffect(() => {
     let cancelled = false;
@@ -29,16 +26,14 @@ export default function AuthContinuePage() {
         return;
       }
       if (cancelled) return;
-      savePendingAuth({ email: user.email, flow: "google" });
-      setMessage("Préparation de ton espace…");
-      await advanceFromSession(applyCloudUser, (path) => {
-        if (!cancelled) router.replace(path);
-      });
+      savePendingAuth({ email: user.email, flow: "google", emailOtpVerified: false });
+      setMessage(`Compte sélectionné : ${user.email}. Envoi du code…`);
+      router.replace(`/otp?email=${encodeURIComponent(user.email)}&flow=google`);
     })();
     return () => {
       cancelled = true;
     };
-  }, [applyCloudUser, router]);
+  }, [router]);
 
   return (
     <Page className="flex min-h-dvh flex-col items-center justify-center gap-4">

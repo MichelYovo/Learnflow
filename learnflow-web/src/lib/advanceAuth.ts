@@ -15,6 +15,10 @@ export async function advanceFromSession(
     go(error ? `/login?error=${error}` : "/login");
     return;
   }
+  if (settled.next === "otp") {
+    go("/otp");
+    return;
+  }
   if (settled.next === "complete-profile") {
     go("/complete-profile");
     return;

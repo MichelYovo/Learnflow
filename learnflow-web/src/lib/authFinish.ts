@@ -1,6 +1,7 @@
 import { ensureBeginnerLeague, fetchOwnStudentProfile, trackActivity, upsertStudentProfile } from "./cloud";
 import { isProfileComplete } from "./cloudTypes";
 import { clearPendingAuth, loadPendingAuth } from "./pendingAuth";
+import { notifySecureLogin } from "./secureAuth";
 import { getBrowserSupabase } from "./supabase";
 
 export type CloudUserInput = {
@@ -18,6 +19,7 @@ export type CloudUserInput = {
 
 export async function settleVerifiedUser(): Promise<
   | { next: "login"; error?: string }
+  | { next: "otp" }
   | { next: "complete-profile" }
   | { next: "ready"; user: CloudUserInput; fresh: boolean; event: "login" | "signup" | "profile_complete" }
 > {
@@ -28,6 +30,9 @@ export async function settleVerifiedUser(): Promise<
   if (!user) return { next: "login", error: "session" };
 
   const pending = loadPendingAuth();
+  if (pending?.email && pending.emailOtpVerified !== true) {
+    return { next: "otp" };
+  }
   const email = user.email ?? pending?.email ?? "";
   const metaName = String(user.user_metadata?.full_name ?? user.user_metadata?.name ?? "").trim();
 
@@ -52,6 +57,7 @@ export async function settleVerifiedUser(): Promise<
     await ensureBeginnerLeague(user.id);
     clearPendingAuth();
     void trackActivity("signup", { provider: "email" });
+    void notifySecureLogin("signup");
     return {
       next: "ready",
       fresh: true,
@@ -81,11 +87,13 @@ export async function settleVerifiedUser(): Promise<
 
   const xp = profile?.total_xp ?? 0;
   clearPendingAuth();
-  void trackActivity(pending?.flow === "signup" ? "signup" : "login", { provider: pending?.flow ?? "email" });
+  const event = pending?.flow === "signup" ? "signup" : "login";
+  void trackActivity(event, { provider: pending?.flow ?? "email" });
+  void notifySecureLogin(event);
   return {
     next: "ready",
     fresh: false,
-    event: "login",
+    event,
     user: {
       id: user.id,
       email: email || profile?.email || "",

@@ -17,6 +17,10 @@ export async function advanceFromSession(
     if (settled.error === "suspended") return { error: "Compte suspendu. Contacte l’admin LearnFlow." };
     return { error: "Session expirée. Reconnecte-toi." };
   }
+  if (settled.next === "otp") {
+    navigation.replace("OTP");
+    return {};
+  }
   if (settled.next === "complete-profile") {
     navigation.replace("CompleteProfile");
     return {};
