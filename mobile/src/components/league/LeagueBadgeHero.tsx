@@ -45,6 +45,7 @@ const styles = StyleSheet.create({
   },
   badgeWrap: {
     position: "relative",
+    alignItems: "center",
     paddingBottom: 12,
     marginBottom: 4,
   },
@@ -52,8 +53,6 @@ const styles = StyleSheet.create({
     position: "absolute",
     bottom: 4,
     alignSelf: "center",
-    left: "50%",
-    transform: [{ translateX: -22 }],
     minWidth: 44,
     borderRadius: 999,
     paddingHorizontal: 10,

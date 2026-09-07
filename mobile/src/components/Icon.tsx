@@ -17,6 +17,7 @@ const MAP: Record<string, keyof typeof Ionicons.glyphMap> = {
   zap: "flash",
   flame: "flame",
   star: "star",
+  award: "ribbon",
   sparkles: "sparkles",
   crown: "trophy",
   target: "locate",

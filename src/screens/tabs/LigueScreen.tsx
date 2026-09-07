@@ -1,19 +1,27 @@
 import React, { useMemo, useState } from "react";
-import { Alert, Image, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Ionicons } from "@expo/vector-icons";
 import LeagueBadgeHero from "../../components/league/LeagueBadgeHero";
 import LeagueLeaderboardRow from "../../components/league/LeagueLeaderboardRow";
 import LeaguePodium from "../../components/league/LeaguePodium";
 import LeagueTierScroller from "../../components/league/LeagueTierScroller";
-import { LEAGUE_BADGE_IMAGES } from "../../components/league/badgeAssets";
-import { SectionLabel } from "../../components/ui";
+import { LeagueBadgeCircle } from "../../components/league/LeagueBadge";
+import Icon from "../../components/Icon";
 import { LEAGUE_TIERS } from "../../data/mock";
 import { useLearnFlowStore } from "../../store/useLearnFlowStore";
 import type { LigueNom } from "../../types/learnflow";
 import { useAppTheme } from "../../theme/useAppTheme";
 
 const TIER_ORDER: LigueNom[] = ["Bronze", "Argent", "Or", "Platine", "Diamant"];
+
+const ACHIEVEMENTS = [
+  { label: "Série 7", key: "Série 7", color: "#EF4444", icon: "flame" as const },
+  { label: "Blitz King", key: "Blitz King", color: "#F59E0B", icon: "zap" as const },
+  { label: "Lecteur Pro", key: "Lecteur Pro", color: "#1677FF", icon: "book" as const },
+  { label: "CHALLENGER", key: "CHALLENGER", color: "#F59E0B", icon: "award" as const },
+  { label: "Étoile d'Or", key: "Étoile d'Or", color: "#1677FF", icon: "star" as const },
+  { label: "Diamant", key: "Diamant", color: "#06B6D4", icon: "sparkles" as const },
+];
 
 export default function LigueScreen() {
   const ligue = useLearnFlowStore((s) => s.ligue);
@@ -24,6 +32,7 @@ export default function LigueScreen() {
   const { colors, darkMode } = useAppTheme();
   const [selectedTier, setSelectedTier] = useState<LigueNom>(ligue.nomLigue);
   const [tab, setTab] = useState<"classement" | "badges">("classement");
+  const [gelMsg, setGelMsg] = useState(false);
 
   const sorted = useMemo(
     () =>
@@ -38,26 +47,15 @@ export default function LigueScreen() {
   const rest = sorted.filter((p) => p.rank >= 4 && p.rank <= 30);
 
   const tierMeta = LEAGUE_TIERS.find((t) => t.id === selectedTier) ?? LEAGUE_TIERS[2];
-  const isCurrentTier = selectedTier === ligue.nomLigue;
+  const isCurrent = selectedTier === ligue.nomLigue;
   const currentIndex = TIER_ORDER.indexOf(ligue.nomLigue);
-
-  const achievementBadges = [
-    { label: "Série 7", key: "Série 7", color: colors.danger, icon: "flame" as const },
-    { label: "Blitz King", key: "Blitz King", color: colors.accent, icon: "flash" as const },
-    { label: "Lecteur Pro", key: "Lecteur Pro", color: colors.primary, icon: "book" as const },
-    { label: "CHALLENGER", key: "CHALLENGER", color: colors.accent, icon: "trophy" as const },
-    { label: "Étoile d'Or", key: "Étoile d'Or", color: colors.primary, icon: "star" as const },
-    { label: "Diamant", key: "Diamant", color: colors.cyan, icon: "diamond" as const },
-  ];
+  const selectedIndex = TIER_ORDER.indexOf(selectedTier);
+  const isUnlocked = selectedIndex <= currentIndex;
 
   return (
-    <SafeAreaView
-      style={[styles.safe, { backgroundColor: darkMode ? "#0F172A" : colors.surface }]}
-      edges={["top"]}
-    >
+    <SafeAreaView style={[styles.safe, { backgroundColor: colors.surface }]} edges={["top"]}>
       <View style={[styles.header, { backgroundColor: colors.white, borderBottomColor: colors.border }]}>
         <Text style={[styles.title, { color: colors.textDark }]}>Ligues</Text>
-
         <View style={styles.tabs}>
           {(["classement", "badges"] as const).map((t) => {
             const active = tab === t;
@@ -66,7 +64,6 @@ export default function LigueScreen() {
                 key={t}
                 onPress={() => setTab(t)}
                 accessibilityRole="button"
-                accessibilityState={{ selected: active }}
                 style={[
                   styles.tab,
                   {
@@ -75,26 +72,8 @@ export default function LigueScreen() {
                   },
                 ]}
               >
-                <Ionicons
-                  name={
-                    t === "classement"
-                      ? active
-                        ? "podium"
-                        : "podium-outline"
-                      : active
-                        ? "ribbon"
-                        : "ribbon-outline"
-                  }
-                  size={16}
-                  color={active ? colors.primary : colors.textMuted}
-                />
-                <Text
-                  style={{
-                    fontSize: 13,
-                    fontWeight: active ? "800" : "600",
-                    color: active ? colors.primary : colors.textMuted,
-                  }}
-                >
+                <Icon name={t === "classement" ? "award" : "star"} size={16} color={active ? colors.primary : colors.textMuted} />
+                <Text style={{ fontSize: 13, fontWeight: "800", color: active ? colors.primary : colors.textMuted }}>
                   {t === "classement" ? "Classement" : "Badges"}
                 </Text>
               </Pressable>
@@ -104,68 +83,59 @@ export default function LigueScreen() {
       </View>
 
       {tab === "classement" ? (
-        <ScrollView
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.scroll}
-          stickyHeaderIndices={[0]}
-        >
-          <View style={{ backgroundColor: darkMode ? "#0F172A" : colors.surface, paddingVertical: 12 }}>
-            <LeagueTierScroller
-              selected={selectedTier}
-              onSelect={setSelectedTier}
-              currentTier={ligue.nomLigue}
-            />
-          </View>
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
+          <LeagueTierScroller selected={selectedTier} onSelect={setSelectedTier} currentTier={ligue.nomLigue} />
 
           <LeagueBadgeHero
             tier={tierMeta}
             title={`Ligue ${tierMeta.label}`}
             subtitle={
-              isCurrentTier
-                ? `Rang #${ligue.rangActuel}`
-                : "Palier à débloquer"
+              isCurrent
+                ? `Rang #${ligue.rangActuel} · cette semaine`
+                : isUnlocked
+                  ? "Palier débloqué"
+                  : "Palier à débloquer"
             }
+            subtitleColor={isCurrent ? tierMeta.color : colors.textMuted}
+            rank={isCurrent ? ligue.rangActuel : null}
+            dimmed={!isUnlocked}
           />
 
-          {isCurrentTier ? (
+          {!isCurrent ? (
+            <Text style={[styles.hint, { color: colors.textMuted }]}>
+              {isUnlocked
+                ? "Tu as déjà dépassé ce palier. Le classement s’affiche pour ta ligue actuelle."
+                : "Gagne de l’XP cette semaine pour viser ce palier."}
+            </Text>
+          ) : null}
+
+          {isCurrent && first && second && third ? (
             <>
-              {first && second && third ? (
-                <LeaguePodium first={first} second={second} third={third} />
-              ) : null}
-
-              <View style={{ paddingHorizontal: 20, marginTop: 20, marginBottom: 8 }}>
-                <SectionLabel>Classement</SectionLabel>
-              </View>
-
+              <LeaguePodium first={first} second={second} third={third} />
+              <Text style={[styles.section, { color: colors.textDark }]}>Classement</Text>
               {rest.map((player) => (
                 <LeagueLeaderboardRow key={player.rank} player={player} />
               ))}
-
               <Pressable
                 accessibilityRole="button"
                 style={[styles.gelBtn, { backgroundColor: colors.white, borderColor: colors.border }]}
                 onPress={() => {
                   gelerLigue(7);
-                  Alert.alert("Ligue gelée", "Ton rang est protégé pendant 7 jours (démo).");
+                  setGelMsg(true);
                 }}
               >
-                <Ionicons name="shield-checkmark" size={20} color={colors.primary} />
-                <Text style={{ color: colors.primary, fontWeight: "800", fontSize: 15 }}>
-                  Geler ma ligue (7j)
-                </Text>
+                <Icon name="shield" size={20} color={colors.primary} />
+                <Text style={{ color: colors.primary, fontWeight: "800", fontSize: 15 }}>Geler ma ligue (7j)</Text>
               </Pressable>
+              {gelMsg || ligue.estGelee ? (
+                <Text style={[styles.hint, { color: colors.textMuted }]}>Ton rang est protégé pendant 7 jours (démo).</Text>
+              ) : null}
             </>
           ) : null}
         </ScrollView>
       ) : (
-        <ScrollView
-          contentContainerStyle={[styles.scroll, { paddingTop: 16 }]}
-          showsVerticalScrollIndicator={false}
-        >
-          <View style={{ paddingHorizontal: 20, marginBottom: 12 }}>
-            <SectionLabel>Paliers</SectionLabel>
-          </View>
-
+        <ScrollView contentContainerStyle={[styles.scroll, { paddingTop: 16 }]} showsVerticalScrollIndicator={false}>
+          <Text style={[styles.section, { color: colors.textDark }]}>Paliers</Text>
           <View style={styles.badges}>
             {LEAGUE_TIERS.map((tier, index) => {
               const unlocked = index <= currentIndex;
@@ -181,14 +151,8 @@ export default function LigueScreen() {
                     },
                   ]}
                 >
-                  <Image
-                    source={LEAGUE_BADGE_IMAGES[tier.badgeKey]}
-                    style={{ width: 72, height: 72 }}
-                    resizeMode="contain"
-                  />
-                  <Text style={{ fontWeight: "800", fontSize: 14, color: colors.textDark }}>
-                    {tier.label}
-                  </Text>
+                  <LeagueBadgeCircle nom={tier.id} size={72} selected={tier.id === ligue.nomLigue} />
+                  <Text style={{ fontWeight: "800", fontSize: 14, color: colors.textDark }}>{tier.label}</Text>
                   <Text style={{ fontSize: 12, color: colors.textMuted }}>
                     {unlocked ? (tier.id === ligue.nomLigue ? "Palier actuel" : "Débloqué") : "Verrouillé"}
                   </Text>
@@ -197,25 +161,16 @@ export default function LigueScreen() {
             })}
           </View>
 
-          <View style={{ paddingHorizontal: 20, marginTop: 20, marginBottom: 12 }}>
-            <SectionLabel>Succès</SectionLabel>
-          </View>
-
+          <Text style={[styles.section, { color: colors.textDark, marginTop: 8 }]}>Succès</Text>
           <View style={styles.badges}>
-            {achievementBadges.map((b) => {
-              const earned =
-                badgesDebloques.includes(b.key) ||
-                ["Série 7", "Blitz King", "Lecteur Pro"].includes(b.key);
+            {ACHIEVEMENTS.map((b) => {
+              const earned = badgesDebloques.includes(b.key) || ["Série 7", "Blitz King", "Lecteur Pro"].includes(b.key);
               return (
                 <View
                   key={b.label}
                   style={[
                     styles.badge,
-                    {
-                      backgroundColor: colors.white,
-                      borderColor: colors.border,
-                      opacity: earned ? 1 : 0.45,
-                    },
+                    { backgroundColor: colors.white, borderColor: colors.border, opacity: earned ? 1 : 0.45 },
                   ]}
                 >
                   <View
@@ -228,12 +183,10 @@ export default function LigueScreen() {
                       justifyContent: "center",
                     }}
                   >
-                    <Ionicons name={b.icon} size={22} color={b.color} />
+                    <Icon name={b.icon} size={22} color={b.color} />
                   </View>
                   <Text style={{ fontWeight: "800", fontSize: 14, color: colors.textDark }}>{b.label}</Text>
-                  <Text style={{ fontSize: 12, color: colors.textMuted }}>
-                    {earned ? "Débloqué" : "Verrouillé"}
-                  </Text>
+                  <Text style={{ fontSize: 12, color: colors.textMuted }}>{earned ? "Débloqué" : "Verrouillé"}</Text>
                 </View>
               );
             })}
@@ -251,9 +204,8 @@ const styles = StyleSheet.create({
     paddingTop: 12,
     paddingBottom: 14,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    gap: 4,
   },
-  title: { fontSize: 28, fontWeight: "800", letterSpacing: -0.5 },
+  title: { fontSize: 22, fontWeight: "800", letterSpacing: -0.5 },
   tabs: { flexDirection: "row", gap: 8, marginTop: 12 },
   tab: {
     flex: 1,
@@ -267,6 +219,8 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
   },
   scroll: { paddingBottom: 120 },
+  section: { fontSize: 18, fontWeight: "800", paddingHorizontal: 20, paddingTop: 20, paddingBottom: 8 },
+  hint: { textAlign: "center", fontSize: 14, fontWeight: "600", paddingHorizontal: 24, marginBottom: 8 },
   gelBtn: {
     marginTop: 12,
     marginHorizontal: 16,

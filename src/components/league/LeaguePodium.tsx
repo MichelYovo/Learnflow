@@ -1,11 +1,10 @@
 import React from "react";
-import { Text, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
-import { Ionicons } from "@expo/vector-icons";
 import type { LeaguePlayer } from "../../data/mock";
 import { useAppTheme } from "../../theme/useAppTheme";
-import { Card } from "../ui";
 import Avatar from "../Avatar";
+import Icon from "../Icon";
 
 type Props = {
   first: LeaguePlayer;
@@ -14,13 +13,37 @@ type Props = {
 };
 
 const PLACE = {
-  1: { height: 132, gradient: ["#FDE68A", "#F59E0B"] as const, size: 64 },
-  2: { height: 96, gradient: ["#E2E8F0", "#94A3B8"] as const, size: 52 },
-  3: { height: 80, gradient: ["#FED7AA", "#F97316"] as const, size: 52 },
-};
+  1: {
+    height: 108,
+    size: 64,
+    ring: "#F59E0B",
+    glow: "rgba(245,158,11,0.38)",
+    bar: ["#FDE68A", "#F59E0B", "#D97706"] as const,
+    lip: "#FEF3C7",
+    ink: "#78350F",
+  },
+  2: {
+    height: 78,
+    size: 52,
+    ring: "#94A3B8",
+    glow: "rgba(148,163,184,0.32)",
+    bar: ["#F8FAFC", "#CBD5E1", "#94A3B8"] as const,
+    lip: "#FFFFFF",
+    ink: "#334155",
+  },
+  3: {
+    height: 62,
+    size: 52,
+    ring: "#F97316",
+    glow: "rgba(249,115,22,0.32)",
+    bar: ["#FED7AA", "#FB923C", "#EA580C"] as const,
+    lip: "#FFEDD5",
+    ink: "#9A3412",
+  },
+} as const;
 
 export default function LeaguePodium({ first, second, third }: Props) {
-  const { colors, darkMode } = useAppTheme();
+  const { colors } = useAppTheme();
 
   const slots: { player: LeaguePlayer; place: 1 | 2 | 3 }[] = [
     { player: second, place: 2 },
@@ -29,75 +52,133 @@ export default function LeaguePodium({ first, second, third }: Props) {
   ];
 
   return (
-    <Card className="p-5" style={{ marginHorizontal: 16, marginTop: 8 }}>
-      <Text
-        style={{
-          fontSize: 11,
-          fontWeight: "800",
-          letterSpacing: 1,
-          textTransform: "uppercase",
-          color: colors.textMuted,
-          marginBottom: 16,
-          textAlign: "center",
-        }}
-      >
-        Podium de la semaine
-      </Text>
-      <View style={{ flexDirection: "row", alignItems: "flex-end", justifyContent: "center", gap: 8 }}>
+    <View style={[styles.card, { backgroundColor: colors.white, borderColor: colors.border }]}>
+      <Text style={[styles.kicker, { color: colors.textMuted }]}>Podium de la semaine</Text>
+      <View style={styles.row}>
         {slots.map(({ player, place }) => {
           const meta = PLACE[place];
           return (
-            <View key={place} style={{ flex: 1, alignItems: "center", gap: 8 }}>
-              {place === 1 ? (
-                <Ionicons name="ribbon" size={22} color="#F59E0B" />
-              ) : (
-                <View style={{ height: 22 }} />
-              )}
-              <View
-                style={{
-                  borderWidth: place === 1 ? 3 : 2,
-                  borderColor: place === 1 ? "#FBBF24" : darkMode ? colors.border : "#FFFFFF",
-                  borderRadius: meta.size / 2 + 3,
-                }}
-              >
-                <Avatar
-                  avatarId={player.avatarId}
-                  size={meta.size}
-                  radius={meta.size / 2}
-                  initials={player.initials}
-                  fallbackColor={player.avatarColor}
-                />
+            <View key={place} style={[styles.col, place === 1 ? styles.colFirst : null]}>
+              <View style={styles.avatarStack}>
+                {place === 1 ? (
+                  <View style={styles.crown}>
+                    <Icon name="crown" size={16} color="#D97706" />
+                  </View>
+                ) : null}
+                <View
+                  style={{
+                    borderRadius: 999,
+                    padding: place === 1 ? 3 : 2,
+                    backgroundColor: meta.ring,
+                    shadowColor: meta.ring,
+                    shadowOpacity: 0.45,
+                    shadowRadius: 12,
+                    shadowOffset: { width: 0, height: 8 },
+                    elevation: 6,
+                  }}
+                >
+                  <Avatar
+                    avatarId={player.avatarId}
+                    size={meta.size}
+                    radius={meta.size / 2}
+                    initials={player.initials}
+                    fallbackColor={player.avatarColor}
+                  />
+                </View>
+                <View style={[styles.placeBadge, { backgroundColor: meta.ring, borderColor: colors.white }]}>
+                  <Text style={styles.placeBadgeText}>{place}</Text>
+                </View>
               </View>
               <Text
                 numberOfLines={1}
-                style={{ fontSize: 13, fontWeight: "800", color: colors.textDark, maxWidth: "100%" }}
+                style={[styles.name, { color: player.you ? colors.primary : colors.textDark }]}
               >
                 {player.you ? "Toi" : player.name.split(" ")[0]}
               </Text>
-              <View style={{ flexDirection: "row", alignItems: "center", gap: 3 }}>
-                <Ionicons name="flash" size={12} color={colors.primary} />
-                <Text style={{ fontSize: 12, fontWeight: "800", color: colors.primary }}>
-                  {player.xp.toLocaleString("fr-FR")}
-                </Text>
+              <View style={styles.xpRow}>
+                <Icon name="zap" size={11} color={meta.ring} />
+                <Text style={[styles.xp, { color: meta.ink }]}>{player.xp.toLocaleString("fr-FR")}</Text>
               </View>
-              <LinearGradient
-                colors={[...meta.gradient]}
-                style={{
-                  width: "100%",
-                  height: meta.height,
-                  borderTopLeftRadius: 16,
-                  borderTopRightRadius: 16,
-                  alignItems: "center",
-                  justifyContent: "flex-end",
-                  paddingBottom: 12,
-                }}
-              >
-                <Text style={{ fontWeight: "900", fontSize: 18, color: "#0F172A" }}>#{place}</Text>
+              <LinearGradient colors={[...meta.bar]} style={[styles.bar, { height: meta.height }]}>
+                <View style={[styles.lip, { backgroundColor: meta.lip }]} />
+                <Text style={[styles.barHash, { color: meta.ink }]}>#{place}</Text>
               </LinearGradient>
             </View>
           );
         })}
       </View>
-    </Card>
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  card: {
+    marginHorizontal: 16,
+    marginTop: 8,
+    borderRadius: 20,
+    borderWidth: 1,
+    paddingTop: 20,
+    overflow: "hidden",
+  },
+  kicker: {
+    fontSize: 11,
+    fontWeight: "800",
+    letterSpacing: 1.6,
+    textTransform: "uppercase",
+    textAlign: "center",
+    marginBottom: 16,
+  },
+  row: { flexDirection: "row", alignItems: "flex-end", justifyContent: "center", paddingHorizontal: 8, gap: 4 },
+  col: { flex: 1, alignItems: "center", minWidth: 0, paddingTop: 16 },
+  colFirst: { flex: 1.2, zIndex: 1 },
+  avatarStack: { alignItems: "center", marginBottom: 10, position: "relative" },
+  crown: {
+    position: "absolute",
+    top: -14,
+    zIndex: 2,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: "#FEF3C7",
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#F59E0B",
+    shadowOpacity: 0.45,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 3,
+  },
+  placeBadge: {
+    position: "absolute",
+    bottom: -4,
+    minWidth: 24,
+    height: 24,
+    borderRadius: 12,
+    paddingHorizontal: 6,
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 2,
+    zIndex: 2,
+  },
+  placeBadgeText: { color: "#FFFFFF", fontSize: 11, fontWeight: "900" },
+  name: { fontSize: 13, fontWeight: "800", maxWidth: "100%", paddingHorizontal: 4 },
+  xpRow: { flexDirection: "row", alignItems: "center", gap: 2, marginBottom: 8, marginTop: 2 },
+  xp: { fontSize: 11, fontWeight: "800" },
+  bar: {
+    width: "100%",
+    borderTopLeftRadius: 18,
+    borderTopRightRadius: 18,
+    alignItems: "center",
+    justifyContent: "flex-end",
+    paddingBottom: 12,
+  },
+  lip: {
+    position: "absolute",
+    top: 6,
+    width: "42%",
+    height: 6,
+    borderRadius: 99,
+    opacity: 0.85,
+  },
+  barHash: { fontSize: 22, fontWeight: "900" },
+});

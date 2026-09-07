@@ -17,6 +17,6 @@ const TIER_TO_KEY: Record<LigueNom, keyof typeof LEAGUE_BADGE_IMAGES> = {
   Diamant: "diamond",
 };
 
-export function leagueBadgeSource(nom: LigueNom) {
-  return LEAGUE_BADGE_IMAGES[TIER_TO_KEY[nom] ?? "gold"];
+export function leagueBadgeSource(nom: LigueNom | string) {
+  return LEAGUE_BADGE_IMAGES[TIER_TO_KEY[nom as LigueNom] ?? "gold"];
 }
