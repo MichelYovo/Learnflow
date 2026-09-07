@@ -540,6 +540,47 @@ function buildLeaguePlayers(): LeaguePlayer[] {
 /** Classement hebdo du groupe (rangs 1–30) */
 export const LEAGUE_PLAYERS: LeaguePlayer[] = buildLeaguePlayers();
 
+export const BEGINNER_LIGUE = {
+  nomLigue: "Bronze" as const,
+  rangActuel: 30,
+  scoreHebdo: 0,
+  estGelee: false,
+  groupe: 1,
+};
+
+export const EMPTY_WEEK_CHART = [
+  { label: "L", height: 8, color: "#BFDBFE" },
+  { label: "M", height: 8, color: "#BFDBFE" },
+  { label: "M", height: 8, color: "#BFDBFE" },
+  { label: "J", height: 8, color: "#BFDBFE" },
+  { label: "V", height: 8, color: "#BFDBFE" },
+  { label: "S", height: 8, color: "#BFDBFE" },
+  { label: "D", height: 10, color: "#1D4ED8", today: true },
+];
+
+export function beginnerLeagueBoard(
+  name: string,
+  avatarId?: string,
+  initials?: string
+): LeaguePlayer[] {
+  const others = LEAGUE_PLAYERS.filter((p) => !p.you).map((p, i) => ({
+    ...p,
+    rank: i + 1,
+    you: false,
+  }));
+  const you: LeaguePlayer = {
+    rank: others.length + 1,
+    name,
+    xp: 0,
+    streak: 0,
+    you: true,
+    initials: (initials ?? (name.replace(/[^A-Za-zÀ-ÿ]/g, " ").trim().split(/\s+/).map((p) => p[0]).join("").slice(0, 2) || "ÉL")).toUpperCase(),
+    avatarColor: "#1677FF",
+    avatarId,
+  };
+  return [...others, you];
+}
+
 export const PROFILES_DEMO = [
   {
     id: "1",
@@ -575,12 +616,19 @@ export const PROFILES_DEMO = [
   },
 ];
 
-/** Tests locaux : uniquement les deux profils de départ (Kofi + Ama). */
+/** Tests locaux : Kofi + Ama restent, les comptes Google/cloud aussi. */
 export const LOCAL_TEST_PROFILE_IDS = PROFILES_DEMO.map((p) => String(p.id));
+
+export function isCloudProfileId(id: string | number): boolean {
+  const s = String(id);
+  return s.length >= 20 || /^[0-9a-f-]{36}$/i.test(s);
+}
 
 export function keepLocalTestProfiles<T extends { id: string | number }>(profiles: T[]): T[] {
   const allowed = new Set(LOCAL_TEST_PROFILE_IDS);
-  return profiles.filter((p) => allowed.has(String(p.id)));
+  const demos = profiles.filter((p) => allowed.has(String(p.id)));
+  const cloud = profiles.filter((p) => !allowed.has(String(p.id)));
+  return [...demos, ...cloud];
 }
 
 export function resolveLocalTestActiveId(

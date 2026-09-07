@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { playSfx, preloadSfx } from "../../lib/sfx";
 import Phone from "../phone/Phone";
 import { BlitzMock, HomeMock, LeagueMock, QuizMock } from "../phone/screens";
 
@@ -13,13 +14,24 @@ const SCENES = [
 
 export default function HeroPhones() {
   const [i, setI] = useState(0);
+  const [playKey, setPlayKey] = useState(0);
 
   useEffect(() => {
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (reduce) return;
-    const t = window.setInterval(() => setI((n) => (n + 1) % SCENES.length), 4200);
+    const t = window.setInterval(() => {
+      setI((n) => (n + 1) % SCENES.length);
+      setPlayKey((k) => k + 1);
+    }, 4200);
     return () => window.clearInterval(t);
-  }, []);
+  }, [i]);
+
+  const go = (idx: number) => {
+    preloadSfx();
+    playSfx(idx === 1 ? "correct" : idx === 3 ? "warn" : "click");
+    setI(idx);
+    setPlayKey((k) => k + 1);
+  };
 
   const left = SCENES[(i + 3) % SCENES.length];
   const center = SCENES[i];
@@ -35,9 +47,13 @@ export default function HeroPhones() {
           </Phone>
         </div>
         <div className="relative z-20">
-          <Phone float glow={center.glow} dark={center.id === "blitz"} label={center.label}>
-            {center.node}
-          </Phone>
+          <button type="button" onClick={() => go(i)} aria-label="Rejouer l’aperçu" className="cursor-pointer">
+            <div key={playKey} className="lf-demo-phone lf-anim-pop">
+              <Phone float glow={center.glow} dark={center.id === "blitz"} label={center.label}>
+                {center.node}
+              </Phone>
+            </div>
+          </button>
         </div>
         <div className="absolute right-0 top-10 hidden origin-bottom md:block" style={{ transform: "rotate(14deg) translateX(-8px) translateY(48px) scale(0.82)" }}>
           <Phone glow={right.glow} dark={right.id === "blitz"} label={right.label}>
@@ -52,7 +68,7 @@ export default function HeroPhones() {
             type="button"
             aria-label={`Voir l’écran ${s.label}`}
             aria-pressed={idx === i}
-            onClick={() => setI(idx)}
+            onClick={() => go(idx)}
             className={`h-2.5 rounded-full transition-all ${idx === i ? "w-8 bg-[#1677FF]" : "w-2.5 bg-[#BAE0FF] hover:bg-[#1677FF]/50"}`}
           />
         ))}

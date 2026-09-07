@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Poppins } from "next/font/google";
 import AuthGuard from "@/components/AuthGuard";
+import CloudSyncBootstrap from "@/components/CloudSyncBootstrap";
 import SfxBootstrap from "@/components/SfxBootstrap";
 import { ThemeSync } from "@/components/useHydrated";
 import "./globals.css";
@@ -40,6 +41,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="h-dvh min-h-dvh font-sans">
         <ThemeSync />
         <SfxBootstrap />
+        <CloudSyncBootstrap />
         <AuthGuard>{children}</AuthGuard>
       </body>
     </html>

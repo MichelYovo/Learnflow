@@ -1,7 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
 import AnalogieSpira from "@/components/AnalogieSpira";
 import Icon from "@/components/Icon";
 import { AppMain, ScreenHeader } from "@/components/ui";
@@ -27,6 +27,11 @@ export default function CoursePage() {
   const router = useRouter();
   const fiche = ficheForChapter(chapterId);
   const { colors } = useAppTheme();
+
+  useEffect(() => {
+    if (!chapterId) return;
+    void import("@/lib/cloud").then((m) => m.trackActivity("chapter_open", { chapterId }));
+  }, [chapterId]);
   const [speed, setSpeed] = useState<"essentiel" | "details">("essentiel");
   const [masked, setMasked] = useState(false);
   const [revealed, setRevealed] = useState<Set<string>>(new Set());

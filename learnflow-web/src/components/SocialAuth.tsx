@@ -1,17 +1,55 @@
 "use client";
 
+import { useState } from "react";
 import { useAppTheme } from "@/theme/useAppTheme";
+import { getBrowserSupabase, isSupabaseConfigured } from "@/lib/supabase";
 
 type Provider = "google" | "apple" | "facebook";
 
 export default function SocialAuth({
   mode,
-  onProvider,
 }: {
   mode: "login" | "signup";
-  onProvider: (provider: Provider) => void;
+  onProvider?: (provider: Provider) => void;
 }) {
   const { colors } = useAppTheme();
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
+
+  const showPending = (name: "Apple" | "Facebook") => {
+    setError("");
+    setNotice(
+      `La connexion ${name} est en cours de service. Utilise Google ou ton email pour l’instant.`,
+    );
+  };
+
+  const startGoogle = async () => {
+    setError("");
+    setNotice("");
+    const supabase = getBrowserSupabase();
+    if (!isSupabaseConfigured || !supabase) {
+      setError("Google n’est pas encore configuré. Ajoute les clés Supabase.");
+      return;
+    }
+    setBusy(true);
+    const origin = typeof window !== "undefined" ? window.location.origin : "";
+    const { error: oauthError } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: `${origin}/auth/callback`,
+        queryParams: {
+          prompt: "select_account",
+          access_type: "offline",
+        },
+      },
+    });
+    if (oauthError) {
+      setError(oauthError.message);
+      setBusy(false);
+    }
+  };
+
   return (
     <div className="mt-4 space-y-3">
       <div className="flex items-center gap-2.5">
@@ -23,17 +61,19 @@ export default function SocialAuth({
       </div>
       <button
         type="button"
-        onClick={() => onProvider("google")}
-        className="flex w-full items-center justify-center gap-2.5 rounded-2xl border-2 py-3.5 text-sm font-bold"
+        onClick={() => void startGoogle()}
+        disabled={busy}
+        className="flex w-full items-center justify-center gap-2.5 rounded-2xl border-2 py-3.5 text-sm font-bold disabled:opacity-60"
         style={{ background: colors.white, borderColor: colors.border, color: colors.textDark }}
       >
         <GoogleMark />
-        Continuer avec Google
+        {busy ? "Ouverture de Google…" : "Continuer avec Google"}
       </button>
+      {error ? <p className="text-center text-xs font-bold text-red-500">{error}</p> : null}
       <div className="grid grid-cols-2 gap-2.5">
         <button
           type="button"
-          onClick={() => onProvider("apple")}
+          onClick={() => showPending("Apple")}
           className="flex items-center justify-center gap-2 rounded-2xl border-2 py-3 text-[13px] font-bold"
           style={{ background: colors.white, borderColor: colors.border, color: colors.textDark }}
         >
@@ -42,7 +82,7 @@ export default function SocialAuth({
         </button>
         <button
           type="button"
-          onClick={() => onProvider("facebook")}
+          onClick={() => showPending("Facebook")}
           className="flex items-center justify-center gap-2 rounded-2xl border-2 py-3 text-[13px] font-bold"
           style={{ background: colors.white, borderColor: colors.border, color: colors.textDark }}
         >
@@ -50,6 +90,15 @@ export default function SocialAuth({
           Facebook
         </button>
       </div>
+      {notice ? (
+        <p
+          role="status"
+          className="rounded-2xl border-2 px-3 py-2.5 text-center text-xs font-bold"
+          style={{ borderColor: colors.border, background: colors.surfaceAlt, color: colors.textDark }}
+        >
+          {notice}
+        </p>
+      ) : null}
     </div>
   );
 }

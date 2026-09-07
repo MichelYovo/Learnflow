@@ -1,0 +1,14 @@
+export const TOGO_PREFIX = "+228";
+
+export function normalizeTogoLocal(value: string): string {
+  let digits = value.replace(/\D/g, "");
+  if (digits.startsWith("00228")) digits = digits.slice(5);
+  else if (digits.startsWith("228") && digits.length > 8) digits = digits.slice(3);
+  return digits.slice(0, 8);
+}
+
+export function maskTogoPhone(e164: string): string {
+  const local = normalizeTogoLocal(e164);
+  if (local.length !== 8) return `${TOGO_PREFIX} ••••••••`;
+  return `${TOGO_PREFIX} ${local.slice(0, 2)} ** ** ${local.slice(6)}`;
+}

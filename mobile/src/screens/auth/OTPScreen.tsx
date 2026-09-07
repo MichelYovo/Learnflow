@@ -4,40 +4,113 @@ import { LinearGradient } from "expo-linear-gradient";
 import { SafeAreaView } from "react-native-safe-area-context";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import Logo from "../../components/Logo";
+import { settleVerifiedUser } from "../../lib/authFinish";
+import { sendEmailOtp, verifyEmailOtp } from "../../lib/emailOtp";
+import { loadPendingAuth } from "../../lib/pendingAuth";
+import { useLearnFlowStore } from "../../store/useLearnFlowStore";
 import { colors } from "../../theme/colors";
 import { useAppTheme } from "../../theme/useAppTheme";
 import type { AuthStackParamList } from "../../navigation/types";
 
 type Props = NativeStackScreenProps<AuthStackParamList, "OTP">;
 
-const DEMO_OTP = "123456";
-
-export default function OTPScreen({ navigation }: Props) {
+export default function OTPScreen({ navigation, route }: Props) {
   const { colors } = useAppTheme();
+  const applyCloudUser = useLearnFlowStore((s) => s.applyCloudUser);
+  const [email, setEmail] = useState(route.params?.email ?? "");
   const [code, setCode] = useState("");
   const [error, setError] = useState("");
+  const [info, setInfo] = useState("Envoi du code…");
+  const [busy, setBusy] = useState(false);
   const sent = useRef(false);
+  const sending = useRef(false);
 
-  const submit = (value: string) => {
-    if (sent.current) return;
-    if (value !== DEMO_OTP) {
-      setError("Code incorrect. Pour la démo, entre 123456.");
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      const pending = await loadPendingAuth();
+      const nextEmail = (route.params?.email || pending?.email || "").trim().toLowerCase();
+      if (cancelled) return;
+      setEmail(nextEmail);
+      if (!nextEmail.includes("@")) {
+        setInfo("");
+        setError("Adresse email manquante. Repars de la connexion.");
+        return;
+      }
+      if (sending.current) return;
+      sending.current = true;
+      const result = await sendEmailOtp(nextEmail, { shouldCreateUser: pending?.flow === "signup" });
+      if (cancelled) return;
+      if (result.error) {
+        setError(result.error);
+        setInfo("");
+        sending.current = false;
+        return;
+      }
+      setInfo(`Un code à 6 chiffres a été envoyé à ${nextEmail}.`);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [route.params?.email]);
+
+  const afterVerify = async () => {
+    const settled = await settleVerifiedUser();
+    if (settled.next === "login") {
+      navigation.replace("Login");
+      return;
+    }
+    if (settled.next === "complete-profile") {
+      navigation.replace("CompleteProfile");
+      return;
+    }
+    applyCloudUser(settled.user, { fresh: settled.fresh, authenticate: false });
+    navigation.replace("Success");
+  };
+
+  const submit = async (value: string) => {
+    if (sent.current || busy) return;
+    if (value.length !== 6) {
+      setError("Entre les 6 chiffres reçus par email.");
+      return;
+    }
+    if (!email.includes("@")) {
+      setError("Adresse email manquante.");
       return;
     }
     sent.current = true;
-    navigation.navigate("Success");
+    setBusy(true);
+    setError("");
+    const result = await verifyEmailOtp(email, value);
+    if (result.error) {
+      sent.current = false;
+      setBusy(false);
+      setError(result.error);
+      return;
+    }
+    await afterVerify();
   };
 
-  useEffect(() => {
-    if (code.length === 6) submit(code);
-  }, [code]);
+  const resend = async () => {
+    if (!email.includes("@") || busy) return;
+    setError("");
+    setBusy(true);
+    const pending = await loadPendingAuth();
+    const result = await sendEmailOtp(email, { shouldCreateUser: pending?.flow === "signup" });
+    setBusy(false);
+    if (result.error) {
+      setError(result.error);
+      return;
+    }
+    setInfo(`Nouveau code envoyé à ${email}.`);
+  };
 
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: colors.surface }]} edges={["top", "bottom"]}>
       <Logo height={76} style={{ alignSelf: "center", marginBottom: 16 }} />
       <Text style={[styles.title, { color: colors.textDark }]}>Vérification</Text>
       <Text style={[styles.sub, { color: colors.textMuted }]}>
-        Entre le code à 6 chiffres. Pour la démo : 123456
+        {info || "Entre le code à 6 chiffres reçu par email."}
       </Text>
       <TextInput
         style={[styles.input, { backgroundColor: colors.white, borderColor: colors.mathsBorder, color: colors.textDark }]}
@@ -47,18 +120,23 @@ export default function OTPScreen({ navigation }: Props) {
         onChangeText={(t) => {
           setError("");
           sent.current = false;
-          setCode(t.replace(/\D/g, "").slice(0, 6));
+          const next = t.replace(/\D/g, "").slice(0, 6);
+          setCode(next);
+          if (next.length === 6) void submit(next);
         }}
-        placeholder="123456"
+        placeholder="••••••"
         placeholderTextColor={colors.textMuted}
         textAlign="center"
         autoFocus
       />
       {error ? <Text style={styles.error}>{error}</Text> : null}
-      <Pressable onPress={() => submit(code)} style={styles.btnWrap}>
+      <Pressable onPress={() => void submit(code)} disabled={busy} style={styles.btnWrap}>
         <LinearGradient colors={[colors.primary, colors.primaryDark]} style={styles.btn}>
-          <Text style={styles.btnText}>Valider</Text>
+          <Text style={styles.btnText}>{busy ? "Vérification…" : "Valider"}</Text>
         </LinearGradient>
+      </Pressable>
+      <Pressable onPress={() => void resend()} style={{ marginTop: 16 }}>
+        <Text style={[styles.resend, { color: colors.primary }]}>Renvoyer le code</Text>
       </Pressable>
     </SafeAreaView>
   );
@@ -84,4 +162,5 @@ const styles = StyleSheet.create({
   btn: { paddingVertical: 16, alignItems: "center" },
   btnText: { color: colors.white, fontWeight: "800", fontSize: 16 },
   error: { color: colors.danger, textAlign: "center", fontWeight: "700", marginBottom: 12 },
+  resend: { textAlign: "center", fontWeight: "800", fontSize: 14 },
 });

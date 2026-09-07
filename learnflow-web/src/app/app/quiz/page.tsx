@@ -1,7 +1,7 @@
 "use client";
 
 import { AppMain, CardButton, ScreenHeader } from "@/components/ui";
-import { continueLessonForClass } from "@/data/programme";
+import { continueLessonForLearner } from "@/data/programme";
 import { useLearnFlowStore } from "@/store/useLearnFlowStore";
 import { useAppTheme } from "@/theme/useAppTheme";
 
@@ -10,7 +10,7 @@ export default function QuizHubPage() {
   const profile = useLearnFlowStore((s) => s.getActiveProfile());
   const canAccess = useLearnFlowStore((s) => s.canAccessGrandQuizz);
   const chapterProgress = useLearnFlowStore((s) => s.chapterProgress);
-  const chapterId = continueLessonForClass(profile.classe).chapterId;
+  const chapterId = continueLessonForLearner(profile.classe, profile.id, chapterProgress).chapterId;
   const unlocked = canAccess(chapterId);
   const lockedUntil = chapterProgress[chapterId]?.grandQuizzLockedUntil;
 

@@ -3,10 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect } from "react";
-import { useLearnFlowStore } from "@/store/useLearnFlowStore";
 import { useAppTheme } from "@/theme/useAppTheme";
-import Avatar from "./Avatar";
-import Logo from "./Logo";
 import type { IconName } from "./Icon";
 import FloatingChatbot from "./FloatingChatbot";
 
@@ -15,6 +12,11 @@ const NAV: { href: string; label: string; icon: IconName; fill: string; outline:
   { href: "/app/cours", label: "Cours", icon: "book", fill: "/icons/book-fill.png", outline: "/icons/book.png" },
   { href: "/app/ligue", label: "Ligues", icon: "trophy", fill: "/icons/trophy-fill.png", outline: "/icons/trophy.png" },
   { href: "/app/profil", label: "Profil", icon: "user", fill: "/icons/user-fill.png", outline: "/icons/user.png" },
+];
+
+const SIDE_NAV = [
+  ...NAV,
+  { href: "/app/agenda", label: "Agenda", fill: "/brand/logo-mark.png", outline: "/brand/logo-mark.png" },
 ];
 
 function TabLink({
@@ -56,9 +58,10 @@ function TabLink({
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { colors, darkMode } = useAppTheme();
-  const profile = useLearnFlowStore((s) => s.getActiveProfile());
-  const fullscreen = pathname.startsWith("/app/blitz");
-  const agendaOn = pathname.startsWith("/app/agenda");
+  const fullscreen =
+    pathname.startsWith("/app/blitz") ||
+    pathname.startsWith("/app/quiz/assimilation") ||
+    pathname.startsWith("/app/quiz/grand");
 
   useEffect(() => {
     document.documentElement.classList.toggle("dark", darkMode);
@@ -71,56 +74,29 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-dvh max-w-[100vw] overflow-x-clip" style={{ background: colors.surface, color: colors.textDark }}>
       <aside
-        className="hidden w-[min(232px,28vw)] shrink-0 flex-col border-r lg:flex"
+        className="hidden w-[min(220px,26vw)] shrink-0 flex-col border-r lg:flex"
         style={{ background: colors.white, borderColor: colors.border }}
       >
-        <div className="flex h-[72px] items-center border-b px-5" style={{ borderColor: colors.border }}>
-          <Link href="/app" className="min-w-0">
-            <Logo height="nav" animated={false} />
-          </Link>
-        </div>
-        <nav className="mt-3 flex flex-1 flex-col gap-1 px-3">
-          {NAV.map((item) => {
+        <nav className="flex flex-col gap-0.5 p-3" aria-label="Navigation">
+          {SIDE_NAV.map((item) => {
             const active = item.href === "/app" ? pathname === "/app" : pathname.startsWith(item.href);
             return (
               <Link
                 key={item.href}
                 href={item.href}
-                className="flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-bold"
+                className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-bold"
                 style={{
                   background: active ? (darkMode ? "#0C1A33" : "#E6F4FF") : "transparent",
                   color: active ? colors.primary : colors.textSecondary,
                 }}
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={active ? item.fill : item.outline} alt="" width={18} height={18} />
+                <img src={active ? item.fill : item.outline} alt="" width={18} height={18} className="h-[18px] w-[18px] object-contain" />
                 {item.label}
               </Link>
             );
           })}
-          <Link
-            href="/app/agenda"
-            className="mt-2 flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-bold"
-            style={{
-              background: agendaOn ? (darkMode ? "#0C1A33" : "#E6F4FF") : "transparent",
-              color: agendaOn ? colors.primary : colors.textSecondary,
-            }}
-          >
-            <Logo variant="mark" height={28} animated={false} />
-            Agenda
-          </Link>
         </nav>
-        <div className="border-t p-4" style={{ borderColor: colors.border }}>
-          <Link href="/app/profil" className="flex items-center gap-3">
-            <Avatar avatarId={profile.avatarId} size={40} initials={profile.firstName} fallbackColor={profile.color} />
-            <div className="min-w-0">
-              <p className="truncate text-sm font-extrabold">{profile.firstName}</p>
-              <p className="truncate text-xs font-semibold" style={{ color: colors.textMuted }}>
-                {profile.gradeLabel} · {profile.xpTotale.toLocaleString()} XP
-              </p>
-            </div>
-          </Link>
-        </div>
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col pb-[calc(5.5rem+env(safe-area-inset-bottom,0px))] lg:pb-0">

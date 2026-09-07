@@ -25,7 +25,6 @@ export const MODES = [
     color: "#10B981",
     bg: "#ECFDF5",
     border: "#A7F3D0",
-    spira: "calme",
   },
   {
     id: "guide",
@@ -37,7 +36,6 @@ export const MODES = [
     color: "#1677FF",
     bg: "#E6F4FF",
     border: "#BAE0FF",
-    spira: "confiant",
   },
   {
     id: "cramming",
@@ -49,7 +47,6 @@ export const MODES = [
     color: "#F59E0B",
     bg: "#FFFBEB",
     border: "#FDE68A",
-    spira: "determine",
   },
   {
     id: "blitz",
@@ -61,7 +58,6 @@ export const MODES = [
     color: "#EF4444",
     bg: "#FEF2F2",
     border: "#FECACA",
-    spira: "enerve",
   },
 ] as const;
 
@@ -71,17 +67,4 @@ export const TIERS = [
   { id: "or", label: "Or", src: "/badges/gold.png" },
   { id: "platine", label: "Platine", src: "/badges/platinum.png" },
   { id: "diamant", label: "Diamant", src: "/badges/diamond.png" },
-] as const;
-
-export const SPIRA_MOODS = [
-  { id: "joyeux", label: "Joyeux", role: "Quand tu as 10/10" },
-  { id: "calme", label: "Calme", role: "Quand tu lis un cours" },
-  { id: "confiant", label: "Confiant", role: "Quand tu suis le guidé" },
-  { id: "determine", label: "Déterminé", role: "La veille d’un devoir" },
-  { id: "enerve", label: "Énervé", role: "Pendant le Blitz 60 s" },
-  { id: "surpris", label: "Surpris", role: "Quand ça « clique »" },
-  { id: "timide", label: "Timide", role: "Quand un chapitre est encore fermé" },
-  { id: "triste", label: "Triste", role: "Quand tu rates une question" },
-  { id: "neutre", label: "Neutre", role: "Quand tu cherches une aide" },
-  { id: "fatigue", label: "Fatigué", role: "Quand tu as besoin d’une pause" },
 ] as const;

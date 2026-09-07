@@ -3,7 +3,7 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import CorrectBurst from "../../components/CorrectBurst";
-import Icon from "../../components/Icon";
+import QuizPlay from "../../components/quiz/QuizPlay";
 import Spira from "../../components/Spira";
 import { GRAND_QUIZZ } from "../../data/mock";
 import { spiraForScore } from "../../data/spira";
@@ -52,26 +52,25 @@ export default function GrandQuizzScreen({ navigation, route }: Props) {
     setSelected(i);
     const ok = i === q.indexReponseCorrecte;
     playSfx(ok ? "correct" : "wrong");
-    const next = ok ? score + 1 : score;
-    if (ok) {
-      setScore(next);
-      setBurstKey((k) => k + 1);
+    if (ok) setBurstKey((k) => k + 1);
+  };
+
+  const continueQuiz = () => {
+    const next = score + (selected === q.indexReponseCorrecte ? 1 : 0);
+    setScore(next);
+    if (current + 1 >= questions.length) {
+      const xp = calculerXP({
+        baseXP: next * 20,
+        classe: profile.classe,
+        densiteChapitre: 1.2,
+        multiplicateurPrecision: 2,
+      });
+      accumulerXP(xp);
+      setDone(true);
+    } else {
+      setCurrent((c) => c + 1);
+      setSelected(null);
     }
-    setTimeout(() => {
-      if (current + 1 >= questions.length) {
-        const xp = calculerXP({
-          baseXP: next * 20,
-          classe: profile.classe,
-          densiteChapitre: 1.2,
-          multiplicateurPrecision: 2,
-        });
-        accumulerXP(xp);
-        setDone(true);
-      } else {
-        setCurrent((c) => c + 1);
-        setSelected(null);
-      }
-    }, 500);
   };
 
   if (done) {
@@ -96,36 +95,21 @@ export default function GrandQuizzScreen({ navigation, route }: Props) {
   }
 
   return (
-    <SafeAreaView style={styles.safe}>
-      <View style={styles.top}>
-        <Pressable onPress={() => navigation.goBack()}>
-          <Icon name="arrow-left" size={20} color={colors.textDark} />
-        </Pressable>
-        <Text style={styles.progress}>
-          Grand Quizz · {current + 1}/{questions.length}
-        </Text>
-        <Spira scene="quiz.play" size={36} />
-      </View>
-      <Text style={styles.q}>{q.enonceQuestion}</Text>
-      <View style={styles.options}>
-        {q.optionsProposees.map((opt, i) => (
-          <Pressable
-            key={i}
-            onPressIn={() => pick(i)}
-            onPress={() => pick(i)}
-            style={[
-              styles.opt,
-              selected === i && {
-                borderColor: i === q.indexReponseCorrecte ? colors.secondary : colors.danger,
-                backgroundColor: i === q.indexReponseCorrecte ? colors.svtBg : colors.angBg,
-                transform: [{ scale: i === q.indexReponseCorrecte ? 1.02 : 0.99 }],
-              },
-            ]}
-          >
-            <Text style={styles.optText}>{opt}</Text>
-          </Pressable>
-        ))}
-      </View>
+    <SafeAreaView style={styles.safe} edges={["top"]}>
+      <QuizPlay
+        kicker={`Grand Quizz${q.matiere ? ` · ${q.matiere}` : ""}`}
+        current={current}
+        total={questions.length}
+        question={q.enonceQuestion}
+        options={q.optionsProposees}
+        correctIndex={q.indexReponseCorrecte}
+        selected={selected}
+        onPick={pick}
+        onBack={() => navigation.goBack()}
+        onContinue={continueQuiz}
+        explanation={q.explicationPedagogique}
+        headerRight={<Spira scene="quiz.play" size={36} />}
+      />
       <CorrectBurst trigger={burstKey} />
     </SafeAreaView>
   );
@@ -133,34 +117,6 @@ export default function GrandQuizzScreen({ navigation, route }: Props) {
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.surface },
-  top: { flexDirection: "row", alignItems: "center", gap: 12, padding: 16 },
-  progress: { fontWeight: "800", color: colors.primary },
-  q: {
-    fontSize: 17,
-    fontWeight: "800",
-    color: colors.textDark,
-    lineHeight: 24,
-    paddingHorizontal: 20,
-    paddingTop: 8,
-    paddingBottom: 0,
-  },
-  options: {
-    flex: 1,
-    justifyContent: "center",
-    paddingHorizontal: 20,
-    paddingTop: 36,
-    paddingBottom: 16,
-    gap: 16,
-  },
-  opt: {
-    backgroundColor: colors.white,
-    borderWidth: 2,
-    borderColor: colors.border,
-    borderRadius: 16,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-  },
-  optText: { fontWeight: "700", color: colors.textDark },
   locked: { flex: 1, alignItems: "center", justifyContent: "center", padding: 24, gap: 12 },
   lockedTitle: { fontSize: 22, fontWeight: "800", color: colors.textDark },
   muted: { textAlign: "center", color: colors.textMuted },

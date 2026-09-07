@@ -16,6 +16,7 @@ import SignUpScreen from "../screens/auth/SignUpScreen";
 import LoginScreen from "../screens/auth/LoginScreen";
 import OTPScreen from "../screens/auth/OTPScreen";
 import SuccessScreen from "../screens/auth/SuccessScreen";
+import CompleteProfileScreen from "../screens/auth/CompleteProfileScreen";
 import FocusModeScreen from "../screens/auth/FocusModeScreen";
 
 import HomeScreen from "../screens/tabs/HomeScreen";
@@ -87,6 +88,7 @@ function AuthNavigator() {
       <AuthStack.Screen name="Login" component={LoginScreen} />
       <AuthStack.Screen name="OTP" component={OTPScreen} />
       <AuthStack.Screen name="Success" component={SuccessScreen} />
+      <AuthStack.Screen name="CompleteProfile" component={CompleteProfileScreen} />
     </AuthStack.Navigator>
   );
 }

@@ -1,22 +1,55 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Icon from "@/components/Icon";
 import Logo from "@/components/Logo";
 import SocialAuth from "@/components/SocialAuth";
 import { AuthStage, Page, PrimaryButton } from "@/components/ui";
+import { savePendingAuth } from "@/lib/pendingAuth";
+import { getBrowserSupabase } from "@/lib/supabase";
 import { useAppTheme } from "@/theme/useAppTheme";
 
-export default function LoginPage() {
+function LoginInner() {
   const { colors } = useAppTheme();
   const router = useRouter();
+  const params = useSearchParams();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPw, setShowPw] = useState(false);
+  const [error, setError] = useState("");
+  const [busy, setBusy] = useState(false);
+  const googleError = params.get("error");
 
-  const goOtp = () => router.push("/otp");
+  const goOtp = async () => {
+    setError("");
+    if (!email.includes("@")) {
+      setError("Entre l’adresse email de ton compte.");
+      return;
+    }
+    if (password.length < 8) {
+      setError("Entre ton mot de passe.");
+      return;
+    }
+    const supabase = getBrowserSupabase();
+    if (!supabase) {
+      setError("Supabase n’est pas configuré. Ajoute les clés puis réessaie.");
+      return;
+    }
+    setBusy(true);
+    const { error: authError } = await supabase.auth.signInWithPassword({
+      email: email.trim(),
+      password,
+    });
+    if (authError) {
+      setBusy(false);
+      setError("Email ou mot de passe incorrect.");
+      return;
+    }
+    savePendingAuth({ email: email.trim().toLowerCase(), flow: "login" });
+    router.push(`/otp?email=${encodeURIComponent(email.trim().toLowerCase())}`);
+  };
 
   return (
     <Page>
@@ -83,15 +116,35 @@ export default function LoginPage() {
         </label>
 
         <div className="mt-5">
-          <PrimaryButton onClick={goOtp}>Se connecter</PrimaryButton>
+          <PrimaryButton onClick={() => void goOtp()} disabled={busy}>
+            {busy ? "Vérification…" : "Se connecter"}
+          </PrimaryButton>
         </div>
 
-        <SocialAuth mode="login" onProvider={goOtp} />
+        {error ? <p className="mt-3 text-center text-xs font-bold text-red-500">{error}</p> : null}
+
+        {googleError ? (
+          <p className="mt-3 text-center text-xs font-bold text-red-500">
+            {googleError === "config"
+              ? "Google n’est pas configuré. Ajoute les clés Supabase."
+              : "Connexion Google interrompue. Réessaie et choisis ton compte."}
+          </p>
+        ) : null}
+
+        <SocialAuth mode="login" onProvider={() => setError("Utilise Google, ou connecte-toi par email.")} />
 
         <Link href="/profiles" className="mt-4 block text-center text-sm font-bold" style={{ color: colors.primary }}>
           Choisir un profil local
         </Link>
       </AuthStage>
     </Page>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense>
+      <LoginInner />
+    </Suspense>
   );
 }

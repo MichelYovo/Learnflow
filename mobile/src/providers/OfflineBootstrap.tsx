@@ -1,4 +1,5 @@
 import React, { useEffect } from "react";
+import { AppState } from "react-native";
 import {
   getCachedLeaderboard,
   ensureDemoPins,
@@ -13,7 +14,10 @@ import {
   updateLocalProfileAvatar,
 } from "../db";
 import { startSyncManager } from "../lib/SyncManager";
-import { keepLocalTestProfiles } from "../data/mock";
+import { fetchOwnStudentProfile, isProfileComplete } from "../lib/cloud";
+import { syncProgress } from "../lib/progressSync";
+import { isSupabaseConfigured, supabase } from "../lib/supabase";
+import { isCloudProfileId, keepLocalTestProfiles } from "../data/mock";
 import { useLearnFlowStore } from "../store/useLearnFlowStore";
 
 async function hydrateFromSqlite(): Promise<void> {
@@ -53,6 +57,31 @@ async function hydrateFromSqlite(): Promise<void> {
   }
 }
 
+async function restoreCloudSession(): Promise<void> {
+  if (!isSupabaseConfigured) return;
+  const { data } = await supabase.auth.getSession();
+  const user = data.session?.user;
+  if (!user) return;
+  const state = useLearnFlowStore.getState();
+  const already = isCloudProfileId(state.activeProfileId) && state.activeProfileId === user.id && state.isAuthenticated;
+  if (!already) {
+    const profile = await fetchOwnStudentProfile();
+    if (!isProfileComplete(profile)) return;
+    useLearnFlowStore.getState().applyCloudUser({
+      id: user.id,
+      email: user.email ?? profile?.email ?? "",
+      nom: profile?.name ?? String(user.user_metadata?.full_name ?? "Élève"),
+      classe: profile?.class_level ?? "3eme",
+      parentPhone: profile?.parent_phone ?? "",
+      xpTotale: profile?.total_xp ?? 0,
+      streak: profile?.streak ?? 0,
+      lessonsDone: profile?.lessons_done ?? 0,
+      avatarId: profile?.avatar_id ?? undefined,
+    });
+  }
+  await syncProgress();
+}
+
 export default function OfflineBootstrap({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     let stop: (() => void) | undefined;
@@ -73,8 +102,15 @@ export default function OfflineBootstrap({ children }: { children: React.ReactNo
       } catch (error) {
         console.warn("[LearnFlow] offline bootstrap", error);
       } finally {
+        if (!cancelled) {
+          try {
+            await restoreCloudSession();
+          } catch (error) {
+            console.warn("[LearnFlow] restore cloud", error);
+          }
+        }
         if (cancelled) return;
-        stop = startSyncManager({
+        const stopSync = startSyncManager({
           getActiveStudentId: () => {
             const state = useLearnFlowStore.getState();
             return state.isAuthenticated ? String(state.activeProfileId) : null;
@@ -85,6 +121,13 @@ export default function OfflineBootstrap({ children }: { children: React.ReactNo
             useLearnFlowStore.getState().applyRemoteLeague(studentId, weeklyXp, rank);
           },
         });
+        const appSub = AppState.addEventListener("change", (next) => {
+          if (next === "active") void syncProgress();
+        });
+        stop = () => {
+          appSub.remove();
+          stopSync();
+        };
       }
     })();
 

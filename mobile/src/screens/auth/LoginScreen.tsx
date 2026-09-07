@@ -18,6 +18,8 @@ import SocialAuth from "../../components/SocialAuth";
 import { colors } from "../../theme/colors";
 import { useAppTheme } from "../../theme/useAppTheme";
 import type { AuthStackParamList } from "../../navigation/types";
+import { signInWithGoogle } from "../../lib/googleAuth";
+import { savePendingAuth } from "../../lib/pendingAuth";
 import { isSupabaseConfigured, supabase } from "../../lib/supabase";
 
 type Props = NativeStackScreenProps<AuthStackParamList, "Login">;
@@ -30,38 +32,60 @@ export default function LoginScreen({ navigation }: Props) {
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
 
-  const goOtp = () => {
+  const goOtp = (nextEmail: string) => {
     setError("");
-    navigation.navigate("OTP");
+    navigation.navigate("OTP", { email: nextEmail, flow: "login" });
   };
 
   const goApp = async (provider?: "google" | "apple" | "facebook") => {
     setError("");
-    if (provider) {
-      navigation.navigate("OTP");
+    if (provider === "google") {
+      setBusy(true);
+      const result = await signInWithGoogle();
+      if (result.error) {
+        setBusy(false);
+        setError(result.error);
+        return;
+      }
+      const { data } = await supabase.auth.getSession();
+      const nextEmail = data.session?.user.email ?? "";
+      setBusy(false);
+      if (!nextEmail) {
+        setError("Impossible de lire l’email Google.");
+        return;
+      }
+      await savePendingAuth({ email: nextEmail, flow: "google" });
+      navigation.navigate("OTP", { email: nextEmail, flow: "google" });
       return;
     }
-    if (isSupabaseConfigured && email.includes("@") && password.length >= 8) {
-      setBusy(true);
-      try {
-        const { error: authError } = await supabase.auth.signInWithPassword({
-          email: email.trim(),
-          password,
-        });
-        if (authError) {
-          setError(authError.message);
-          setBusy(false);
-          return;
-        }
-        navigation.navigate("OTP");
-        return;
-      } catch {
-        setError("Connexion cloud indisponible. On continue en local.");
-      } finally {
-        setBusy(false);
-      }
+    if (provider) {
+      setError("Apple et Facebook arrivent bientôt. Utilise Google ou l’email.");
+      return;
     }
-    goOtp();
+    if (!email.includes("@")) {
+      setError("Entre l’adresse email de ton compte.");
+      return;
+    }
+    if (password.length < 8) {
+      setError("Entre ton mot de passe.");
+      return;
+    }
+    if (!isSupabaseConfigured) {
+      setError("Supabase n’est pas configuré.");
+      return;
+    }
+    setBusy(true);
+    const { error: authError } = await supabase.auth.signInWithPassword({
+      email: email.trim(),
+      password,
+    });
+    setBusy(false);
+    if (authError) {
+      setError("Email ou mot de passe incorrect.");
+      return;
+    }
+    await savePendingAuth({ email: email.trim().toLowerCase(), flow: "login" });
+    goOtp(email.trim().toLowerCase());
   };
 
   return (

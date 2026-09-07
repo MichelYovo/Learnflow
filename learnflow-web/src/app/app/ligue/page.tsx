@@ -72,7 +72,7 @@ export default function LiguePage() {
   const second = sorted.find((p) => p.rank === 2);
   const third = sorted.find((p) => p.rank === 3);
   const rest = sorted.filter((p) => p.rank >= 4 && p.rank <= 30);
-  const tierMeta = LEAGUE_TIERS.find((t) => t.id === selectedTier) ?? LEAGUE_TIERS[2];
+  const tierMeta = LEAGUE_TIERS.find((t) => t.id === selectedTier) ?? LEAGUE_TIERS[0];
   const isCurrent = selectedTier === ligue.nomLigue;
   const currentIndex = TIER_ORDER.indexOf(ligue.nomLigue);
   const selectedIndex = TIER_ORDER.indexOf(selectedTier);

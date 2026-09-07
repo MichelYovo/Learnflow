@@ -33,7 +33,7 @@ export function LeagueBadgeCircle({
   selected?: boolean;
   dimmed?: boolean;
 }) {
-  const meta = LEAGUE_TIERS.find((t) => t.id === nom) ?? LEAGUE_TIERS[2];
+  const meta = LEAGUE_TIERS.find((t) => t.id === nom) ?? LEAGUE_TIERS[0];
   const frame = Math.round(size * 1.36);
   return (
     <View

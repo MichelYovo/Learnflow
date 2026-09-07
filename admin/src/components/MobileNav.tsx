@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 
 const LINKS = [
   { href: "/dashboard", label: "Aperçu" },
+  { href: "/dashboard/activite", label: "Activité" },
   { href: "/dashboard/eleves", label: "Élèves" },
   { href: "/dashboard/ligues", label: "Ligues" },
   { href: "/dashboard/programme", label: "Programme" },
@@ -24,7 +25,7 @@ export default function MobileNav() {
   return (
     <nav className="flex gap-2 overflow-x-auto border-b border-[#F0EFEE] bg-white px-3 py-2 md:hidden">
       {LINKS.map((link) => {
-        const active = pathname === link.href;
+        const active = pathname === link.href || (link.href !== "/dashboard" && pathname.startsWith(link.href));
         return (
           <Link
             key={link.href}

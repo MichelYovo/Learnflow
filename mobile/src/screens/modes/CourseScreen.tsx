@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { LayoutAnimation, Platform, Pressable, ScrollView, StyleSheet, Text, UIManager, View, type StyleProp, type TextStyle } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
@@ -160,6 +160,10 @@ export default function CourseScreen({ navigation, route }: Props) {
   const show2d = fiche.schema === "2d" || fiche.schema === "both";
   const show3d = fiche.schema === "3d" || fiche.schema === "both" || chapterHas3dImage(chapterId);
   const analogieAfter = Math.min(1, Math.max(0, fiche.sectionsDetaillees.length - 1));
+
+  useEffect(() => {
+    void import("../../lib/cloud").then((m) => m.trackActivity("chapter_open", { chapterId }));
+  }, [chapterId]);
 
   const reveal = (word: string) => {
     setRevealed((prev) => new Set(prev).add(normalize(word)));

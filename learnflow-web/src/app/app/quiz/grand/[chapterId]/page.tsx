@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import Icon from "@/components/Icon";
+import QuizPlay from "@/components/quiz/QuizPlay";
 import Spira from "@/components/Spira";
 import { PrimaryButton } from "@/components/ui";
 import { GRAND_QUIZZ } from "@/data/mock";
@@ -32,7 +32,7 @@ export default function GrandQuizzPage() {
 
   if (!canAccess) {
     return (
-      <div className="flex min-h-[calc(100dvh-5.5rem)] flex-col items-center justify-center px-6 text-center lg:min-h-dvh">
+      <div className="flex min-h-dvh flex-col items-center justify-center px-6 text-center">
         <Spira scene="quiz.locked" size={96} />
         <h1 className="mt-3 text-xl font-black">Grand Quizz verrouillé</h1>
         <p className="mt-2 text-sm font-semibold" style={{ color: colors.textMuted }}>
@@ -48,30 +48,30 @@ export default function GrandQuizzPage() {
   const pick = (i: number) => {
     if (selected !== null) return;
     setSelected(i);
-    const ok = i === q.indexReponseCorrecte;
-    playSfx(ok ? "correct" : "wrong");
-    const next = ok ? score + 1 : score;
-    if (ok) setScore(next);
-    setTimeout(() => {
-      if (current + 1 >= questions.length) {
-        const xp = calculerXP({
-          baseXP: next * 20,
-          classe: profile.classe,
-          densiteChapitre: 1.2,
-          multiplicateurPrecision: 2,
-        });
-        accumulerXP(xp);
-        setDone(true);
-      } else {
-        setCurrent((c) => c + 1);
-        setSelected(null);
-      }
-    }, 450);
+    playSfx(i === q.indexReponseCorrecte ? "correct" : "wrong");
+  };
+
+  const continueQuiz = () => {
+    const next = score + (selected === q.indexReponseCorrecte ? 1 : 0);
+    setScore(next);
+    if (current + 1 >= questions.length) {
+      const xp = calculerXP({
+        baseXP: next * 20,
+        classe: profile.classe,
+        densiteChapitre: 1.2,
+        multiplicateurPrecision: 2,
+      });
+      accumulerXP(xp);
+      setDone(true);
+    } else {
+      setCurrent((c) => c + 1);
+      setSelected(null);
+    }
   };
 
   if (done) {
     return (
-      <div className="flex min-h-[calc(100dvh-5.5rem)] flex-col items-center justify-center px-6 text-center lg:min-h-dvh">
+      <div className="flex min-h-dvh flex-col items-center justify-center px-6 text-center">
         <Spira
           mood={spiraForScore(score, questions.length)}
           size={96}
@@ -91,47 +91,19 @@ export default function GrandQuizzPage() {
   }
 
   return (
-    <div className="mx-auto flex min-h-[calc(100dvh-5.5rem)] max-w-2xl flex-col lg:min-h-dvh">
-      <div className="flex items-center justify-between px-4 py-4">
-        <button type="button" onClick={() => router.back()} aria-label="Retour">
-          <Icon name="arrow-left" size={20} color={colors.textDark} />
-        </button>
-        <span className="text-sm font-extrabold" style={{ color: colors.primary }}>
-          Grand Quizz · {current + 1}/{questions.length}
-        </span>
-        <Spira scene="quiz.play" size={36} message="" />
-      </div>
-      <h1 className="shrink-0 px-5 pt-2 text-[17px] font-extrabold leading-6 sm:text-[18px] sm:leading-7">
-        {q.enonceQuestion}
-      </h1>
-      <div className="flex min-h-0 flex-1 flex-col justify-center overflow-y-auto px-5 py-6">
-        <div className="mt-5 flex shrink-0 flex-col gap-4 sm:gap-5">
-          {q.optionsProposees.map((opt, i) => {
-            const on = selected === i;
-            const ok = on && i === q.indexReponseCorrecte;
-            const ko = on && i !== q.indexReponseCorrecte;
-            return (
-              <button
-                key={opt}
-                type="button"
-                onPointerDown={(e) => {
-                  if (e.button !== 0) return;
-                  pick(i);
-                }}
-                onClick={() => pick(i)}
-                className="w-full shrink-0 rounded-2xl border-2 px-3 py-2 text-left font-bold"
-                style={{
-                  background: ok ? colors.svtBg : ko ? colors.angBg : colors.white,
-                  borderColor: ok ? colors.secondary : ko ? colors.danger : colors.border,
-                  transform: ok ? "scale(1.02)" : ko ? "scale(0.99)" : undefined,
-                }}
-              >
-                {opt}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-    </div>
+    <QuizPlay
+      kicker={`Grand Quizz${q.matiere ? ` · ${q.matiere}` : ""}`}
+      current={current}
+      total={questions.length}
+      question={q.enonceQuestion}
+      options={q.optionsProposees}
+      correctIndex={q.indexReponseCorrecte}
+      selected={selected}
+      onPick={pick}
+      onBack={() => router.back()}
+      onContinue={continueQuiz}
+      explanation={q.explicationPedagogique}
+      headerRight={<Spira scene="quiz.play" size={36} message="" />}
+    />
   );
 }

@@ -1,5 +1,5 @@
 import React from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
 import Icon from "./Icon";
 import { colors } from "../theme/colors";
 import { useAppTheme } from "../theme/useAppTheme";
@@ -34,7 +34,16 @@ export default function SocialAuth({ mode, onProvider }: Props) {
 
       <View style={styles.row}>
         {PROVIDERS.slice(1).map((p) => (
-          <Pressable key={p.id} style={[styles.alt, { backgroundColor: colors.white, borderColor: colors.border }]} onPress={() => onProvider(p.id)}>
+          <Pressable
+            key={p.id}
+            style={[styles.alt, { backgroundColor: colors.white, borderColor: colors.border }]}
+            onPress={() =>
+              Alert.alert(
+                "En cours de service",
+                `La connexion ${p.label} n’est pas encore disponible. Utilise Google ou ton email pour l’instant.`,
+              )
+            }
+          >
             <Icon name={p.icon} size={18} color={p.color} />
             <Text style={[styles.altText, { color: colors.textDark }]}>{p.label}</Text>
           </Pressable>

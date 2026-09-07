@@ -13,8 +13,8 @@ import MesMatieres from "../../components/MesMatieres";
 import ModeWorkSelector from "../../components/ModeWorkSelector";
 import FloatingChatbot from "../../components/FloatingChatbot";
 import { HomeSkeleton } from "../../components/ui";
-import { WEEK_BARS, AGENDA_MODE_CONFIG } from "../../data/mock";
-import { continueLessonForClass, programmeForClass, subjectShortcutsForClass } from "../../data/programme";
+import { AGENDA_MODE_CONFIG, EMPTY_WEEK_CHART, LOCAL_TEST_PROFILE_IDS, WEEK_BARS } from "../../data/mock";
+import { continueLessonForLearner, programmeForLearner, subjectShortcutsForLearner } from "../../data/programme";
 import { cardsDueToday } from "../../engine/spacedRepetition";
 import { useLearnFlowStore } from "../../store/useLearnFlowStore";
 import { colors } from "../../theme/colors";
@@ -43,13 +43,16 @@ export default function HomeScreen() {
   const nav = useNavigation<Nav>();
   const profile = useLearnFlowStore((s) => s.getActiveProfile());
   const ligue = useLearnFlowStore((s) => s.ligue);
+  const chapterProgress = useLearnFlowStore((s) => s.chapterProgress);
   const setPendingMode = useLearnFlowStore((s) => s.setPendingMode);
   const setCustomTools = useLearnFlowStore((s) => s.setCustomTools);
   const agendaSessions = useLearnFlowStore((s) => s.agendaSessions);
   const flashcards = useLearnFlowStore((s) => s.flashcards);
   const inbox = useLearnFlowStore((s) => s.inbox);
   const { colors, darkMode } = useAppTheme();
-  const weekXp = WEEK_BARS.reduce((a, b) => a + b.xp, 0);
+  const isDemo = LOCAL_TEST_PROFILE_IDS.includes(String(profile.id));
+  const weekXp = isDemo ? WEEK_BARS.reduce((a, b) => a + b.xp, 0) : ligue.scoreHebdo;
+  const weekChart = isDemo ? WEEK_CHART : EMPTY_WEEK_CHART;
   const nextLigue =
     ligue.nomLigue === "Bronze"
       ? "Argent"
@@ -60,11 +63,11 @@ export default function HomeScreen() {
           : ligue.nomLigue === "Platine"
             ? "Diamant"
             : null;
-  const continueLesson = continueLessonForClass(profile.classe);
-  const shortcuts = subjectShortcutsForClass(profile.classe);
+  const continueLesson = continueLessonForLearner(profile.classe, profile.id, chapterProgress);
+  const shortcuts = subjectShortcutsForLearner(profile.classe, profile.id, chapterProgress);
   const [selectedMode, setSelectedMode] = useState<AppMode | null>(null);
   const [booting, setBooting] = useState(true);
-  const totalDone = programmeForClass(profile.classe).reduce(
+  const totalDone = programmeForLearner(profile.classe, profile.id, chapterProgress).reduce(
     (a, s) => a + s.themes.reduce((b, t) => b + t.lessonsDone, 0),
     0
   );
@@ -223,7 +226,7 @@ export default function HomeScreen() {
             </View>
             <View style={[styles.statCell, styles.statBorder, { borderRightColor: darkMode ? colors.border : "#E5E7EB" }]}>
               <Text style={[styles.statValue, { color: darkMode ? colors.textDark : "#0F172A" }]}>
-                4.2h
+                {isDemo ? "4.2h" : "0h"}
               </Text>
               <Text style={styles.statLabel}>d'étude</Text>
             </View>
@@ -234,7 +237,7 @@ export default function HomeScreen() {
           </View>
 
           <View style={styles.chartPlot}>
-            {WEEK_CHART.map((b, i) => (
+            {weekChart.map((b, i) => (
               <View key={`bar-${i}`} style={styles.chartCol}>
                 <View
                   style={{
@@ -249,7 +252,7 @@ export default function HomeScreen() {
             ))}
           </View>
           <View style={styles.chartRow}>
-            {WEEK_CHART.map((b, i) => (
+            {weekChart.map((b, i) => (
               <View key={`lbl-${i}`} style={styles.chartCol}>
                 <Text
                   style={{
@@ -284,7 +287,7 @@ export default function HomeScreen() {
             {nextLigue ? (
               <View style={styles.leagueBar}>
                 <View style={styles.leagueTrack}>
-                  <View style={styles.leagueFill} />
+                  <View style={[styles.leagueFill, { width: `${Math.min(100, ligue.scoreHebdo)}%` }]} />
                 </View>
               </View>
             ) : null}
@@ -394,5 +397,5 @@ const styles = StyleSheet.create({
   leagueMeta: { fontSize: 15, fontWeight: "600", color: "#D97706", marginTop: 2 },
   leagueBar: { marginTop: 10 },
   leagueTrack: { height: 8, backgroundColor: "#FDE68A", borderRadius: 99, overflow: "hidden" },
-  leagueFill: { height: 8, width: "30%", backgroundColor: "#F59E0B", borderRadius: 99 },
+  leagueFill: { height: 8, width: "0%", backgroundColor: "#F59E0B", borderRadius: 99 },
 });

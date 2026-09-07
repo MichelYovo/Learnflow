@@ -216,7 +216,8 @@ async function runSync(): Promise<void> {
     const leagueTier = hooks?.getLeagueTier() ?? "Or";
     const activeStudentId = hooks?.getActiveStudentId() ?? null;
 
-    await pushPendingXp(parentId, leagueTier);
+    const { syncProgress } = await import("./progressSync");
+    await syncProgress();
     await pullLeaderboard(activeStudentId, leagueTier);
     await setSyncMeta("last_sync_at", nowIso());
     await setSyncMeta("last_sync_error", "");

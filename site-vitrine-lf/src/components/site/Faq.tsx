@@ -25,7 +25,7 @@ const ITEMS = [
   },
   {
     q: "Spira, c’est qui ?",
-    a: "C’est la mascotte de LearnFlow — un personnage qui t’accompagne. Il n’est pas un robot qui fait tes devoirs. Il change d’humeur : joyeux quand tu réussis, calme quand tu lis, déterminé avant un devoir. Comme un copain dans l’app.",
+    a: "C’est le petit personnage dans l’app. Il t’accompagne pendant que tu révises. Il ne fait pas tes devoirs : il est là pour t’encourager quand tu lis, quand tu réussis, ou quand tu rates une question.",
   },
   {
     q: "Ça marche sans internet ?",

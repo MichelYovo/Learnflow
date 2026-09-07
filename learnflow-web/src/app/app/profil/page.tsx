@@ -56,6 +56,16 @@ export default function ProfilPage() {
   const [confirm, setConfirm] = useState<"logout" | "switch" | null>(null);
 
   const grade = profile.gradeLabel ?? classLabel(profile.classe);
+  const nextLigue =
+    ligue.nomLigue === "Bronze"
+      ? "Argent"
+      : ligue.nomLigue === "Argent"
+        ? "Or"
+        : ligue.nomLigue === "Or"
+          ? "Platine"
+          : ligue.nomLigue === "Platine"
+            ? "Diamant"
+            : null;
   const stats = {
     xp: profile.xpTotale.toLocaleString("fr-FR"),
     streak: `${profile.streak}j`,
@@ -154,9 +164,9 @@ export default function ProfilPage() {
             <span className="mb-2 block text-sm font-semibold text-[#92400E]">#{profile.rang}</span>
             <span className="flex items-center gap-2">
               <span className="h-2 flex-1 overflow-hidden rounded-full bg-[#FDE68A]">
-                <span className="block h-full w-[30%] rounded-full bg-[#F59E0B]" />
+                <span className="block h-full rounded-full bg-[#F59E0B]" style={{ width: `${Math.min(100, ligue.scoreHebdo)}%` }} />
               </span>
-              <span className="text-[13px] font-extrabold text-[#F59E0B]">Platine</span>
+              <span className="text-[13px] font-extrabold text-[#F59E0B]">{nextLigue ?? ligue.nomLigue}</span>
             </span>
           </span>
           <span className="flex h-8 w-8 items-center justify-center rounded-[10px] bg-[#FEF3C7]">
@@ -172,14 +182,25 @@ export default function ProfilPage() {
           </button>
         </div>
         <div className="mt-2.5 flex gap-2">
-          {TROPHIES.map((t) => (
-            <div key={t.label} className="flex flex-1 flex-col items-center gap-1.5 rounded-2xl border py-3.5" style={{ background: t.bg, borderColor: t.border }}>
-              <Icon name={t.icon} size={18} color={t.color} />
-              <span className="text-[13px] font-extrabold" style={{ color: t.color }}>
-                {t.label}
-              </span>
-            </div>
-          ))}
+          {TROPHIES.map((t) => {
+            const unlocked = profile.badgesDebloques.some((b) => b.toLowerCase().includes(t.label.toLowerCase().split(" ")[0]));
+            return (
+              <div
+                key={t.label}
+                className="flex flex-1 flex-col items-center gap-1.5 rounded-2xl border py-3.5"
+                style={{
+                  background: unlocked ? t.bg : colors.surfaceAlt,
+                  borderColor: unlocked ? t.border : colors.borderStrong,
+                  opacity: unlocked ? 1 : 0.45,
+                }}
+              >
+                <Icon name={unlocked ? t.icon : "lock"} size={18} color={unlocked ? t.color : colors.textMuted} />
+                <span className="text-[13px] font-extrabold" style={{ color: unlocked ? t.color : colors.textMuted }}>
+                  {t.label}
+                </span>
+              </div>
+            );
+          })}
           <div className="flex flex-1 flex-col items-center gap-1.5 rounded-2xl border py-3.5 opacity-45" style={{ background: colors.surfaceAlt, borderColor: colors.borderStrong }}>
             <Icon name="lock" size={18} color={colors.textMuted} />
             <span className="text-[13px] font-extrabold" style={{ color: colors.textMuted }}>

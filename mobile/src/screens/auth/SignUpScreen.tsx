@@ -14,8 +14,12 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import Icon from "../../components/Icon";
 import Logo from "../../components/Logo";
+import ParentPhoneField from "../../components/ParentPhoneField";
 import SocialAuth from "../../components/SocialAuth";
 import { CLASSES } from "../../data/mock";
+import { signInWithGoogle } from "../../lib/googleAuth";
+import { isValidTogoLocal, toTogoE164 } from "../../lib/phoneTogo";
+import { savePendingAuth } from "../../lib/pendingAuth";
 import { useLearnFlowStore } from "../../store/useLearnFlowStore";
 import { colors } from "../../theme/colors";
 import { useAppTheme } from "../../theme/useAppTheme";
@@ -34,10 +38,35 @@ export default function SignUpScreen({ navigation }: Props) {
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [classe, setClasse] = useState<ClasseAPC | "">("");
+  const [parentLocal, setParentLocal] = useState("");
   const [showPw, setShowPw] = useState(false);
   const [error, setError] = useState("");
+  const [busy, setBusy] = useState(false);
 
-  const submit = (provider: "email" | "google" | "apple" | "facebook" = "email") => {
+  const submit = async (provider: "email" | "google" | "apple" | "facebook" = "email") => {
+    if (provider === "google") {
+      setBusy(true);
+      const result = await signInWithGoogle();
+      if (result.error) {
+        setBusy(false);
+        setError(result.error);
+        return;
+      }
+      const { data } = await supabase.auth.getSession();
+      const nextEmail = data.session?.user.email ?? "";
+      setBusy(false);
+      if (!nextEmail) {
+        setError("Impossible de lire l’email Google.");
+        return;
+      }
+      await savePendingAuth({ email: nextEmail, flow: "google" });
+      navigation.navigate("OTP", { email: nextEmail, flow: "google" });
+      return;
+    }
+    if (provider !== "email") {
+      setError("Apple et Facebook arrivent bientôt. Utilise Google ou l’email.");
+      return;
+    }
     if (provider === "email") {
       if (!firstName.trim() || !lastName.trim()) {
         setError("Indique ton prénom et ton nom.");
@@ -59,6 +88,10 @@ export default function SignUpScreen({ navigation }: Props) {
         setError("Choisis ta classe.");
         return;
       }
+      if (!isValidTogoLocal(parentLocal)) {
+        setError("Indique le numéro parent togolais (8 chiffres après +228).");
+        return;
+      }
     }
     if (!classe) {
       if (provider !== "email") {
@@ -70,17 +103,30 @@ export default function SignUpScreen({ navigation }: Props) {
     }
     const chosenClasse = classe || "3eme";
     setError("");
+    setBusy(true);
     signUp({
       firstName: firstName.trim() || "Élève",
       lastName: lastName.trim() || provider,
-      email: email.trim() || `${provider}@learnflow.tg`,
+      email: email.trim(),
       classe: chosenClasse,
       provider,
+      parentPhone: isValidTogoLocal(parentLocal) ? toTogoE164(parentLocal) : undefined,
     });
-    if (isSupabaseConfigured && provider === "email") {
-      void supabase.auth.signUp({ email: email.trim(), password });
+    if (!isSupabaseConfigured) {
+      setBusy(false);
+      setError("Supabase n’est pas configuré.");
+      return;
     }
-    navigation.navigate("OTP");
+    await savePendingAuth({
+      email: email.trim().toLowerCase(),
+      flow: "signup",
+      firstName: firstName.trim(),
+      lastName: lastName.trim(),
+      classe: chosenClasse,
+      parentPhone: toTogoE164(parentLocal),
+      password,
+    });
+    navigation.navigate("OTP", { email: email.trim().toLowerCase(), flow: "signup" });
   };
 
   return (
@@ -172,15 +218,17 @@ export default function SignUpScreen({ navigation }: Props) {
             </View>
           </View>
 
+          <ParentPhoneField value={parentLocal} onChange={setParentLocal} />
+
           {error ? <Text style={styles.error}>{error}</Text> : null}
 
-          <Pressable onPress={() => submit("email")} style={styles.btnWrap}>
+          <Pressable onPress={() => void submit("email")} disabled={busy} style={styles.btnWrap}>
             <LinearGradient colors={[colors.primary, colors.primaryDark]} style={styles.btn}>
-              <Text style={[styles.btnText, { color: colors.onPrimary }]}>S'inscrire</Text>
+              <Text style={[styles.btnText, { color: colors.onPrimary }]}>{busy ? "Inscription…" : "S'inscrire"}</Text>
             </LinearGradient>
           </Pressable>
 
-          <SocialAuth mode="signup" onProvider={(p) => submit(p)} />
+          <SocialAuth mode="signup" onProvider={(p) => { void submit(p); }} />
         </ScrollView>
       </KeyboardAvoidingView>
       <Text style={styles.footer}>

@@ -8,8 +8,8 @@ import Icon from "@/components/Icon";
 import LeagueBadge from "@/components/LeagueBadge";
 import MesMatieres from "@/components/MesMatieres";
 import ModeWorkSelector from "@/components/ModeWorkSelector";
-import { WEEK_BARS } from "@/data/mock";
-import { continueLessonForClass, programmeForClass, subjectShortcutsForClass } from "@/data/programme";
+import { EMPTY_WEEK_CHART, LOCAL_TEST_PROFILE_IDS, WEEK_BARS } from "@/data/mock";
+import { continueLessonForLearner, programmeForLearner, subjectShortcutsForLearner } from "@/data/programme";
 import { cardsDueToday } from "@/engine/spacedRepetition";
 import { useLearnFlowStore } from "@/store/useLearnFlowStore";
 import { useAppTheme } from "@/theme/useAppTheme";
@@ -31,15 +31,18 @@ export default function AccueilPage() {
   const router = useRouter();
   const profile = useLearnFlowStore((s) => s.getActiveProfile());
   const ligue = useLearnFlowStore((s) => s.ligue);
+  const chapterProgress = useLearnFlowStore((s) => s.chapterProgress);
   const setPendingMode = useLearnFlowStore((s) => s.setPendingMode);
   const setCustomTools = useLearnFlowStore((s) => s.setCustomTools);
   const agendaSessions = useLearnFlowStore((s) => s.agendaSessions);
   const flashcards = useLearnFlowStore((s) => s.flashcards);
   const inbox = useLearnFlowStore((s) => s.inbox);
   const { colors, darkMode } = useAppTheme();
-  const weekXp = WEEK_BARS.reduce((a, b) => a + b.xp, 0);
-  const continueLesson = continueLessonForClass(profile.classe);
-  const shortcuts = subjectShortcutsForClass(profile.classe);
+  const isDemo = LOCAL_TEST_PROFILE_IDS.includes(String(profile.id));
+  const weekXp = isDemo ? WEEK_BARS.reduce((a, b) => a + b.xp, 0) : ligue.scoreHebdo;
+  const weekChart = isDemo ? WEEK_CHART : EMPTY_WEEK_CHART;
+  const continueLesson = continueLessonForLearner(profile.classe, profile.id, chapterProgress);
+  const shortcuts = subjectShortcutsForLearner(profile.classe, profile.id, chapterProgress);
   const [selectedMode, setSelectedMode] = useState<AppMode | null>(null);
   const dueCount = cardsDueToday(flashcards).length;
   const unread = inbox.filter((n) => !n.read).length;
@@ -47,7 +50,7 @@ export default function AccueilPage() {
   const todaySessions = agendaSessions
     .filter((s) => s.day === todayIdx)
     .sort((a, b) => a.hour * 60 + a.minute - (b.hour * 60 + b.minute));
-  const totalDone = programmeForClass(profile.classe).reduce(
+  const totalDone = programmeForLearner(profile.classe, profile.id, chapterProgress).reduce(
     (a, s) => a + s.themes.reduce((b, t) => b + t.lessonsDone, 0),
     0
   );
@@ -153,7 +156,7 @@ export default function AccueilPage() {
           <div className="mt-5 flex">
             {[
               [String(totalDone), "leçons", colors.textDark],
-              ["4.2h", "d'étude", colors.textDark],
+              [isDemo ? "4.2h" : "0h", "d'étude", colors.textDark],
               [`+${weekXp}`, "XP", "#F59E0B"],
             ].map(([v, l, c], i) => (
               <div key={l} className={`flex flex-1 flex-col items-center ${i < 2 ? "border-r" : ""}`} style={{ borderColor: darkMode ? colors.border : "#E5E7EB" }}>
@@ -165,14 +168,14 @@ export default function AccueilPage() {
             ))}
           </div>
           <div className="mt-5 flex h-[88px] items-end">
-            {WEEK_CHART.map((b, i) => (
+            {weekChart.map((b, i) => (
               <div key={`${b.label}-${i}`} className="flex flex-1 flex-col items-center justify-end">
                 <div className="w-[35%] max-w-[22px] rounded-t-[11px]" style={{ height: b.height, background: b.color }} />
               </div>
             ))}
           </div>
           <div className="mt-2 flex">
-            {WEEK_CHART.map((b, i) => (
+            {weekChart.map((b, i) => (
               <div key={`lbl-${i}`} className="flex-1 text-center text-[13px]" style={{ fontWeight: b.today ? 800 : 600, color: b.today ? "#1677FF" : "#9CA3AF" }}>
                 {b.label}
               </div>
@@ -196,7 +199,7 @@ export default function AccueilPage() {
             <p className="mt-0.5 text-[15px] font-semibold text-[#D97706]">#{ligue.rangActuel}</p>
             {nextLigue ? (
               <div className="mt-2.5 h-2 overflow-hidden rounded-full bg-[#FDE68A]">
-                <div className="h-full w-[30%] rounded-full bg-[#F59E0B]" />
+                <div className="h-full rounded-full bg-[#F59E0B]" style={{ width: `${Math.min(100, ligue.scoreHebdo)}%` }} />
               </div>
             ) : null}
           </div>

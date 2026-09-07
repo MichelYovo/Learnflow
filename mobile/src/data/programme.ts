@@ -1,7 +1,8 @@
-import type { ProgrammeChapter, ProgrammeSubject, ProgrammeTheme, SubjectShortcut } from "../types/learnflow";
+import type { ChapterProgress, ProgrammeChapter, ProgrammeSubject, ProgrammeTheme, SubjectShortcut } from "../types/learnflow";
+import { isCloudProfileId, LOCAL_TEST_PROFILE_IDS } from "./mock";
 import { PROGRAMME_3EME } from "./programme3eme";
 import { PROGRAMME_TLE } from "./programmeTle";
-import { SUBJECT_STYLE, type SubjectId } from "./programmeBuild";
+import { packSubject, packTheme, SUBJECT_STYLE, type SubjectId } from "./programmeBuild";
 import { chapterHas3dImage } from "./schemas3d";
 
 const SHORTCUT_ICONS: Record<string, string> = {
@@ -20,6 +21,66 @@ export function isTleClass(classe?: string): boolean {
 
 export function programmeForClass(classe?: string): ProgrammeSubject[] {
   return isTleClass(classe) ? PROGRAMME_TLE : PROGRAMME_3EME;
+}
+
+function isDemoProfile(profileId?: string): boolean {
+  return !!profileId && LOCAL_TEST_PROFILE_IDS.includes(String(profileId)) && !isCloudProfileId(profileId);
+}
+
+/** Tous les cours à 0 %, première leçon ouverte. */
+export function programmeStartingFresh(subjects: ProgrammeSubject[]): ProgrammeSubject[] {
+  let opened = false;
+  return subjects.map((subject) => {
+    const themes = subject.themes.map((theme) => {
+      const chapters = theme.chapters.map((chapter) => ({
+        ...chapter,
+        lessons: chapter.lessons.map((lesson) => {
+          if (!opened) {
+            opened = true;
+            return { ...lesson, status: "current" as const };
+          }
+          return { ...lesson, status: "locked" as const };
+        }),
+      }));
+      return packTheme(theme.id, theme.title, chapters);
+    });
+    return packSubject(subject.id as SubjectId, themes);
+  });
+}
+
+export function applyChapterProgress(
+  subjects: ProgrammeSubject[],
+  chapterProgress: Record<string, ChapterProgress> = {}
+): ProgrammeSubject[] {
+  return subjects.map((subject) => {
+    const themes = subject.themes.map((theme) => {
+      const chapters = theme.chapters.map((chapter) => {
+        const p = chapterProgress[chapter.id];
+        if (!p || p.assimilationScore == null) return chapter;
+        const done = p.assimilationPerfect || p.assimilationScore >= 50;
+        if (!done) return chapter;
+        return {
+          ...chapter,
+          lessons: chapter.lessons.map((lesson, i, arr) => ({
+            ...lesson,
+            status: i < arr.length - 1 ? ("done" as const) : ("current" as const),
+          })),
+        };
+      });
+      return packTheme(theme.id, theme.title, chapters);
+    });
+    return packSubject(subject.id as SubjectId, themes);
+  });
+}
+
+export function programmeForLearner(
+  classe?: string,
+  profileId?: string,
+  chapterProgress: Record<string, ChapterProgress> = {}
+): ProgrammeSubject[] {
+  const base = programmeForClass(classe);
+  const source = isDemoProfile(profileId) ? base : programmeStartingFresh(base);
+  return applyChapterProgress(source, chapterProgress);
 }
 
 /** Programme par défaut (3ème) — compat anciens imports. */
@@ -64,32 +125,68 @@ export function continueLessonForClass(classe?: string): ContinueLesson {
     return {
       chapterId: "neurones",
       title: "Fonctionnement des neurones",
-      lessonLabel: "SVT · Tle D · Leçon 2 / 4",
-      progress: 45,
+      lessonLabel: "SVT · Tle D · À commencer",
+      progress: 0,
     };
   }
   return {
     chapterId: "circulation",
     title: "La circulation sanguine",
-    lessonLabel: "SVT · 3ème · Leçon 1 / 3",
-    progress: 35,
+    lessonLabel: "SVT · 3ème · À commencer",
+    progress: 0,
   };
 }
 
-export function firstOpenChapterId(classe?: string): string {
-  const programme = programmeForClass(classe);
+export function continueLessonForLearner(
+  classe?: string,
+  profileId?: string,
+  chapterProgress: Record<string, ChapterProgress> = {}
+): ContinueLesson {
+  const programme = programmeForLearner(classe, profileId, chapterProgress);
   for (const subject of programme) {
     for (const theme of subject.themes) {
       for (const chapter of theme.chapters) {
-        if (chapter.lessons.some((l) => l.status === "current")) return chapter.id;
+        const current = chapter.lessons.find((l) => l.status === "current");
+        if (!current) continue;
+        const done = chapter.lessons.filter((l) => l.status === "done").length;
+        const total = chapter.lessons.length || 1;
+        return {
+          chapterId: chapter.id,
+          title: chapter.title,
+          lessonLabel: `${subject.name} · ${done} / ${total}`,
+          progress: Math.round((done / total) * 100),
+        };
       }
     }
   }
-  return continueLessonForClass(classe).chapterId;
+  const fallback = continueLessonForClass(classe);
+  const first = programme[0]?.themes[0]?.chapters[0];
+  return {
+    chapterId: first?.id ?? fallback.chapterId,
+    title: first?.title ?? fallback.title,
+    lessonLabel: "À commencer",
+    progress: 0,
+  };
+}
+
+export function firstOpenChapterId(
+  classe?: string,
+  profileId?: string,
+  chapterProgress: Record<string, ChapterProgress> = {}
+): string {
+  return continueLessonForLearner(classe, profileId, chapterProgress).chapterId;
 }
 
 export function subjectShortcutsForClass(classe?: string): SubjectShortcut[] {
-  return programmeForClass(classe).map((s) => ({
+  return subjectShortcutsForLearner(classe);
+}
+
+export function subjectShortcutsForLearner(
+  classe?: string,
+  profileId?: string,
+  chapterProgress: Record<string, ChapterProgress> = {}
+): SubjectShortcut[] {
+  return programmeForLearner(classe, profileId, chapterProgress).map((s) => ({
     id: s.id,
     name: s.id === "maths" ? "Maths" : s.id === "hg" ? "H-G" : s.name,
     fullName: s.name,

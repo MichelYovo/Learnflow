@@ -38,6 +38,7 @@ export interface ProfileEleve {
   bg?: string;
   avatarId?: string;
   hasPin?: boolean;
+  parentPhone?: string;
 }
 
 export type StudyModeId = "libre" | "guide" | "cramming" | "blitz";

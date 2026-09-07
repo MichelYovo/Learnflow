@@ -10,6 +10,8 @@ export type AdminStudent = {
   leagueTier: string;
   color: string;
   bg: string;
+  platform?: "web" | "mobile" | string;
+  parentPhone?: string;
 };
 
 export const SEED_STUDENTS: AdminStudent[] = [

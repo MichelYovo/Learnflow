@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { CLASSES, classLabel, initialsFromName } from "@/lib/brand";
+import { maskTogoPhone } from "@/lib/phoneTogo";
 import type { AdminStudent } from "@/data/seed";
 
 export default function StudentsTable({ students }: { students: AdminStudent[] }) {
@@ -45,6 +46,8 @@ export default function StudentsTable({ students }: { students: AdminStudent[] }
             <tr>
               <th className="px-4 py-3">Élève</th>
               <th className="px-4 py-3">Classe</th>
+              <th className="px-4 py-3">App</th>
+              <th className="px-4 py-3">Parent</th>
               <th className="px-4 py-3">Ligue</th>
               <th className="px-4 py-3">XP</th>
               <th className="px-4 py-3">Série</th>
@@ -69,6 +72,22 @@ export default function StudentsTable({ students }: { students: AdminStudent[] }
                   </div>
                 </td>
                 <td className="px-4 py-3 font-bold text-[#475569]">{classLabel(s.classe)}</td>
+                <td className="px-4 py-3">
+                  {s.platform ? (
+                    <span
+                      className={`rounded-full px-2 py-0.5 text-[10px] font-extrabold uppercase ${
+                        s.platform === "mobile" ? "bg-[#ECFDF5] text-[#059669]" : "bg-[#E6F4FF] text-[#1677FF]"
+                      }`}
+                    >
+                      {s.platform}
+                    </span>
+                  ) : (
+                    <span className="text-xs font-semibold text-[#A8A29E]">—</span>
+                  )}
+                </td>
+                <td className="px-4 py-3 font-bold text-[#475569]">
+                  <ParentCell phone={s.parentPhone} />
+                </td>
                 <td className="px-4 py-3 font-bold text-[#1C1917]">{s.leagueTier}</td>
                 <td className="px-4 py-3 font-black text-[#1677FF]">{s.xpTotale.toLocaleString("fr-FR")}</td>
                 <td className="px-4 py-3 font-bold">{s.streak} j</td>
@@ -77,7 +96,7 @@ export default function StudentsTable({ students }: { students: AdminStudent[] }
             ))}
             {rows.length === 0 ? (
               <tr>
-                <td colSpan={6} className="px-4 py-10 text-center font-semibold text-[#A8A29E]">
+                <td colSpan={8} className="px-4 py-10 text-center font-semibold text-[#A8A29E]">
                   Aucun élève pour ce filtre.
                 </td>
               </tr>
@@ -86,5 +105,15 @@ export default function StudentsTable({ students }: { students: AdminStudent[] }
         </table>
       </div>
     </div>
+  );
+}
+
+function ParentCell({ phone }: { phone?: string }) {
+  const [open, setOpen] = useState(false);
+  if (!phone) return <span className="text-xs font-semibold text-[#A8A29E]">—</span>;
+  return (
+    <button type="button" onClick={() => setOpen((v) => !v)} className="text-left text-xs font-extrabold text-[#1677FF]">
+      {open ? phone : maskTogoPhone(phone)}
+    </button>
   );
 }

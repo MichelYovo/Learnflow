@@ -39,6 +39,7 @@ export type AuthStackParamList = {
   Profiles: undefined;
   SignUp: { requirePin?: boolean } | undefined;
   Login: undefined;
-  OTP: undefined;
+  OTP: { email?: string; flow?: "login" | "signup" | "google" } | undefined;
   Success: undefined;
+  CompleteProfile: undefined;
 };

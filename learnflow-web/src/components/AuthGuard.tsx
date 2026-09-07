@@ -6,7 +6,17 @@ import AnimatedSplash from "./AnimatedSplash";
 import { useLearnFlowStore } from "@/store/useLearnFlowStore";
 import { useHydrated } from "./useHydrated";
 
-const AUTH_PATHS = ["/onboarding", "/splash", "/profiles", "/login", "/signup", "/otp", "/success"];
+const AUTH_PATHS = [
+  "/onboarding",
+  "/splash",
+  "/profiles",
+  "/login",
+  "/signup",
+  "/otp",
+  "/success",
+  "/complete-profile",
+  "/auth/continue",
+];
 
 export default function AuthGuard({ children }: { children: React.ReactNode }) {
   const ready = useHydrated();
@@ -18,9 +28,10 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!ready) return;
-    const isAuthRoute = AUTH_PATHS.some((p) => pathname === p);
+    const isAuthRoute = AUTH_PATHS.some((p) => pathname === p) || pathname.startsWith("/auth/");
     const isFocus = pathname === "/focus";
     const isApp = pathname.startsWith("/app");
+    const isComplete = pathname === "/complete-profile";
 
     if (!onboardingCompleted && pathname !== "/onboarding") {
       router.replace("/onboarding");
@@ -34,7 +45,7 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
       router.replace("/focus");
       return;
     }
-    if (isAuthenticated && !focusPromptPending && (isAuthRoute || isFocus || pathname === "/")) {
+    if (isAuthenticated && !focusPromptPending && !isComplete && (isAuthRoute || isFocus || pathname === "/")) {
       router.replace("/app");
     }
   }, [ready, pathname, onboardingCompleted, isAuthenticated, focusPromptPending, router]);

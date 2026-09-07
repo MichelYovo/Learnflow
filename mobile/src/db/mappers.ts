@@ -1,4 +1,4 @@
-import { classLabel, PROFILE_COLORS, PROFILES_DEMO } from "../data/mock";
+import { classLabel, isCloudProfileId, LOCAL_TEST_PROFILE_IDS, PROFILE_COLORS, PROFILES_DEMO } from "../data/mock";
 import { defaultAvatarId, resolveAvatarId } from "../data/avatars";
 import { isPinConfigured } from "../lib/pin";
 import type { LocalProfile } from "../types/database";
@@ -94,9 +94,13 @@ export async function seedDemoProfilesIfEmpty(): Promise<LocalProfile[]> {
   return loadProfiles();
 }
 
-/** Retire les profils locaux hors Kofi / Ama (phase de test). */
+/** Retire les profils locaux hors Kofi / Ama, conserve les comptes cloud (UUID). */
 export async function pruneExtraLocalProfiles(): Promise<void> {
-  await deleteProfilesNotIn(PROFILES_DEMO.map((d) => String(d.id)));
+  const rows = await loadProfiles();
+  const keep = rows
+    .filter((row) => LOCAL_TEST_PROFILE_IDS.includes(row.id) || isCloudProfileId(row.id))
+    .map((row) => row.id);
+  await deleteProfilesNotIn(keep.length > 0 ? keep : LOCAL_TEST_PROFILE_IDS);
 }
 
 /** Aligne les PIN des comptes démo déjà présents (ex. Ama encore en 5678). */

@@ -6,6 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 
 const LINKS = [
   { href: "/dashboard", label: "Vue d’ensemble", icon: OverviewIcon },
+  { href: "/dashboard/activite", label: "Activité", icon: ActivityIcon },
   { href: "/dashboard/eleves", label: "Élèves", icon: StudentsIcon },
   { href: "/dashboard/ligues", label: "Ligues", icon: LeagueIcon },
   { href: "/dashboard/programme", label: "Programme APC", icon: BookIcon },
@@ -32,7 +33,7 @@ export default function Sidebar() {
       <p className="px-5 pt-5 text-[11px] font-extrabold uppercase tracking-widest text-[#A8A29E]">Administration</p>
       <nav className="mt-2 flex flex-1 flex-col gap-1 px-3">
         {LINKS.map((link) => {
-          const active = pathname === link.href;
+          const active = pathname === link.href || (link.href !== "/dashboard" && pathname.startsWith(link.href));
           const Icon = link.icon;
           return (
             <Link
@@ -69,6 +70,14 @@ function OverviewIcon({ active }: { active: boolean }) {
       <rect x="13" y="3" width="8" height="5" rx="2" stroke={active ? "#1677FF" : "#94A3B8"} strokeWidth="1.8" />
       <rect x="13" y="10" width="8" height="11" rx="2" stroke={active ? "#1677FF" : "#94A3B8"} strokeWidth="1.8" />
       <rect x="3" y="13" width="8" height="8" rx="2" stroke={active ? "#1677FF" : "#94A3B8"} strokeWidth="1.8" />
+    </svg>
+  );
+}
+
+function ActivityIcon({ active }: { active: boolean }) {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
+      <path d="M4 14l4-4 3 3 6-7 3 3" stroke={active ? "#1677FF" : "#94A3B8"} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }

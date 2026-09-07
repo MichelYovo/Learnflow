@@ -5,6 +5,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import CorrectBurst from "../../components/CorrectBurst";
 import Icon from "../../components/Icon";
+import QuizPlay from "../../components/quiz/QuizPlay";
 import Spira from "../../components/Spira";
 import { questionsForChapter } from "../../data/modeContent";
 import { playSfx, preloadSfx } from "../../lib/sfx";
@@ -28,7 +29,6 @@ export default function AssimilationQuizScreen({ navigation, route }: Props) {
   const [current, setCurrent] = useState(0);
   const [selected, setSelected] = useState<number | null>(null);
   const [score, setScore] = useState(0);
-  const [wrong, setWrong] = useState(false);
   const [done, setDone] = useState(false);
   const [result, setResult] = useState<{ xp: number; unlocked: boolean; challenger: boolean } | null>(null);
   const [burstKey, setBurstKey] = useState(0);
@@ -39,7 +39,9 @@ export default function AssimilationQuizScreen({ navigation, route }: Props) {
     preloadSfx();
   }, []);
 
-  const advance = (nextScore: number) => {
+  const advance = () => {
+    const nextScore = score + (selected === q?.indexReponseCorrecte ? 1 : 0);
+    setScore(nextScore);
     if (current + 1 >= questions.length) {
       const res = recordAssimilation(chapterId, nextScore, questions.length, firstTryRef.current);
       setResult(res);
@@ -47,7 +49,6 @@ export default function AssimilationQuizScreen({ navigation, route }: Props) {
     } else {
       setCurrent((c) => c + 1);
       setSelected(null);
-      setWrong(false);
     }
   };
 
@@ -57,13 +58,9 @@ export default function AssimilationQuizScreen({ navigation, route }: Props) {
     if (i === q.indexReponseCorrecte) {
       playSfx("correct");
       setBurstKey((k) => k + 1);
-      const next = score + 1;
-      setScore(next);
-      setTimeout(() => advance(next), 700);
     } else {
       playSfx("wrong");
       firstTryRef.current = false;
-      setWrong(true);
       missedRef.current = [...missedRef.current, q];
     }
   };
@@ -97,7 +94,6 @@ export default function AssimilationQuizScreen({ navigation, route }: Props) {
                   setCurrent(0);
                   setScore(0);
                   setSelected(null);
-                  setWrong(false);
                   setResult(null);
                 }}
               >
@@ -175,7 +171,6 @@ export default function AssimilationQuizScreen({ navigation, route }: Props) {
                 setCurrent(0);
                 setScore(0);
                 setSelected(null);
-                setWrong(false);
                 setResult(null);
               }}
             >
@@ -188,59 +183,23 @@ export default function AssimilationQuizScreen({ navigation, route }: Props) {
   }
 
   return (
-    <SafeAreaView style={styles.safe}>
-      <View style={styles.top}>
-        <Pressable onPress={() => navigation.goBack()}>
-          <Icon name="arrow-left" size={20} color={colors.textDark} />
-        </Pressable>
-        <Text style={styles.progress}>
-          {current + 1}/{questions.length}
-        </Text>
-        <Spira scene="quiz.play" size={36} />
-      </View>
-      <View style={styles.track}>
-        <View style={[styles.fill, { width: `${((current + 1) / questions.length) * 100}%` }]} />
-      </View>
-
-      <Text style={styles.q}>{q.enonceQuestion}</Text>
-      <View style={[styles.options, wrong && styles.optionsWrong]}>
-        {q.optionsProposees.map((opt, i) => {
-          const isSel = selected === i;
-          const ok = isSel && i === q.indexReponseCorrecte;
-          const ko = isSel && i !== q.indexReponseCorrecte;
-          return (
-            <Pressable
-              key={i}
-                onPressIn={() => pick(i)}
-                onPress={() => pick(i)}
-              style={[
-                styles.opt,
-                ok && { borderColor: colors.secondary, backgroundColor: colors.svtBg, transform: [{ scale: 1.02 }] },
-                ko && { borderColor: colors.danger, backgroundColor: colors.angBg },
-              ]}
-            >
-              <Text style={styles.optText}>{opt}</Text>
-            </Pressable>
-          );
-        })}
-
-        {wrong ? (
-          <View style={styles.feedback}>
-            <Spira scene="quiz.wrong" size={52} />
-            <Text style={styles.feedbackTitle}>Pas tout à fait</Text>
-            <Text style={styles.muted}>{q.explicationPedagogique}</Text>
-            <Pressable
-              style={styles.linkBtn}
-              onPress={() => navigation.navigate("Course", { chapterId })}
-            >
-              <Text style={styles.linkText}>Revoir ce point → {q.ancreCours}</Text>
-            </Pressable>
-            <Pressable style={styles.primary} onPress={() => advance(score)}>
-              <Text style={styles.primaryText}>Continuer</Text>
-            </Pressable>
-          </View>
-        ) : null}
-      </View>
+    <SafeAreaView style={styles.safe} edges={["top"]}>
+      <QuizPlay
+        kicker={`Assimilation${q.matiere ? ` · ${q.matiere}` : ""}`}
+        current={current}
+        total={questions.length}
+        question={q.enonceQuestion}
+        options={q.optionsProposees}
+        correctIndex={q.indexReponseCorrecte}
+        selected={selected}
+        onPick={pick}
+        onBack={() => navigation.goBack()}
+        onContinue={advance}
+        explanation={q.explicationPedagogique}
+        reviewLabel={q.ancreCours ? `Revoir ce point → ${q.ancreCours}` : "Revoir ce point → cours"}
+        onReview={() => navigation.navigate("Course", { chapterId })}
+        headerRight={<Spira scene="quiz.play" size={36} />}
+      />
       <CorrectBurst trigger={burstKey} />
     </SafeAreaView>
   );
@@ -248,56 +207,7 @@ export default function AssimilationQuizScreen({ navigation, route }: Props) {
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.surface },
-  top: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", padding: 16 },
-  progress: { fontWeight: "800", color: colors.primary },
-  track: { height: 4, backgroundColor: colors.border, marginHorizontal: 16 },
-  fill: { height: 4, backgroundColor: colors.primary },
-  q: {
-    fontSize: 17,
-    fontWeight: "800",
-    color: colors.textDark,
-    lineHeight: 24,
-    paddingHorizontal: 20,
-    paddingTop: 8,
-    paddingBottom: 0,
-  },
-  options: {
-    flex: 1,
-    justifyContent: "center",
-    paddingHorizontal: 20,
-    paddingTop: 36,
-    paddingBottom: 16,
-    gap: 16,
-  },
-  optionsWrong: {
-    justifyContent: "flex-start",
-    paddingTop: 16,
-    paddingBottom: 16,
-  },
-  opt: {
-    backgroundColor: colors.white,
-    borderWidth: 2,
-    borderColor: colors.border,
-    borderRadius: 16,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-  },
-  optText: { fontWeight: "700", color: colors.textDark },
-  feedback: {
-    gap: 8,
-    backgroundColor: colors.white,
-    borderRadius: 16,
-    padding: 14,
-    borderWidth: 2,
-    borderColor: colors.angBorder,
-    marginTop: 0,
-    flex: 1,
-    justifyContent: "space-between",
-  },
-  feedbackTitle: { fontWeight: "800", color: colors.danger },
   muted: { color: colors.textSecondary, fontSize: 13, lineHeight: 18 },
-  linkBtn: { paddingVertical: 4 },
-  linkText: { color: colors.primary, fontWeight: "800", fontSize: 13 },
   primary: { backgroundColor: colors.primary, borderRadius: 14, paddingVertical: 14, alignItems: "center", marginTop: 4 },
   primaryText: { color: colors.white, fontWeight: "800" },
   secondary: { borderWidth: 2, borderColor: colors.border, borderRadius: 14, paddingVertical: 14, alignItems: "center", backgroundColor: colors.white },

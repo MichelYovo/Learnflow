@@ -12,7 +12,7 @@ const SRC: Record<string, string> = {
 };
 
 export default function LeagueBadge({ nom, size = 56 }: { nom: LigueNom | string; size?: number }) {
-  const meta = LEAGUE_TIERS.find((t) => t.id === nom) ?? LEAGUE_TIERS[2];
+  const meta = LEAGUE_TIERS.find((t) => t.id === nom) ?? LEAGUE_TIERS[0];
   return (
     // eslint-disable-next-line @next/next/no-img-element
     <img src={SRC[meta.badgeKey]} alt={meta.label} width={size} height={size} className="relative z-[1] object-contain" />
@@ -35,7 +35,7 @@ export function LeagueBadgeCircle({
   selected?: boolean;
   dimmed?: boolean;
 }) {
-  const meta = LEAGUE_TIERS.find((t) => t.id === nom) ?? LEAGUE_TIERS[2];
+  const meta = LEAGUE_TIERS.find((t) => t.id === nom) ?? LEAGUE_TIERS[0];
   const frame = Math.round(size * 1.36);
   return (
     <span

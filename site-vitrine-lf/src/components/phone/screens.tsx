@@ -83,37 +83,50 @@ export function QuizMock() {
   return (
     <div className="flex h-full flex-col bg-[#FAFAF9]">
       <StatusBar />
-      <div className="flex items-center justify-between px-4 pb-2">
-        <span className="text-[20px] text-[#1C1917]">←</span>
-        <span className="text-[15px] font-extrabold text-[#1677FF]">7/10</span>
-        <img src="/spira/confiant.png" alt="" className="h-9 w-9 object-contain" />
+      <div className="flex items-center gap-2 px-4 pb-2">
+        <span className="flex h-8 w-8 items-center justify-center rounded-full border border-[#F0EFEE] bg-white text-[16px] text-[#1C1917]">
+          ×
+        </span>
+        <div className="h-2.5 min-w-0 flex-1 overflow-hidden rounded-full bg-[#F0EFEE]">
+          <div className="h-2.5 w-[70%] rounded-full bg-[#1677FF]" />
+        </div>
+        <span className="text-[13px] font-extrabold text-[#1677FF]">7/10</span>
+        <img src="/spira/confiant.png" alt="" className="h-8 w-8 object-contain" />
       </div>
-      <div className="mx-4 h-1 rounded-full bg-[#F0EFEE]">
-        <div className="h-1 w-[70%] rounded-full bg-[#1677FF]" />
-      </div>
-      <div className="flex-1 space-y-4 px-5 pt-5">
+      <div className="flex-1 space-y-3 px-5 pt-2">
         <p className="text-[11px] font-extrabold uppercase tracking-wider text-[#A8A29E]">Assimilation · SVT</p>
         <p className="text-[18px] font-extrabold leading-snug text-[#1C1917]">
           Le neurone transmet l’influx nerveux grâce à…
         </p>
         {[
-          { t: "La synapse chimique", ok: true },
-          { t: "La paroi des alvéoles", ok: false },
-          { t: "Le globule rouge", ok: false },
-          { t: "La bile du foie", ok: false },
+          { t: "La synapse chimique", ok: true, letter: "A" },
+          { t: "La paroi des alvéoles", ok: false, letter: "B" },
+          { t: "Le globule rouge", ok: false, letter: "C" },
+          { t: "La bile du foie", ok: false, letter: "D" },
         ].map((o) => (
           <div
             key={o.t}
-            className="rounded-2xl border-2 px-4 py-4 text-[15px] font-bold"
+            className="flex items-center gap-3 rounded-[18px] border-2 px-3 py-3 text-[14px] font-bold"
             style={
               o.ok
                 ? { borderColor: "#10B981", background: "#ECFDF5", color: "#065F46" }
-                : { borderColor: "#F0EFEE", background: "#fff", color: "#1C1917" }
+                : { borderColor: "#E7E5E4", background: "#fff", color: "#1C1917", opacity: 0.45 }
             }
           >
+            <span
+              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[12px] font-black"
+              style={o.ok ? { background: "#10B981", color: "#fff" } : { background: "#F5F5F4", color: "#64748B" }}
+            >
+              {o.ok ? "✓" : o.letter}
+            </span>
             {o.t}
           </div>
         ))}
+      </div>
+      <div className="border-t-2 border-[#A7F3D0] bg-[#ECFDF5] px-5 py-3">
+        <p className="text-[15px] font-extrabold text-[#10B981]">C’est ça !</p>
+        <p className="mt-0.5 text-[12px] font-medium leading-4 text-[#64748B]">L’influx passe d’un neurone à l’autre au niveau de la synapse.</p>
+        <div className="mt-2 rounded-2xl bg-[#10B981] py-2.5 text-center text-[14px] font-extrabold text-white">Continuer</div>
       </div>
     </div>
   );

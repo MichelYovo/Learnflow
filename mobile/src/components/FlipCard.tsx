@@ -58,6 +58,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     backfaceVisibility: "hidden",
   },
-  back: { ...StyleSheet.absoluteFillObject },
+  back: { ...StyleSheet.absoluteFill },
   text: { fontSize: 24, fontWeight: "800", textAlign: "center", lineHeight: 32 },
 });

@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, Suspense } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import Icon from "@/components/Icon";
+import QuizPlay from "@/components/quiz/QuizPlay";
 import Spira from "@/components/Spira";
 import { questionsForChapter } from "@/data/modeContent";
 import { playSfx, preloadSfx } from "@/lib/sfx";
@@ -24,7 +25,6 @@ function QuizInner() {
   const [current, setCurrent] = useState(0);
   const [selected, setSelected] = useState<number | null>(null);
   const [score, setScore] = useState(0);
-  const [wrong, setWrong] = useState(false);
   const [done, setDone] = useState(false);
   const [result, setResult] = useState<{ xp: number; unlocked: boolean; challenger: boolean } | null>(null);
   const q = queue[current];
@@ -33,7 +33,9 @@ function QuizInner() {
     preloadSfx();
   }, []);
 
-  const advance = (nextScore: number) => {
+  const advance = () => {
+    const nextScore = score + (selected === q?.indexReponseCorrecte ? 1 : 0);
+    setScore(nextScore);
     if (current + 1 >= queue.length) {
       const res = recordAssimilation(chapterId, nextScore, queue.length, firstTryRef.current);
       setResult(res);
@@ -41,7 +43,6 @@ function QuizInner() {
     } else {
       setCurrent((c) => c + 1);
       setSelected(null);
-      setWrong(false);
     }
   };
 
@@ -50,13 +51,9 @@ function QuizInner() {
     setSelected(i);
     if (i === q.indexReponseCorrecte) {
       playSfx("correct");
-      const next = score + 1;
-      setScore(next);
-      setTimeout(() => advance(next), 700);
     } else {
       playSfx("wrong");
       firstTryRef.current = false;
-      setWrong(true);
       missedRef.current = [...missedRef.current, q];
     }
   };
@@ -90,7 +87,6 @@ function QuizInner() {
                   setCurrent(0);
                   setScore(0);
                   setSelected(null);
-                  setWrong(false);
                   setResult(null);
                 }}
                 className="w-full rounded-[14px] py-3.5 text-[15px] font-extrabold text-white"
@@ -190,7 +186,6 @@ function QuizInner() {
                 setCurrent(0);
                 setScore(0);
                 setSelected(null);
-                setWrong(false);
                 setResult(null);
               }}
               className="w-full rounded-[14px] border-2 py-3.5 text-[15px] font-extrabold"
@@ -207,89 +202,22 @@ function QuizInner() {
   if (!q) return null;
 
   return (
-    <div className="mx-auto flex min-h-[calc(100dvh-5.5rem)] max-w-2xl flex-col lg:min-h-dvh">
-      <div className="flex items-center justify-between px-4 py-4">
-        <button type="button" onClick={() => router.back()} className="flex h-10 w-10 items-center justify-center" aria-label="Retour">
-          <Icon name="arrow-left" size={20} color={colors.textDark} />
-        </button>
-        <span className="text-sm font-extrabold" style={{ color: colors.primary }}>
-          {current + 1}/{queue.length}
-        </span>
-        <Spira scene="quiz.play" size={36} message="" />
-      </div>
-      <div className="mx-4 h-1 overflow-hidden" style={{ background: colors.border }}>
-        <div className="h-full" style={{ width: `${((current + 1) / queue.length) * 100}%`, background: colors.primary }} />
-      </div>
-
-      <h1 className="shrink-0 px-5 pt-2 text-[17px] font-extrabold leading-6 sm:text-[18px] sm:leading-7">
-        {q.enonceQuestion}
-      </h1>
-
-      <div
-        className={`flex min-h-0 flex-1 flex-col overflow-y-auto px-5 ${
-          wrong ? "justify-start pt-4" : "justify-center py-6"
-        }`}
-      >
-        <div className="mt-5 flex shrink-0 flex-col gap-4 sm:gap-5">
-          {q.optionsProposees.map((opt, i) => {
-            const on = selected === i;
-            const ok = on && i === q.indexReponseCorrecte;
-            const ko = on && i !== q.indexReponseCorrecte;
-            return (
-              <button
-                key={opt}
-                type="button"
-                onPointerDown={(e) => {
-                  if (e.button !== 0) return;
-                  pick(i);
-                }}
-                onClick={() => pick(i)}
-                className="w-full shrink-0 rounded-2xl border-2 px-3 py-2 text-left font-bold"
-                style={{
-                  background: ok ? colors.svtBg : ko ? colors.angBg : colors.white,
-                  borderColor: ok ? colors.secondary : ko ? colors.danger : colors.border,
-                  transform: ok ? "scale(1.02)" : undefined,
-                }}
-              >
-                {opt}
-              </button>
-            );
-          })}
-        </div>
-
-        {wrong && selected !== null ? (
-          <div className="mt-4 flex min-h-0 flex-1 flex-col pb-5">
-            <div className="flex flex-1 flex-col justify-between space-y-2 rounded-2xl border-2 p-3.5" style={{ background: colors.white, borderColor: colors.angBorder }}>
-              <div className="space-y-2">
-                <Spira scene="quiz.wrong" size={52} message="" />
-                <p className="font-extrabold" style={{ color: colors.danger }}>
-                  Pas tout à fait
-                </p>
-                <p className="text-[13px] font-medium leading-[18px]" style={{ color: colors.textSecondary }}>
-                  {q.explicationPedagogique}
-                </p>
-                <button
-                  type="button"
-                  onClick={() => router.push(`/app/cours/${chapterId}`)}
-                  className="text-[13px] font-extrabold"
-                  style={{ color: colors.primary }}
-                >
-                  Revoir ce point → {q.ancreCours ?? "cours"}
-                </button>
-              </div>
-              <button
-                type="button"
-                onClick={() => advance(score)}
-                className="w-full rounded-[14px] py-3.5 text-[15px] font-extrabold text-white"
-                style={{ background: colors.primary }}
-              >
-                Continuer
-              </button>
-            </div>
-          </div>
-        ) : null}
-      </div>
-    </div>
+    <QuizPlay
+      kicker={`Assimilation${q.matiere ? ` · ${q.matiere}` : ""}`}
+      current={current}
+      total={queue.length}
+      question={q.enonceQuestion}
+      options={q.optionsProposees}
+      correctIndex={q.indexReponseCorrecte}
+      selected={selected}
+      onPick={pick}
+      onBack={() => router.back()}
+      onContinue={advance}
+      explanation={q.explicationPedagogique}
+      reviewLabel={q.ancreCours ? `Revoir ce point → ${q.ancreCours}` : "Revoir ce point → cours"}
+      onReview={() => router.push(`/app/cours/${chapterId}`)}
+      headerRight={<Spira scene="quiz.play" size={36} message="" />}
+    />
   );
 }
 

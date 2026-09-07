@@ -7,7 +7,7 @@ import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import Icon from "../../components/Icon";
 import Spira from "../../components/Spira";
 import { CoursesSkeleton } from "../../components/ui";
-import { programmeForClass } from "../../data/programme";
+import { programmeForLearner } from "../../data/programme";
 import { useLearnFlowStore } from "../../store/useLearnFlowStore";
 import { colors } from "../../theme/colors";
 import { useAppTheme } from "../../theme/useAppTheme";
@@ -25,8 +25,9 @@ export default function ApprendreScreen() {
   const nav = useNavigation<Nav>();
   const route = useRoute<CoursRoute>();
   const { colors } = useAppTheme();
-  const classe = useLearnFlowStore((s) => s.getActiveProfile()?.classe);
-  const programme = programmeForClass(classe);
+  const profile = useLearnFlowStore((s) => s.getActiveProfile());
+  const chapterProgress = useLearnFlowStore((s) => s.chapterProgress);
+  const programme = programmeForLearner(profile?.classe, profile?.id, chapterProgress);
   const [level, setLevel] = useState<0 | 1 | 2 | 3>(0);
   const [subject, setSubject] = useState<ProgrammeSubject | null>(null);
   const [theme, setTheme] = useState<ProgrammeTheme | null>(null);
@@ -43,7 +44,7 @@ export default function ApprendreScreen() {
     setSubject(null);
     setTheme(null);
     setChapter(null);
-  }, [classe]);
+  }, [profile?.classe]);
 
   useEffect(() => {
     const subjectId = route.params?.subjectId;

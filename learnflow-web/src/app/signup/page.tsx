@@ -5,9 +5,13 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Icon from "@/components/Icon";
 import Logo from "@/components/Logo";
+import ParentPhoneField from "@/components/ParentPhoneField";
 import SocialAuth from "@/components/SocialAuth";
 import { AuthStage, Page, PrimaryButton } from "@/components/ui";
 import { CLASSES } from "@/data/mock";
+import { isValidTogoLocal, toTogoE164 } from "@/lib/phoneTogo";
+import { savePendingAuth } from "@/lib/pendingAuth";
+import { getBrowserSupabase } from "@/lib/supabase";
 import type { ClasseAPC } from "@/types/learnflow";
 import { useLearnFlowStore } from "@/store/useLearnFlowStore";
 import { useAppTheme } from "@/theme/useAppTheme";
@@ -22,50 +26,68 @@ export default function SignUpPage() {
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [classe, setClasse] = useState<ClasseAPC | "">("");
+  const [parentLocal, setParentLocal] = useState("");
   const [showPw, setShowPw] = useState(false);
   const [error, setError] = useState("");
+  const [busy, setBusy] = useState(false);
 
-  const submit = (provider: "email" | "google" | "apple" | "facebook" = "email") => {
-    if (provider === "email") {
-      if (!firstName.trim() || !lastName.trim()) {
-        setError("Indique ton prénom et ton nom.");
-        return;
-      }
-      if (!email.includes("@")) {
-        setError("Entre une adresse email valide.");
-        return;
-      }
-      if (password.length < 8) {
-        setError("Le mot de passe doit faire au moins 8 caractères.");
-        return;
-      }
-      if (password !== confirm) {
-        setError("Les mots de passe ne correspondent pas.");
-        return;
-      }
-      if (!classe) {
-        setError("Choisis ta classe.");
-        return;
-      }
+  const submit = async (provider: "email" | "google" | "apple" | "facebook" = "email") => {
+    if (provider !== "email") {
+      setError("Utilise « Continuer avec Google » ci-dessous. Apple et Facebook arrivent bientôt.");
+      return;
+    }
+    if (!firstName.trim() || !lastName.trim()) {
+      setError("Indique ton prénom et ton nom.");
+      return;
+    }
+    if (!email.includes("@")) {
+      setError("Entre une adresse email valide.");
+      return;
+    }
+    if (password.length < 8) {
+      setError("Le mot de passe doit faire au moins 8 caractères.");
+      return;
+    }
+    if (password !== confirm) {
+      setError("Les mots de passe ne correspondent pas.");
+      return;
     }
     if (!classe) {
-      if (provider !== "email") {
-        setClasse("3eme");
-      } else {
-        setError("Choisis ta classe avant de continuer.");
-        return;
-      }
+      setError("Choisis ta classe.");
+      return;
     }
-    const chosenClasse = classe || "3eme";
+    if (!isValidTogoLocal(parentLocal)) {
+      setError("Indique le numéro parent togolais (8 chiffres après +228).");
+      return;
+    }
     setError("");
+    setBusy(true);
+    const chosenClasse = classe;
+    const phone = toTogoE164(parentLocal);
     signUp({
-      firstName: firstName.trim() || "Élève",
-      lastName: lastName.trim() || provider,
-      email: email.trim() || `${provider}@learnflow.tg`,
+      firstName: firstName.trim(),
+      lastName: lastName.trim(),
+      email: email.trim(),
       classe: chosenClasse,
-      provider,
+      provider: "email",
+      parentPhone: phone,
     });
-    router.push("/otp");
+    savePendingAuth({
+      email: email.trim().toLowerCase(),
+      flow: "signup",
+      firstName: firstName.trim(),
+      lastName: lastName.trim(),
+      classe: chosenClasse,
+      parentPhone: phone,
+      password,
+    });
+    const supabase = getBrowserSupabase();
+    if (!supabase) {
+      setBusy(false);
+      setError("Supabase n’est pas configuré. Ajoute les clés puis réessaie.");
+      return;
+    }
+    router.push(`/otp?email=${encodeURIComponent(email.trim().toLowerCase())}`);
   };
 
   return (
@@ -153,13 +175,17 @@ export default function SignUpPage() {
           </div>
         </label>
 
+        <ParentPhoneField value={parentLocal} onChange={setParentLocal} className="mt-3" />
+
         {error ? <p className="mt-3 text-xs font-bold text-red-500">{error}</p> : null}
 
         <div className="mt-4">
-          <PrimaryButton onClick={() => submit("email")}>S&apos;inscrire</PrimaryButton>
+          <PrimaryButton onClick={() => void submit("email")} disabled={busy}>
+            {busy ? "Envoi du code…" : "S'inscrire"}
+          </PrimaryButton>
         </div>
 
-        <SocialAuth mode="signup" onProvider={(p) => submit(p)} />
+        <SocialAuth mode="signup" onProvider={() => setError("Utilise Google, ou inscris-toi par email.")} />
       </AuthStage>
     </Page>
   );

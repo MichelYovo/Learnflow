@@ -1,5 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
+import ActivityCharts from "@/components/ActivityCharts";
+import ActivityFeed from "@/components/ActivityFeed";
 import StatCard from "@/components/StatCard";
 import TopBar from "@/components/TopBar";
 import { getAdminSession } from "@/lib/auth";
@@ -22,10 +24,14 @@ export default async function DashboardPage() {
         </div>
         <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <StatCard label="Élèves" value={String(data.stats.students)} hint="Profils suivis" tone="blue" />
-          <StatCard label="XP total" value={data.stats.xpTotal.toLocaleString("fr-FR")} hint="Cumul des comptes" tone="green" />
-          <StatCard label="XP moyen" value={data.stats.avgXp.toLocaleString("fr-FR")} hint="Par élève" tone="violet" />
-          <StatCard label="Séries actives" value={String(data.stats.activeStreaks)} hint="Streak ≥ 3 jours" tone="amber" />
+          <StatCard label="Actifs 24 h" value={String(data.stats.active24h)} hint="Mouvements récents" tone="green" />
+          <StatCard label="Sessions" value={String(data.stats.sessions)} hint="Login, quiz, blitz, modes" tone="violet" />
+          <StatCard label="XP total" value={data.stats.xpTotal.toLocaleString("fr-FR")} hint="Cumul des comptes" tone="amber" />
         </section>
+
+        <ActivityCharts stats={data.stats} />
+
+        <ActivityFeed events={data.events.slice(0, 8)} />
 
         <section className="grid gap-4 lg:grid-cols-[1.2fr_.8fr]">
           <article className="rounded-[22px] border-2 border-[#F0EFEE] bg-white p-5">

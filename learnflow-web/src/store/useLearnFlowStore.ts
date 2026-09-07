@@ -24,6 +24,10 @@ import {
   INITIAL_INBOX,
   INITIAL_TIMETABLE,
   LEAGUE_PLAYERS,
+  BEGINNER_LIGUE,
+  beginnerLeagueBoard,
+  classLabel,
+  isCloudProfileId,
   keepLocalTestProfiles,
   PROFILES_DEMO,
   resolveLocalTestActiveId,
@@ -60,6 +64,38 @@ interface LearnFlowState {
   getActiveProfile: () => ProfileEleve;
   login: () => void;
   logout: () => void;
+  applyCloudUser: (
+    user: {
+      id: string;
+      email: string;
+      nom: string;
+      classe: string;
+      parentPhone?: string;
+      xpTotale?: number;
+      streak?: number;
+      lessonsDone?: number;
+      rang?: number;
+      avatarId?: string;
+    },
+    opts?: { fresh?: boolean; authenticate?: boolean }
+  ) => void;
+  ingestCloudProgress: (data: {
+    id: string;
+    xpTotale: number;
+    streak: number;
+    lessonsDone: number;
+    badgesDebloques: string[];
+    avatarId?: string;
+    chapterProgress: Record<string, ChapterProgress>;
+    flashcards: FlashcardData[];
+    ligue: {
+      nomLigue: string;
+      rangActuel: number;
+      scoreHebdo: number;
+      estGelee: boolean;
+      groupe: number;
+    };
+  }) => void;
   selectProfile: (id: string) => void;
   dismissFocusPrompt: () => void;
   signUp: (data: {
@@ -71,6 +107,7 @@ interface LearnFlowState {
     avatarId?: string;
     multiProfile?: boolean;
     provider?: "email" | "google" | "apple" | "facebook";
+    parentPhone?: string;
   }) => void;
   accumulerXP: (amount: number, meta?: { chapterId?: string; chapterTitle?: string }) => void;
   setPendingMode: (mode: ModeApprentissage | null) => void;
@@ -212,7 +249,96 @@ export const useLearnFlowStore = create<LearnFlowState>()(
       },
 
       login: () => set({ isAuthenticated: true, focusPromptPending: true }),
-      logout: () => set({ isAuthenticated: false, focusPromptPending: true }),
+      logout: () => {
+        set({ isAuthenticated: false, focusPromptPending: true });
+        void import("@/lib/supabase").then((m) => m.getBrowserSupabase()?.auth.signOut());
+      },
+      applyCloudUser: (user, opts) => {
+        const existing = get().profiles.find((p) => p.id === user.id);
+        const switching = get().activeProfileId !== user.id;
+        const xp = user.xpTotale ?? 0;
+        const startFresh = opts?.fresh === true;
+        const parts = user.nom.trim().split(/\s+/);
+        const firstName = parts[0] || "Élève";
+        const avatarId = user.avatarId ?? existing?.avatarId ?? defaultAvatarId(user.id);
+        const rang = startFresh ? BEGINNER_LIGUE.rangActuel : (user.rang ?? existing?.rang ?? BEGINNER_LIGUE.rangActuel);
+        const profile: ProfileEleve = {
+          id: user.id,
+          compteId: user.id,
+          nom: user.nom.trim() || "Élève",
+          firstName,
+          lastName: parts.slice(1).join(" ") || undefined,
+          email: user.email,
+          classe: user.classe,
+          gradeLabel: classLabel(user.classe),
+          xpTotale: startFresh ? 0 : xp,
+          streak: startFresh ? 0 : (user.streak ?? existing?.streak ?? 0),
+          rang,
+          lessonsDone: startFresh ? 0 : (user.lessonsDone ?? existing?.lessonsDone ?? 0),
+          badgesDebloques: startFresh ? [] : (existing?.badgesDebloques ?? []),
+          color: "#1677FF",
+          bg: "#E6F4FF",
+          avatarId,
+          hasPin: false,
+          parentPhone: user.parentPhone,
+        };
+        const others = get().profiles.filter((p) => p.id !== user.id);
+        set({
+          profiles: keepLocalTestProfiles([...others, profile]),
+          activeProfileId: user.id,
+          isAuthenticated: opts?.authenticate !== false,
+          focusPromptPending: true,
+          suiviParental: user.parentPhone
+            ? { ...get().suiviParental, telParent: user.parentPhone }
+            : get().suiviParental,
+          ...(startFresh || switching
+            ? {
+                chapterProgress: {},
+                lastSession: null,
+                ligue: { ...BEGINNER_LIGUE },
+                flashcards: FLASHCARDS,
+              }
+            : {}),
+          ...(startFresh
+            ? {
+                leagueBoard: beginnerLeagueBoard(profile.nom, avatarId, firstName.slice(0, 2).toUpperCase()),
+                inbox: [],
+                agendaSessions: [],
+              }
+            : {}),
+        });
+        if (isCloudProfileId(user.id) && !startFresh) {
+          void import("@/lib/progressSync").then((m) => m.requestProgressSync());
+        }
+      },
+      ingestCloudProgress: (data) => {
+        if (get().activeProfileId !== data.id) return;
+        const ligueNom = data.ligue.nomLigue as Ligue["nomLigue"];
+        set({
+          profiles: get().profiles.map((p) =>
+            p.id === data.id
+              ? {
+                  ...p,
+                  xpTotale: Math.max(p.xpTotale, data.xpTotale),
+                  streak: Math.max(p.streak, data.streak),
+                  lessonsDone: Math.max(p.lessonsDone, data.lessonsDone),
+                  badgesDebloques: Array.from(new Set([...p.badgesDebloques, ...data.badgesDebloques])),
+                  avatarId: data.avatarId ?? p.avatarId,
+                  rang: data.ligue.rangActuel || p.rang,
+                }
+              : p
+          ),
+          chapterProgress: data.chapterProgress,
+          flashcards: data.flashcards.length ? data.flashcards : get().flashcards,
+          ligue: {
+            nomLigue: ligueNom || get().ligue.nomLigue,
+            rangActuel: data.ligue.rangActuel || get().ligue.rangActuel,
+            scoreHebdo: Math.max(get().ligue.scoreHebdo, data.ligue.scoreHebdo),
+            estGelee: data.ligue.estGelee || get().ligue.estGelee,
+            groupe: data.ligue.groupe || get().ligue.groupe,
+          },
+        });
+      },
       selectProfile: (id) =>
         set({
           activeProfileId: resolveLocalTestActiveId(get().profiles, id),
@@ -226,6 +352,9 @@ export const useLearnFlowStore = create<LearnFlowState>()(
           settings: data.multiProfile
             ? { ...get().settings, multiProfileEnabled: true }
             : get().settings,
+          suiviParental: data.parentPhone
+            ? { ...get().suiviParental, telParent: data.parentPhone }
+            : get().suiviParental,
         });
       },
 
@@ -275,7 +404,7 @@ export const useLearnFlowStore = create<LearnFlowState>()(
         set({ timetable: get().timetable.filter((c) => c.id !== id) });
       },
 
-      accumulerXP: (amount) => {
+      accumulerXP: (amount, meta) => {
         if (amount <= 0) return;
         const { activeProfileId, profiles, ligue } = get();
         set({
@@ -284,15 +413,25 @@ export const useLearnFlowStore = create<LearnFlowState>()(
           ),
           ligue: { ...ligue, scoreHebdo: ligue.scoreHebdo + amount },
         });
+        void import("@/lib/cloud").then((m) =>
+          m.trackActivity("xp_gain", { amount, chapterId: meta?.chapterId, chapterTitle: meta?.chapterTitle })
+        );
+        void import("@/lib/progressSync").then((m) => m.requestProgressSync());
       },
 
-      setPendingMode: (mode) => set({ pendingMode: mode }),
+      setPendingMode: (mode) => {
+        set({ pendingMode: mode });
+        if (mode) {
+          void import("@/lib/cloud").then((m) => m.trackActivity("mode_start", { mode }));
+        }
+      },
       setCustomTools: (tools) => set({ customTools: tools }),
 
       rateFlashcard: (id, rating) => {
         set({
           flashcards: get().flashcards.map((c) => (c.id === id ? applySelfRating(c, rating) : c)),
         });
+        void import("@/lib/progressSync").then((m) => m.requestProgressSync());
       },
 
       recordAssimilation: (chapitreId, score, total, firstTry) => {
@@ -304,6 +443,9 @@ export const useLearnFlowStore = create<LearnFlowState>()(
 
         if (perfect) {
           get().accumulerXP(xp, { chapterId: chapitreId });
+          void import("@/lib/cloud").then((m) =>
+            m.trackActivity("quiz_complete", { chapterId: chapitreId, score, total, firstTry })
+          );
           if (challenger && !profile.badgesDebloques.includes("CHALLENGER")) {
             set({
               profiles: get().profiles.map((p) =>
@@ -335,6 +477,7 @@ export const useLearnFlowStore = create<LearnFlowState>()(
             },
           },
         });
+        void import("@/lib/progressSync").then((m) => m.requestProgressSync());
 
         return { xp: perfect ? xp : 0, unlocked: perfect, challenger };
       },
@@ -355,6 +498,7 @@ export const useLearnFlowStore = create<LearnFlowState>()(
             body: "Le Grand Quizz est verrouillé une heure. Reviens après une pause.",
           });
         }
+        void import("@/lib/progressSync").then((m) => m.requestProgressSync());
       },
 
       unlockGrandQuizz: (chapitreId) => {
@@ -365,6 +509,7 @@ export const useLearnFlowStore = create<LearnFlowState>()(
             [chapitreId]: { ...prev, grandQuizzLockedUntil: null, grandQuizzUnlocked: true },
           },
         });
+        void import("@/lib/progressSync").then((m) => m.requestProgressSync());
       },
 
       canAccessGrandQuizz: (chapitreId) => {
@@ -381,6 +526,9 @@ export const useLearnFlowStore = create<LearnFlowState>()(
         const niveau = difficulte ?? get().settings.blitzDifficulte;
         const xp = xpBlitz(score, answered, profile.classe, niveau);
         get().accumulerXP(xp);
+        void import("@/lib/cloud").then((m) =>
+          m.trackActivity("blitz_complete", { score, answered, difficulte: niveau, xp })
+        );
         return xp;
       },
 
@@ -507,6 +655,7 @@ export const useLearnFlowStore = create<LearnFlowState>()(
             p.id === id ? { ...p, nom: nom.trim(), firstName } : p
           ),
         });
+        void import("@/lib/progressSync").then((m) => m.requestProgressSync());
       },
 
       updateProfileAvatar: (avatarId) => {
@@ -517,6 +666,7 @@ export const useLearnFlowStore = create<LearnFlowState>()(
             player.you ? { ...player, avatarId } : player
           ),
         });
+        void import("@/lib/progressSync").then((m) => m.requestProgressSync());
       },
 
       setMultiProfileEnabled: (on) => {

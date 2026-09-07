@@ -18,6 +18,12 @@ export interface StudentProfile {
   name: string;
   class_level: string;
   total_xp: number;
+  email?: string | null;
+  parent_phone?: string | null;
+  platform?: string | null;
+  streak?: number | null;
+  lessons_done?: number | null;
+  avatar_id?: string | null;
 }
 
 export interface StudentProfileInsert {
@@ -26,6 +32,12 @@ export interface StudentProfileInsert {
   name: string;
   class_level: string;
   total_xp?: number;
+  email?: string | null;
+  parent_phone?: string | null;
+  platform?: string | null;
+  streak?: number | null;
+  lessons_done?: number | null;
+  avatar_id?: string | null;
 }
 
 export interface StudentProfileUpdate {
