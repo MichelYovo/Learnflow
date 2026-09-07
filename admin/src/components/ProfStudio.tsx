@@ -1,0 +1,203 @@
+"use client";
+
+import { useCallback, useEffect, useState } from "react";
+import { CLASSES, SUBJECTS } from "@/lib/brand";
+import { emptyPayload, type CoursePayload } from "@/lib/contentTypes";
+
+type Draft = {
+  id: string;
+  class_level: string;
+  subject_id: string;
+  chapter_id: string;
+  chapter_title: string;
+  source_name?: string;
+  payload: CoursePayload;
+  status: string;
+};
+
+export default function ProfStudio() {
+  const [drafts, setDrafts] = useState<Draft[]>([]);
+  const [active, setActive] = useState<Draft | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState("");
+  const [classLevel, setClassLevel] = useState("3eme");
+  const [subjectId, setSubjectId] = useState("svt");
+  const [chapterId, setChapterId] = useState("");
+  const [chapterTitle, setChapterTitle] = useState("");
+  const [text, setText] = useState("");
+  const [file, setFile] = useState<File | null>(null);
+  const [publishWeb, setPublishWeb] = useState(true);
+  const [publishMobile, setPublishMobile] = useState(true);
+
+  const load = useCallback(async () => {
+    const res = await fetch("/api/prof/drafts");
+    const json = (await res.json()) as { drafts?: Draft[]; error?: string };
+    setDrafts(json.drafts ?? []);
+    if (json.error) setMessage(json.error);
+  }, []);
+
+  useEffect(() => {
+    void load();
+  }, [load]);
+
+  const generate = async () => {
+    setBusy(true);
+    setMessage("Prof lit le cours…");
+    const form = new FormData();
+    form.set("class_level", classLevel);
+    form.set("subject_id", subjectId);
+    form.set("chapter_id", chapterId.trim() || `ch-${Date.now()}`);
+    form.set("chapter_title", chapterTitle.trim() || "Nouveau chapitre");
+    form.set("text", text);
+    if (file) form.set("file", file);
+    const res = await fetch("/api/prof/generate", { method: "POST", body: form });
+    const json = (await res.json()) as { error?: string; draft?: Draft; warning?: string };
+    setBusy(false);
+    if (!res.ok) {
+      setMessage(json.error || "Prof n’a pas pu générer.");
+      return;
+    }
+    setMessage(json.warning ? `Brouillon prêt (${json.warning})` : "Brouillon prêt. Relis et corrige avant d’envoyer.");
+    await load();
+    if (json.draft) setActive({ ...json.draft, payload: json.draft.payload ?? emptyPayload() });
+  };
+
+  const saveDraft = async () => {
+    if (!active) return;
+    setBusy(true);
+    const res = await fetch(`/api/prof/drafts/${active.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(active),
+    });
+    setBusy(false);
+    setMessage(res.ok ? "Brouillon enregistré." : "Enregistrement impossible.");
+    await load();
+  };
+
+  const publish = async () => {
+    if (!active) return;
+    setBusy(true);
+    const res = await fetch("/api/prof/publish", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        class_level: active.class_level,
+        subject_id: active.subject_id,
+        chapter_id: active.chapter_id,
+        chapter_title: active.chapter_title,
+        payload: active.payload,
+        publish_web: publishWeb,
+        publish_mobile: publishMobile,
+      }),
+    });
+    const json = (await res.json()) as { error?: string };
+    setBusy(false);
+    setMessage(res.ok ? "Cours envoyé sur la plateforme choisie." : json.error || "Publication impossible.");
+  };
+
+  const payload = active?.payload ?? emptyPayload();
+
+  return (
+    <div className="grid gap-5 lg:grid-cols-[280px_1fr]">
+      <aside className="space-y-3">
+        <article className="rounded-[22px] border-2 border-[#F0EFEE] bg-white p-4">
+          <h2 className="font-black text-[#1C1917]">Nouveau cours</h2>
+          <label className="mt-3 block text-xs font-extrabold text-[#64748B]">
+            Classe
+            <select value={classLevel} onChange={(e) => setClassLevel(e.target.value)} className="mt-1 h-10 w-full rounded-xl border-2 border-[#F0EFEE] px-2 text-sm font-bold">
+              {CLASSES.map((c) => (
+                <option key={c.id} value={c.id}>{c.label}</option>
+              ))}
+            </select>
+          </label>
+          <label className="mt-2 block text-xs font-extrabold text-[#64748B]">
+            Matière
+            <select value={subjectId} onChange={(e) => setSubjectId(e.target.value)} className="mt-1 h-10 w-full rounded-xl border-2 border-[#F0EFEE] px-2 text-sm font-bold">
+              {SUBJECTS.map((s) => (
+                <option key={s.id} value={s.id}>{s.label}</option>
+              ))}
+            </select>
+          </label>
+          <input value={chapterTitle} onChange={(e) => setChapterTitle(e.target.value)} placeholder="Titre du chapitre" className="mt-2 h-10 w-full rounded-xl border-2 border-[#F0EFEE] px-3 text-sm font-bold" />
+          <input value={chapterId} onChange={(e) => setChapterId(e.target.value)} placeholder="id (ex. digestion)" className="mt-2 h-10 w-full rounded-xl border-2 border-[#F0EFEE] px-3 text-sm font-bold" />
+          <input type="file" accept="application/pdf,.pdf,.txt" className="mt-2 w-full text-xs" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
+          <textarea value={text} onChange={(e) => setText(e.target.value)} rows={5} placeholder="Ou colle le texte du cours…" className="mt-2 w-full rounded-xl border-2 border-[#F0EFEE] p-2 text-sm" />
+          <button type="button" disabled={busy} onClick={() => void generate()} className="mt-2 w-full rounded-2xl bg-[#1677FF] py-2.5 text-sm font-extrabold text-white disabled:opacity-60">
+            {busy ? "Prof travaille…" : "Analyser avec Prof"}
+          </button>
+        </article>
+        <article className="rounded-[22px] border-2 border-[#F0EFEE] bg-white p-4">
+          <h2 className="font-black text-[#1C1917]">Brouillons</h2>
+          <ul className="mt-2 space-y-1">
+            {drafts.map((d) => (
+              <li key={d.id}>
+                <button type="button" onClick={() => setActive({ ...d, payload: d.payload ?? emptyPayload() })} className={`w-full rounded-xl px-3 py-2 text-left text-sm font-bold ${active?.id === d.id ? "bg-[#E6F4FF] text-[#1677FF]" : "text-[#475569]"}`}>
+                  {d.chapter_title}
+                  <span className="block text-[11px] font-semibold text-[#94A3B8]">{d.class_level} · {d.subject_id}</span>
+                </button>
+              </li>
+            ))}
+            {drafts.length === 0 ? <p className="text-xs font-semibold text-[#A8A29E]">Aucun brouillon.</p> : null}
+          </ul>
+        </article>
+      </aside>
+
+      <section className="space-y-4">
+        {message ? <p className="rounded-2xl bg-[#E6F4FF] px-4 py-3 text-sm font-bold text-[#1677FF]">{message}</p> : null}
+        {!active ? (
+          <p className="rounded-[22px] border-2 border-dashed border-[#E7E5E4] p-10 text-center text-sm font-semibold text-[#A8A29E]">
+            Envoie un PDF. Prof prépare résumé, leçons et quiz. Tu corriges, puis tu publies sur le web, le mobile, ou les deux.
+          </p>
+        ) : (
+          <>
+            <div className="flex flex-wrap gap-2">
+              <input value={active.chapter_title} onChange={(e) => setActive({ ...active, chapter_title: e.target.value })} className="h-11 min-w-[200px] flex-1 rounded-2xl border-2 border-[#F0EFEE] px-3 font-black" />
+              <button type="button" disabled={busy} onClick={() => void saveDraft()} className="rounded-2xl bg-[#F1F5F9] px-4 py-2 text-sm font-extrabold">Sauver</button>
+            </div>
+            <label className="block text-xs font-extrabold text-[#64748B]">
+              Essentiel (une puce par ligne)
+              <textarea
+                rows={6}
+                value={payload.fiche.pucesEssentiel.join("\n")}
+                onChange={(e) =>
+                  setActive({
+                    ...active,
+                    payload: { ...payload, fiche: { ...payload.fiche, pucesEssentiel: e.target.value.split("\n") } },
+                  })
+                }
+                className="mt-1 w-full rounded-2xl border-2 border-[#F0EFEE] p-3 text-sm"
+              />
+            </label>
+            <label className="block text-xs font-extrabold text-[#64748B]">
+              Quiz (JSON)
+              <textarea
+                rows={10}
+                value={JSON.stringify(payload.quiz, null, 2)}
+                onChange={(e) => {
+                  try {
+                    setActive({ ...active, payload: { ...payload, quiz: JSON.parse(e.target.value) } });
+                  } catch {
+                    /* keep typing */
+                  }
+                }}
+                className="mt-1 w-full rounded-2xl border-2 border-[#F0EFEE] p-3 font-mono text-xs"
+              />
+            </label>
+            <div className="flex flex-wrap items-center gap-4">
+              <label className="flex items-center gap-2 text-sm font-bold">
+                <input type="checkbox" checked={publishWeb} onChange={(e) => setPublishWeb(e.target.checked)} /> Web
+              </label>
+              <label className="flex items-center gap-2 text-sm font-bold">
+                <input type="checkbox" checked={publishMobile} onChange={(e) => setPublishMobile(e.target.checked)} /> Mobile
+              </label>
+              <button type="button" disabled={busy || (!publishWeb && !publishMobile)} onClick={() => void publish()} className="rounded-2xl bg-[#10B981] px-5 py-2.5 text-sm font-extrabold text-white disabled:opacity-60">
+                Envoyer le cours
+              </button>
+            </div>
+          </>
+        )}
+      </section>
+    </div>
+  );
+}

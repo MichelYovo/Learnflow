@@ -1,15 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import { ScreenHeader } from "@/components/ui";
+import { usePublishedCatalog } from "@/data/publishedCache";
 import { schemas3dForChapter } from "@/data/schemas3d";
 import { useAppTheme } from "@/theme/useAppTheme";
 
 export default function Schema3DPage() {
   const { chapterId } = useParams<{ chapterId: string }>();
   const { colors } = useAppTheme();
-  const models = schemas3dForChapter(chapterId);
+  const catalogEpoch = usePublishedCatalog();
+  const models = useMemo(() => schemas3dForChapter(chapterId), [chapterId, catalogEpoch]);
   const [idx, setIdx] = useState(0);
   const [partId, setPartId] = useState<string | null>(null);
   const model = models[idx];

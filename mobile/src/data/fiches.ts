@@ -1,5 +1,6 @@
 import type { AnalogieSpiraData, FicheCoursData, SchemaCoursKind } from "../types/learnflow";
 import { findChapterMeta } from "./programme";
+import { overlayFiche } from "./publishedCache";
 import { chapterHas3dImage } from "./schemas3d";
 
 const KICKER = "EN D'AUTRE TERME";
@@ -654,8 +655,9 @@ function fallbackFiche(chapitreId: string): FicheCoursData {
   };
 }
 
-export function ficheForChapter(chapitreId: string): FicheCoursData {
-  return FICHES[chapitreId] ?? fallbackFiche(chapitreId);
+export function ficheForChapter(chapitreId: string, classe?: string): FicheCoursData {
+  const fallback = FICHES[chapitreId] ?? fallbackFiche(chapitreId);
+  return overlayFiche(chapitreId, fallback, classe) ?? fallback;
 }
 
 export function countWords(puces: string[]): number {

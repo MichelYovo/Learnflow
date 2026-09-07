@@ -3,14 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 
-const LINKS = [
-  { href: "/dashboard", label: "Aperçu" },
-  { href: "/dashboard/activite", label: "Activité" },
-  { href: "/dashboard/eleves", label: "Élèves" },
-  { href: "/dashboard/ligues", label: "Ligues" },
-  { href: "/dashboard/programme", label: "Programme" },
-  { href: "/dashboard/parametres", label: "Réglages" },
-];
+import { ADMIN_LINKS } from "@/lib/nav";
 
 export default function MobileNav() {
   const pathname = usePathname();
@@ -24,7 +17,7 @@ export default function MobileNav() {
 
   return (
     <nav className="flex gap-2 overflow-x-auto border-b border-[#F0EFEE] bg-white px-3 py-2 md:hidden">
-      {LINKS.map((link) => {
+      {ADMIN_LINKS.map((link) => {
         const active = pathname === link.href || (link.href !== "/dashboard" && pathname.startsWith(link.href));
         return (
           <Link
@@ -34,7 +27,7 @@ export default function MobileNav() {
               active ? "bg-[#1677FF] text-white" : "bg-[#FAFAF9] text-[#64748B]"
             }`}
           >
-            {link.label}
+              {link.short}
           </Link>
         );
       })}

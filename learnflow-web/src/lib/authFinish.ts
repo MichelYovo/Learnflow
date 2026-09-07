@@ -71,6 +71,10 @@ export async function settleVerifiedUser(): Promise<
   }
 
   const profile = await fetchOwnStudentProfile();
+  if (profile?.status === "suspendu") {
+    await supabase.auth.signOut();
+    return { next: "login", error: "suspended" };
+  }
   if (!isProfileComplete(profile)) {
     return { next: "complete-profile" };
   }

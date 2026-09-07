@@ -1,4 +1,5 @@
 import type { ImageSourcePropType } from "react-native";
+import { getPublishedSchemas } from "./publishedCache";
 
 export type Schema3DPart = {
   id: string;
@@ -113,7 +114,17 @@ const BY_CHAPTER: Record<string, Schema3DModel[]> = {
 
 export function schemas3dForChapter(chapterId?: string): Schema3DModel[] {
   if (!chapterId) return [];
-  return BY_CHAPTER[chapterId] ?? [];
+  const local = BY_CHAPTER[chapterId] ?? [];
+  const cloud = getPublishedSchemas()
+    .filter((row) => row.chapter_id === chapterId && row.image_url)
+    .map((row) => ({
+      id: row.id || `cloud-${row.chapter_id}-${row.title}`,
+      title: row.title,
+      subtitle: row.subtitle,
+      image: { uri: row.image_url },
+      parts: row.parts ?? [],
+    }));
+  return [...local, ...cloud];
 }
 
 export function chapterHas3dImage(chapterId?: string): boolean {

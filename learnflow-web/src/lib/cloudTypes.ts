@@ -60,6 +60,7 @@ export type StudentCloudProfile = {
   streak?: number | null;
   lessons_done?: number | null;
   avatar_id?: string | null;
+  status?: "actif" | "suspendu" | string | null;
   progress?: CloudProgress | Record<string, unknown> | null;
   progress_updated_at?: string | null;
 };

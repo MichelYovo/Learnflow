@@ -6,6 +6,7 @@ import Icon from "@/components/Icon";
 import Spira from "@/components/Spira";
 import { AppMain, ScreenHeader, CardButton } from "@/components/ui";
 import { chapterHas3dImage } from "@/data/schemas3d";
+import { usePublishedCatalog } from "@/data/publishedCache";
 import { useLearnFlowStore } from "@/store/useLearnFlowStore";
 import { useAppTheme } from "@/theme/useAppTheme";
 
@@ -15,6 +16,7 @@ function LibreInner() {
   const { colors } = useAppTheme();
   const tools = useLearnFlowStore((s) => s.customTools);
   const chapterId = search.get("chapterId") ?? "circulation";
+  usePublishedCatalog();
   const open = tools.length === 0;
   const showFiche = open || tools.includes("fiche");
   const showFlash = open || tools.includes("flashcards");

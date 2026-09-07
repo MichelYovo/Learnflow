@@ -6,6 +6,7 @@ import Icon from "@/components/Icon";
 import QuizPlay from "@/components/quiz/QuizPlay";
 import Spira from "@/components/Spira";
 import { questionsForChapter } from "@/data/modeContent";
+import { usePublishedCatalog } from "@/data/publishedCache";
 import { playSfx, preloadSfx } from "@/lib/sfx";
 import { useLearnFlowStore } from "@/store/useLearnFlowStore";
 import { useAppTheme } from "@/theme/useAppTheme";
@@ -16,6 +17,7 @@ function QuizInner() {
   const loopErrors = search.get("loop") === "1";
   const router = useRouter();
   const { colors } = useAppTheme();
+  usePublishedCatalog();
   const bank = questionsForChapter(chapterId);
   const [queue, setQueue] = useState(bank);
   const recordAssimilation = useLearnFlowStore((s) => s.recordAssimilation);

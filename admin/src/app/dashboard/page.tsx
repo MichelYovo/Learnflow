@@ -20,6 +20,7 @@ export default async function DashboardPage() {
         <div className="flex items-center justify-between">
           <p className="text-sm font-semibold text-[#64748B]">
             Source : {data.source === "cloud" ? "Supabase (élèves réels)" : "Supabase non configuré"}
+            {data.cloudError ? ` · ${data.cloudError}` : ""}
           </p>
         </div>
         <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -44,6 +45,7 @@ export default async function DashboardPage() {
             <ul className="space-y-3">
               {top.map((s, i) => (
                 <li key={s.id} className="flex items-center gap-3 rounded-2xl border border-[#F0EFEE] px-3 py-2.5">
+                  <Link href={`/dashboard/eleves/${s.id}`} className="flex min-w-0 flex-1 items-center gap-3">
                   <span className="w-6 text-sm font-black text-[#A8A29E]">{i + 1}</span>
                   <span
                     className="flex h-9 w-9 items-center justify-center rounded-full text-xs font-black text-white"
@@ -56,6 +58,7 @@ export default async function DashboardPage() {
                     <p className="text-xs font-semibold text-[#64748B]">{classLabel(s.classe)} · {s.leagueTier}</p>
                   </div>
                   <p className="font-black text-[#1677FF]">{s.xpTotale.toLocaleString("fr-FR")} XP</p>
+                  </Link>
                 </li>
               ))}
             </ul>

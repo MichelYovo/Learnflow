@@ -6,6 +6,7 @@ import {
   fetchCloudStudents,
   isSupabaseConfigured,
   type CloudEvent,
+  type CloudStudent,
 } from "./supabase";
 
 const PALETTE = [
@@ -43,6 +44,7 @@ export type AdminActivityEvent = {
 
 export type DashboardData = {
   source: "cloud" | "local";
+  cloudError?: string;
   students: AdminStudent[];
   leagues: AdminLeagueRow[];
   events: AdminActivityEvent[];
@@ -165,41 +167,63 @@ function buildStats(students: AdminStudent[], leagues: AdminLeagueRow[], events:
   };
 }
 
-function emptyDashboard(source: DashboardData["source"]): DashboardData {
+function emptyDashboard(source: DashboardData["source"], cloudError?: string): DashboardData {
   const students: AdminStudent[] = [];
   const leagues: AdminLeagueRow[] = [];
   const events: AdminActivityEvent[] = [];
-  return { source, students, leagues, events, stats: buildStats(students, leagues, events) };
+  return { source, cloudError, students, leagues, events, stats: buildStats(students, leagues, events) };
+}
+
+function mapStudent(row: CloudStudent, i: number, weeklyXp: number, leagueTier: string): AdminStudent {
+  const palette = PALETTE[i % PALETTE.length];
+  return {
+    id: row.id,
+    name: row.name,
+    email: row.email || "",
+    classe: row.class_level,
+    xpTotale: row.total_xp,
+    weeklyXp,
+    streak: row.streak ?? 0,
+    lessonsDone: row.lessons_done ?? 0,
+    leagueTier,
+    color: palette.color,
+    bg: palette.bg,
+    platform: row.platform ?? undefined,
+    parentPhone: row.parent_phone ?? undefined,
+    status: row.status === "suspendu" ? "suspendu" : "actif",
+    createdAt: row.created_at ?? undefined,
+  };
 }
 
 export async function loadDashboardData(): Promise<DashboardData> {
   if (!isSupabaseConfigured) {
-    return emptyDashboard("local");
+    return emptyDashboard("local", "Ajoute NEXT_PUBLIC_SUPABASE_URL et SUPABASE_SECRET_KEY.");
   }
-  const [cloudStudents, cloudLeagues, cloudEvents] = await Promise.all([
+  const [studentsRes, leaguesRes, eventsRes] = await Promise.all([
     fetchCloudStudents(),
     fetchCloudLeagues(),
     fetchCloudEvents(),
   ]);
-  const students: AdminStudent[] = (cloudStudents ?? []).map((row, i) => {
-    const palette = PALETTE[i % PALETTE.length];
-    return {
-      id: row.id,
-      name: row.name,
-      email: row.email || "",
-      classe: row.class_level,
-      xpTotale: row.total_xp,
-      weeklyXp: cloudLeagues?.find((l) => l.student_id === row.id)?.weekly_xp ?? 0,
-      streak: row.streak ?? 0,
-      lessonsDone: row.lessons_done ?? 0,
-      leagueTier: cloudLeagues?.find((l) => l.student_id === row.id)?.league_tier ?? "Bronze",
-      color: palette.color,
-      bg: palette.bg,
-      platform: row.platform ?? undefined,
-      parentPhone: row.parent_phone ?? undefined,
-    };
+  const cloudError = studentsRes.error || leaguesRes.error || eventsRes.error;
+  const cloudStudents = studentsRes.data;
+  const cloudLeagues = leaguesRes.data;
+  const cloudEvents = eventsRes.data;
+  if (!cloudStudents) {
+    return emptyDashboard("local", cloudError);
+  }
+  const students: AdminStudent[] = cloudStudents.map((row, i) => {
+    const league = cloudLeagues?.find((l) => l.student_id === row.id);
+    return mapStudent(row, i, league?.weekly_xp ?? 0, league?.league_tier ?? "Bronze");
   });
   const leagues = toLeagueRows(students, cloudLeagues ?? undefined);
   const events = mapEvents(cloudEvents ?? [], students);
-  return { source: "cloud", students, leagues, events, stats: buildStats(students, leagues, events) };
+  return { source: "cloud", cloudError, students, leagues, events, stats: buildStats(students, leagues, events) };
+}
+
+export async function loadStudentDetail(id: string) {
+  const data = await loadDashboardData();
+  const student = data.students.find((s) => s.id === id) ?? null;
+  const events = data.events.filter((e) => e.studentId === id);
+  const league = data.leagues.find((l) => l.studentId === id) ?? null;
+  return { ...data, student, events, league };
 }

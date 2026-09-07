@@ -1,10 +1,11 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Icon, { type IconName } from "@/components/Icon";
 import Spira from "@/components/Spira";
 import { AppBar, AppMain } from "@/components/ui";
+import { usePublishedCatalog } from "@/data/publishedCache";
 import { programmeForLearner } from "@/data/programme";
 import { useLearnFlowStore } from "@/store/useLearnFlowStore";
 import { useAppTheme } from "@/theme/useAppTheme";
@@ -26,7 +27,11 @@ function CoursInner() {
   const { colors } = useAppTheme();
   const profile = useLearnFlowStore((s) => s.getActiveProfile());
   const chapterProgress = useLearnFlowStore((s) => s.chapterProgress);
-  const programme = programmeForLearner(profile?.classe, profile?.id, chapterProgress);
+  const catalogEpoch = usePublishedCatalog();
+  const programme = useMemo(
+    () => programmeForLearner(profile?.classe, profile?.id, chapterProgress),
+    [profile?.classe, profile?.id, chapterProgress, catalogEpoch],
+  );
   const [level, setLevel] = useState<0 | 1 | 2 | 3>(0);
   const [subject, setSubject] = useState<ProgrammeSubject | null>(null);
   const [theme, setTheme] = useState<ProgrammeTheme | null>(null);

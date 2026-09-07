@@ -14,6 +14,7 @@ import { fetchOwnStudentProfile, isProfileComplete } from "../lib/cloud";
 import { syncProgress } from "../lib/progressSync";
 import { isSupabaseConfigured, supabase } from "../lib/supabase";
 import { isCloudProfileId, keepLocalTestProfiles } from "../data/mock";
+import { refreshPublishedCatalog } from "../data/publishedCache";
 import { useLearnFlowStore } from "../store/useLearnFlowStore";
 
 async function hydrateFromSqlite(): Promise<void> {
@@ -48,13 +49,18 @@ async function hydrateFromSqlite(): Promise<void> {
 
 async function restoreCloudSession(): Promise<void> {
   if (!isSupabaseConfigured) return;
+  await refreshPublishedCatalog("mobile");
   const { data } = await supabase.auth.getSession();
   const user = data.session?.user;
   if (!user) return;
+  const profile = await fetchOwnStudentProfile();
+  if (profile?.status === "suspendu") {
+    useLearnFlowStore.getState().logout();
+    return;
+  }
   const state = useLearnFlowStore.getState();
   const already = isCloudProfileId(state.activeProfileId) && state.activeProfileId === user.id && state.isAuthenticated;
   if (!already) {
-    const profile = await fetchOwnStudentProfile();
     if (!isProfileComplete(profile)) return;
     useLearnFlowStore.getState().applyCloudUser({
       id: user.id,
@@ -116,7 +122,10 @@ export default function OfflineBootstrap({ children }: { children: React.ReactNo
           },
         });
         const appSub = AppState.addEventListener("change", (next) => {
-          if (next === "active") void syncProgress();
+          if (next === "active") {
+            void refreshPublishedCatalog("mobile");
+            void syncProgress();
+          }
         });
         stop = () => {
           appSub.remove();

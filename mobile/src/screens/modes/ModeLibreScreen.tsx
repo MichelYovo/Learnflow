@@ -5,6 +5,7 @@ import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import Icon from "../../components/Icon";
 import Spira from "../../components/Spira";
 import { chapterHas3dImage } from "../../data/schemas3d";
+import { usePublishedCatalog } from "../../data/publishedCache";
 import { useLearnFlowStore } from "../../store/useLearnFlowStore";
 import { colors } from "../../theme/colors";
 import type { RootStackParamList } from "../../navigation/types";
@@ -14,6 +15,7 @@ type Props = NativeStackScreenProps<RootStackParamList, "ModeLibre">;
 export default function ModeLibreScreen({ navigation, route }: Props) {
   const tools = useLearnFlowStore((s) => s.customTools);
   const chapterId = route.params?.chapterId ?? "circulation";
+  usePublishedCatalog();
   const open = tools.length === 0;
   const showFiche = open || tools.includes("fiche");
   const showFlash = open || tools.includes("flashcards");

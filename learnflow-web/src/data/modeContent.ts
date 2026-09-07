@@ -1,6 +1,7 @@
 import type { QCMData } from "../types/learnflow";
 import { ASSIMILATION_QCM } from "./mock";
 import { findChapterMeta } from "./programme";
+import { overlayQuiz } from "./publishedCache";
 
 export type ClozeBlank = {
   id: string;
@@ -362,15 +363,16 @@ export const COMPLEXES_QCM: QCMData[] = [
   },
 ];
 
-export function questionsForChapter(chapterId: string): QCMData[] {
-  if (chapterId === "digest") return DIGESTION_QCM;
-  if (chapterId === "cell") return CELL_QCM;
-  if (chapterId === "circulation") return CIRCULATION_QCM;
-  if (chapterId === "nerveux" || chapterId === "neurones") return NERVEUX_QCM;
-  if (chapterId === "excretion" || chapterId === "glycemie") return EXCRETION_QCM;
-  if (chapterId === "adn" || chapterId === "brassage" || chapterId === "gene") return ADN_QCM;
-  if (chapterId === "complexes") return COMPLEXES_QCM;
-  return ASSIMILATION_QCM;
+export function questionsForChapter(chapterId: string, classe?: string): QCMData[] {
+  let bank = ASSIMILATION_QCM;
+  if (chapterId === "digest") bank = DIGESTION_QCM;
+  else if (chapterId === "cell") bank = CELL_QCM;
+  else if (chapterId === "circulation") bank = CIRCULATION_QCM;
+  else if (chapterId === "nerveux" || chapterId === "neurones") bank = NERVEUX_QCM;
+  else if (chapterId === "excretion" || chapterId === "glycemie") bank = EXCRETION_QCM;
+  else if (chapterId === "adn" || chapterId === "brassage" || chapterId === "gene") bank = ADN_QCM;
+  else if (chapterId === "complexes") bank = COMPLEXES_QCM;
+  return overlayQuiz(chapterId, bank, classe);
 }
 
 export const CLOZE_BY_CHAPTER: Record<string, ClozeItem[]> = {

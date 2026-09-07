@@ -3,15 +3,18 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { ADMIN_LINKS } from "@/lib/nav";
 
-const LINKS = [
-  { href: "/dashboard", label: "Vue d’ensemble", icon: OverviewIcon },
-  { href: "/dashboard/activite", label: "Activité", icon: ActivityIcon },
-  { href: "/dashboard/eleves", label: "Élèves", icon: StudentsIcon },
-  { href: "/dashboard/ligues", label: "Ligues", icon: LeagueIcon },
-  { href: "/dashboard/programme", label: "Programme APC", icon: BookIcon },
-  { href: "/dashboard/parametres", label: "Paramètres", icon: GearIcon },
-];
+const ICONS: Record<string, typeof OverviewIcon> = {
+  "/dashboard": OverviewIcon,
+  "/dashboard/activite": ActivityIcon,
+  "/dashboard/eleves": StudentsIcon,
+  "/dashboard/ligues": LeagueIcon,
+  "/dashboard/cours": ProfIcon,
+  "/dashboard/schemas": CubeIcon,
+  "/dashboard/programme": BookIcon,
+  "/dashboard/parametres": GearIcon,
+};
 
 export default function Sidebar() {
   const pathname = usePathname();
@@ -32,9 +35,9 @@ export default function Sidebar() {
       </div>
       <p className="px-5 pt-5 text-[11px] font-extrabold uppercase tracking-widest text-[#A8A29E]">Administration</p>
       <nav className="mt-2 flex flex-1 flex-col gap-1 px-3">
-        {LINKS.map((link) => {
+        {ADMIN_LINKS.map((link) => {
           const active = pathname === link.href || (link.href !== "/dashboard" && pathname.startsWith(link.href));
-          const Icon = link.icon;
+          const Icon = ICONS[link.href] ?? BookIcon;
           return (
             <Link
               key={link.href}
@@ -97,6 +100,24 @@ function LeagueIcon({ active }: { active: boolean }) {
   return (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
       <path d="M8 20h8M12 4l2.2 4.5L19 9.2l-3.5 3.4.8 4.7L12 15.3 7.7 17.3l.8-4.7L5 9.2l4.8-.7L12 4z" stroke={active ? "#1677FF" : "#94A3B8"} strokeWidth="1.8" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function ProfIcon({ active }: { active: boolean }) {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
+      <path d="M4 19V8l8-4 8 4v11" stroke={active ? "#1677FF" : "#94A3B8"} strokeWidth="1.8" strokeLinejoin="round" />
+      <path d="M8 11v8M16 11v8M12 7v12" stroke={active ? "#1677FF" : "#94A3B8"} strokeWidth="1.8" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function CubeIcon({ active }: { active: boolean }) {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
+      <path d="M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3z" stroke={active ? "#1677FF" : "#94A3B8"} strokeWidth="1.8" strokeLinejoin="round" />
+      <path d="M12 12l8-4.5M12 12v9M12 12L4 7.5" stroke={active ? "#1677FF" : "#94A3B8"} strokeWidth="1.8" />
     </svg>
   );
 }

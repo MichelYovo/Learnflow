@@ -9,6 +9,7 @@ import LeagueBadge from "@/components/LeagueBadge";
 import MesMatieres from "@/components/MesMatieres";
 import ModeWorkSelector from "@/components/ModeWorkSelector";
 import { EMPTY_WEEK_CHART } from "@/data/mock";
+import { usePublishedCatalog } from "@/data/publishedCache";
 import { continueLessonForLearner, programmeForLearner, subjectShortcutsForLearner } from "@/data/programme";
 import { cardsDueToday } from "@/engine/spacedRepetition";
 import { useLearnFlowStore } from "@/store/useLearnFlowStore";
@@ -28,10 +29,17 @@ export default function AccueilPage() {
   const flashcards = useLearnFlowStore((s) => s.flashcards);
   const inbox = useLearnFlowStore((s) => s.inbox);
   const { colors, darkMode } = useAppTheme();
+  const catalogEpoch = usePublishedCatalog();
   const weekXp = ligue.scoreHebdo;
   const weekChart = EMPTY_WEEK_CHART;
-  const continueLesson = continueLessonForLearner(profile.classe, profile.id, chapterProgress);
-  const shortcuts = subjectShortcutsForLearner(profile.classe, profile.id, chapterProgress);
+  const continueLesson = useMemo(
+    () => continueLessonForLearner(profile.classe, profile.id, chapterProgress),
+    [profile.classe, profile.id, chapterProgress, catalogEpoch],
+  );
+  const shortcuts = useMemo(
+    () => subjectShortcutsForLearner(profile.classe, profile.id, chapterProgress),
+    [profile.classe, profile.id, chapterProgress, catalogEpoch],
+  );
   const [selectedMode, setSelectedMode] = useState<AppMode | null>(null);
   const dueCount = cardsDueToday(flashcards).length;
   const unread = inbox.filter((n) => !n.read).length;
@@ -39,9 +47,13 @@ export default function AccueilPage() {
   const todaySessions = agendaSessions
     .filter((s) => s.day === todayIdx)
     .sort((a, b) => a.hour * 60 + a.minute - (b.hour * 60 + b.minute));
-  const totalDone = programmeForLearner(profile.classe, profile.id, chapterProgress).reduce(
-    (a, s) => a + s.themes.reduce((b, t) => b + t.lessonsDone, 0),
-    0
+  const totalDone = useMemo(
+    () =>
+      programmeForLearner(profile.classe, profile.id, chapterProgress).reduce(
+        (a, s) => a + s.themes.reduce((b, t) => b + t.lessonsDone, 0),
+        0,
+      ),
+    [profile.classe, profile.id, chapterProgress, catalogEpoch],
   );
   const greetingName = (profile.firstName || profile.nom || "").trim() || "toi";
   const nextLigue = useMemo(() => {

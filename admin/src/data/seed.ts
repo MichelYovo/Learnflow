@@ -12,6 +12,8 @@ export type AdminStudent = {
   bg: string;
   platform?: "web" | "mobile" | string;
   parentPhone?: string;
+  status?: "actif" | "suspendu" | string;
+  createdAt?: string;
 };
 
 export const SEED_STUDENTS: AdminStudent[] = [];

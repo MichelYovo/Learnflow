@@ -14,6 +14,7 @@ import ModeWorkSelector from "../../components/ModeWorkSelector";
 import FloatingChatbot from "../../components/FloatingChatbot";
 import { HomeSkeleton } from "../../components/ui";
 import { AGENDA_MODE_CONFIG, EMPTY_WEEK_CHART } from "../../data/mock";
+import { usePublishedCatalog } from "../../data/publishedCache";
 import { continueLessonForLearner, programmeForLearner, subjectShortcutsForLearner } from "../../data/programme";
 import { cardsDueToday } from "../../engine/spacedRepetition";
 import { useLearnFlowStore } from "../../store/useLearnFlowStore";
@@ -39,6 +40,7 @@ export default function HomeScreen() {
   const flashcards = useLearnFlowStore((s) => s.flashcards);
   const inbox = useLearnFlowStore((s) => s.inbox);
   const { colors, darkMode } = useAppTheme();
+  const catalogEpoch = usePublishedCatalog();
   const weekXp = ligue.scoreHebdo;
   const weekChart = EMPTY_WEEK_CHART;
   const nextLigue =
@@ -51,13 +53,23 @@ export default function HomeScreen() {
           : ligue.nomLigue === "Platine"
             ? "Diamant"
             : null;
-  const continueLesson = continueLessonForLearner(profile.classe, profile.id, chapterProgress);
-  const shortcuts = subjectShortcutsForLearner(profile.classe, profile.id, chapterProgress);
+  const continueLesson = useMemo(
+    () => continueLessonForLearner(profile.classe, profile.id, chapterProgress),
+    [profile.classe, profile.id, chapterProgress, catalogEpoch],
+  );
+  const shortcuts = useMemo(
+    () => subjectShortcutsForLearner(profile.classe, profile.id, chapterProgress),
+    [profile.classe, profile.id, chapterProgress, catalogEpoch],
+  );
   const [selectedMode, setSelectedMode] = useState<AppMode | null>(null);
   const [booting, setBooting] = useState(true);
-  const totalDone = programmeForLearner(profile.classe, profile.id, chapterProgress).reduce(
-    (a, s) => a + s.themes.reduce((b, t) => b + t.lessonsDone, 0),
-    0
+  const totalDone = useMemo(
+    () =>
+      programmeForLearner(profile.classe, profile.id, chapterProgress).reduce(
+        (a, s) => a + s.themes.reduce((b, t) => b + t.lessonsDone, 0),
+        0,
+      ),
+    [profile.classe, profile.id, chapterProgress, catalogEpoch],
   );
   const todayIdx = (new Date().getDay() + 6) % 7;
   const todaySessions = agendaSessions

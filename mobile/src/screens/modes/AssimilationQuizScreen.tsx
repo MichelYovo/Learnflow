@@ -8,6 +8,7 @@ import Icon from "../../components/Icon";
 import QuizPlay from "../../components/quiz/QuizPlay";
 import Spira from "../../components/Spira";
 import { questionsForChapter } from "../../data/modeContent";
+import { usePublishedCatalog } from "../../data/publishedCache";
 import { playSfx, preloadSfx } from "../../lib/sfx";
 import { useLearnFlowStore } from "../../store/useLearnFlowStore";
 import { colors } from "../../theme/colors";
@@ -18,6 +19,7 @@ type Props = NativeStackScreenProps<RootStackParamList, "AssimilationQuiz">;
 export default function AssimilationQuizScreen({ navigation, route }: Props) {
   const chapterId = route.params.chapterId;
   const loopErrors = route.params?.loopErrors === true;
+  usePublishedCatalog();
   const bank = questionsForChapter(chapterId);
   const [queue, setQueue] = useState(bank);
   const questions = queue;

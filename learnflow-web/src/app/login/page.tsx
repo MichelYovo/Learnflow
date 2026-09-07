@@ -126,7 +126,11 @@ function LoginInner() {
 
         {error ? <p className="mt-3 text-center text-xs font-bold text-red-500">{error}</p> : null}
 
-        {googleError ? (
+        {googleError === "suspended" ? (
+          <p className="mt-3 text-center text-xs font-bold text-red-500">
+            Compte suspendu. Contacte l’admin LearnFlow.
+          </p>
+        ) : googleError ? (
           <p className="mt-3 text-center text-xs font-bold text-red-500">
             {googleError === "config"
               ? "Google n’est pas configuré. Ajoute les clés Supabase."

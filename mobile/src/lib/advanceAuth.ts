@@ -13,7 +13,9 @@ export async function advanceFromSession(
 ): Promise<{ error?: string }> {
   const settled = await settleVerifiedUser();
   if (settled.next === "login") {
-    return { error: settled.error === "config" ? "Supabase n’est pas configuré." : "Session expirée. Reconnecte-toi." };
+    if (settled.error === "config") return { error: "Supabase n’est pas configuré." };
+    if (settled.error === "suspended") return { error: "Compte suspendu. Contacte l’admin LearnFlow." };
+    return { error: "Session expirée. Reconnecte-toi." };
   }
   if (settled.next === "complete-profile") {
     navigation.replace("CompleteProfile");

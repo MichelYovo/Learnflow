@@ -6,6 +6,7 @@ import AnalogieSpira from "@/components/AnalogieSpira";
 import Icon from "@/components/Icon";
 import { AppMain, ScreenHeader } from "@/components/ui";
 import { countWords, ficheForChapter } from "@/data/fiches";
+import { usePublishedCatalog } from "@/data/publishedCache";
 import { chapterHas3dImage } from "@/data/schemas3d";
 import { useAppTheme } from "@/theme/useAppTheme";
 
@@ -25,7 +26,8 @@ function apcKind(titre: string): string | null {
 export default function CoursePage() {
   const { chapterId } = useParams<{ chapterId: string }>();
   const router = useRouter();
-  const fiche = ficheForChapter(chapterId);
+  const catalogEpoch = usePublishedCatalog();
+  const fiche = useMemo(() => ficheForChapter(chapterId), [chapterId, catalogEpoch]);
   const { colors } = useAppTheme();
 
   useEffect(() => {

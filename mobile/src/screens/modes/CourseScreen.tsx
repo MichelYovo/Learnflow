@@ -5,6 +5,7 @@ import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import AnalogieSpira from "../../components/AnalogieSpira";
 import Icon from "../../components/Icon";
 import { countWords, ficheForChapter } from "../../data/fiches";
+import { usePublishedCatalog } from "../../data/publishedCache";
 import { chapterHas3dImage } from "../../data/schemas3d";
 import { useAppTheme } from "../../theme/useAppTheme";
 import { appFont } from "../../theme/typography";
@@ -148,7 +149,8 @@ function apcKind(titre: string): string | null {
 export default function CourseScreen({ navigation, route }: Props) {
   const { colors } = useAppTheme();
   const chapterId = route.params?.chapterId ?? "eq2";
-  const fiche = useMemo(() => ficheForChapter(chapterId), [chapterId]);
+  const catalogEpoch = usePublishedCatalog();
+  const fiche = useMemo(() => ficheForChapter(chapterId), [chapterId, catalogEpoch]);
   const [speed, setSpeed] = useState<Speed>("essentiel");
   const [masked, setMasked] = useState(false);
   const [revealed, setRevealed] = useState<Set<string>>(new Set());

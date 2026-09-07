@@ -1,6 +1,6 @@
 import TopBar from "@/components/TopBar";
 import { getAdminSession } from "@/lib/auth";
-import { isSupabaseConfigured } from "@/lib/supabase";
+import { adminHasOpenAi, cloudStatusLabel, isAdminCloudReady, isSupabaseConfigured } from "@/lib/supabase";
 
 export default async function SettingsPage() {
   const session = await getAdminSession();
@@ -21,15 +21,19 @@ export default async function SettingsPage() {
               <dt className="font-semibold text-[#64748B]">Rôle</dt>
               <dd className="font-extrabold text-[#1C1917]">Administrateur unique</dd>
             </div>
-            <div className="flex justify-between gap-4">
+            <div className="flex justify-between gap-4 border-b border-[#F0EFEE] pb-3">
               <dt className="font-semibold text-[#64748B]">Cloud Supabase</dt>
-              <dd className="font-extrabold text-[#1C1917]">{isSupabaseConfigured ? "Connecté" : "Non configuré"}</dd>
+              <dd className="font-extrabold text-[#1C1917]">{cloudStatusLabel()}</dd>
+            </div>
+            <div className="flex justify-between gap-4">
+              <dt className="font-semibold text-[#64748B]">IA Prof / Super Prof</dt>
+              <dd className="font-extrabold text-[#1C1917]">{adminHasOpenAi() ? "OPENAI_API_KEY ok" : "Clé absente"}</dd>
             </div>
           </dl>
           <p className="mt-5 text-sm font-medium leading-relaxed text-[#64748B]">
-            Ce site n’accepte pas d’inscription. L’email et le mot de passe se changent uniquement via les variables
-            d’environnement <code className="font-mono text-xs">ADMIN_EMAIL</code> et{" "}
-            <code className="font-mono text-xs">ADMIN_PASSWORD</code>.
+            {isSupabaseConfigured && !isAdminCloudReady
+              ? "La lecture élèves a besoin de SUPABASE_SECRET_KEY (service_role), pas seulement la clé anon."
+              : "Studio Prof, schémas et suppression d’élèves passent par la clé secrète, jamais exposée au navigateur."}
           </p>
         </article>
       </main>

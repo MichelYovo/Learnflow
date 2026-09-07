@@ -156,3 +156,78 @@ exception
   when duplicate_object then null;
   when undefined_object then null;
 end $$;
+
+alter table public.student_profiles add column if not exists status text not null default 'actif';
+
+do $$
+begin
+  if not exists (
+    select 1 from pg_constraint where conname = 'student_profiles_status_check'
+  ) then
+    alter table public.student_profiles
+      add constraint student_profiles_status_check
+      check (status in ('actif', 'suspendu'));
+  end if;
+end $$;
+
+-- Studio Prof : brouillons (service_role seulement)
+create table if not exists public.course_drafts (
+  id uuid primary key default gen_random_uuid(),
+  class_level text not null,
+  subject_id text not null,
+  chapter_id text not null,
+  chapter_title text not null,
+  source_name text,
+  payload jsonb not null default '{}'::jsonb,
+  status text not null default 'draft',
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+-- Cours publiés (lecture élèves)
+create table if not exists public.published_lessons (
+  id uuid primary key default gen_random_uuid(),
+  class_level text not null,
+  subject_id text not null,
+  chapter_id text not null,
+  chapter_title text not null,
+  payload jsonb not null default '{}'::jsonb,
+  publish_web boolean not null default false,
+  publish_mobile boolean not null default false,
+  published_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create unique index if not exists published_lessons_class_chapter_uidx
+  on public.published_lessons (class_level, chapter_id);
+
+create table if not exists public.schema_models (
+  id uuid primary key default gen_random_uuid(),
+  class_level text not null,
+  chapter_id text not null,
+  title text not null,
+  subtitle text not null default '',
+  image_url text not null,
+  parts jsonb not null default '[]'::jsonb,
+  publish_web boolean not null default false,
+  publish_mobile boolean not null default false,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+alter table public.course_drafts enable row level security;
+alter table public.published_lessons enable row level security;
+alter table public.schema_models enable row level security;
+
+drop policy if exists published_lessons_select_public on public.published_lessons;
+create policy published_lessons_select_public
+  on public.published_lessons for select
+  using (publish_web or publish_mobile);
+
+drop policy if exists schema_models_select_public on public.schema_models;
+create policy schema_models_select_public
+  on public.schema_models for select
+  using (publish_web or publish_mobile);
+
+grant select on public.published_lessons to anon, authenticated;
+grant select on public.schema_models to anon, authenticated;

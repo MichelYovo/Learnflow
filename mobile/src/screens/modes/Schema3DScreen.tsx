@@ -6,6 +6,7 @@ import Icon from "../../components/Icon";
 import Spira from "../../components/Spira";
 import { CELL_ORGANELLES } from "../../data/modeContent";
 import { schemas3dForChapter, type Schema3DModel, type Schema3DPart } from "../../data/schemas3d";
+import { usePublishedCatalog } from "../../data/publishedCache";
 import { colors } from "../../theme/colors";
 import type { RootStackParamList } from "../../navigation/types";
 
@@ -14,7 +15,8 @@ const ANGLES = ["Face", "Profil", "Coupe"] as const;
 
 export default function Schema3DScreen({ navigation, route }: Props) {
   const chapterId = route.params?.chapterId;
-  const models = useMemo(() => schemas3dForChapter(chapterId), [chapterId]);
+  const catalogEpoch = usePublishedCatalog();
+  const models = useMemo(() => schemas3dForChapter(chapterId), [chapterId, catalogEpoch]);
   if (models.length === 0) {
     return <LegacyCellModel navigation={navigation} />;
   }

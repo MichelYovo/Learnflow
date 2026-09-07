@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { isCloudProfileId } from "@/data/mock";
+import { refreshPublishedCatalog } from "@/data/publishedCache";
 import { fetchOwnStudentProfile } from "@/lib/cloud";
 import { isProfileComplete } from "@/lib/cloudTypes";
 import { fetchLeagueLeaderboard, subscribeLeagueLive } from "@/lib/leagueLive";
@@ -41,11 +42,20 @@ export default function CloudSyncBootstrap() {
       const user = data.session?.user;
       if (!user || cancelled) return;
 
+      await refreshPublishedCatalog("web");
+      if (cancelled) return;
+
+      const profile = await fetchOwnStudentProfile();
+      if (cancelled) return;
+      if (profile?.status === "suspendu") {
+        useLearnFlowStore.getState().logout();
+        return;
+      }
+
       const state = useLearnFlowStore.getState();
       const alreadyCloud = isCloudProfileId(state.activeProfileId) && state.activeProfileId === user.id && state.isAuthenticated;
       if (!alreadyCloud) {
-        const profile = await fetchOwnStudentProfile();
-        if (cancelled || !isProfileComplete(profile)) return;
+        if (!isProfileComplete(profile)) return;
         useLearnFlowStore.getState().applyCloudUser({
           id: user.id,
           email: user.email ?? profile?.email ?? "",
@@ -66,6 +76,7 @@ export default function CloudSyncBootstrap() {
 
     const onVis = () => {
       if (document.visibilityState === "visible") {
+        void refreshPublishedCatalog("web");
         requestProgressSync();
         void refreshLeaderboard();
       }

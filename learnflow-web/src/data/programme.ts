@@ -2,6 +2,7 @@ import type { ChapterProgress, ProgrammeChapter, ProgrammeSubject, ProgrammeThem
 import { PROGRAMME_3EME } from "./programme3eme";
 import { PROGRAMME_TLE } from "./programmeTle";
 import { packSubject, packTheme, SUBJECT_STYLE, type SubjectId } from "./programmeBuild";
+import { mergePublishedProgramme } from "./publishedCache";
 import { chapterHas3dImage } from "./schemas3d";
 
 const SHORTCUT_ICONS: Record<string, string> = {
@@ -75,7 +76,8 @@ export function programmeForLearner(
 ): ProgrammeSubject[] {
   const base = programmeForClass(classe);
   const source = programmeStartingFresh(base);
-  return applyChapterProgress(source, chapterProgress);
+  const merged = mergePublishedProgramme(source, classe);
+  return applyChapterProgress(merged, chapterProgress);
 }
 
 /** Programme par défaut (3ème) — compat anciens imports. */

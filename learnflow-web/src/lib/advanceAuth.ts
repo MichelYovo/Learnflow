@@ -11,7 +11,8 @@ export async function advanceFromSession(
 ): Promise<void> {
   const settled = await settleVerifiedUser();
   if (settled.next === "login") {
-    go(settled.error === "config" ? "/login?error=config" : "/login");
+    const error = settled.error === "config" ? "config" : settled.error === "suspended" ? "suspended" : undefined;
+    go(error ? `/login?error=${error}` : "/login");
     return;
   }
   if (settled.next === "complete-profile") {

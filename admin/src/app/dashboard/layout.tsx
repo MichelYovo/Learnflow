@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import MobileNav from "@/components/MobileNav";
 import Sidebar from "@/components/Sidebar";
+import SuperProfChat from "@/components/SuperProfChat";
 import { getAdminSession } from "@/lib/auth";
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -14,6 +15,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
         <MobileNav />
         {children}
       </div>
+      <SuperProfChat />
     </div>
   );
 }

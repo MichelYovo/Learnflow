@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { useAppTheme } from "@/theme/useAppTheme";
 import type { IconName } from "./Icon";
@@ -34,6 +34,7 @@ function TabLink({
   return (
     <Link
       href={item.href}
+      prefetch
       className="lf-tabbar-slot flex flex-col items-center justify-end gap-0.5 px-0.5 pb-1 pt-1.5 no-underline"
       style={{ WebkitTapHighlightColor: "transparent" }}
     >
@@ -58,6 +59,7 @@ function TabLink({
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
   const { colors, darkMode } = useAppTheme();
   const fullscreen =
     pathname.startsWith("/app/blitz") ||
@@ -67,6 +69,10 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     document.documentElement.classList.toggle("dark", darkMode);
   }, [darkMode]);
+
+  useEffect(() => {
+    SIDE_NAV.forEach((item) => router.prefetch(item.href));
+  }, [router]);
 
   if (fullscreen) {
     return <div className="h-dvh min-h-dvh overflow-hidden">{children}</div>;
@@ -85,6 +91,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
               <Link
                 key={item.href}
                 href={item.href}
+                prefetch
                 className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-bold"
                 style={{
                   background: active ? (darkMode ? "#0C1A33" : "#E6F4FF") : "transparent",
@@ -100,7 +107,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         </nav>
       </aside>
 
-      <div className="flex min-w-0 flex-1 flex-col pb-[calc(5.5rem+env(safe-area-inset-bottom,0px))] lg:pb-0">
+      <div key={pathname} className="lf-page-in flex min-w-0 flex-1 flex-col pb-[calc(5.5rem+env(safe-area-inset-bottom,0px))] lg:pb-0">
         {children}
       </div>
 
@@ -132,7 +139,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             />
           ))}
         </div>
-        <Link href="/app/agenda" aria-label="Ouvrir l'agenda" className="lf-tabbar-fab">
+        <Link href="/app/agenda" prefetch aria-label="Ouvrir l'agenda" className="lf-tabbar-fab">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/brand/logo-mark.png" alt="" width={56} height={56} draggable={false} />
         </Link>

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation, useRoute } from "@react-navigation/native";
@@ -7,6 +7,7 @@ import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import Icon from "../../components/Icon";
 import Spira from "../../components/Spira";
 import { CoursesSkeleton } from "../../components/ui";
+import { usePublishedCatalog } from "../../data/publishedCache";
 import { programmeForLearner } from "../../data/programme";
 import { useLearnFlowStore } from "../../store/useLearnFlowStore";
 import { colors } from "../../theme/colors";
@@ -27,7 +28,11 @@ export default function ApprendreScreen() {
   const { colors } = useAppTheme();
   const profile = useLearnFlowStore((s) => s.getActiveProfile());
   const chapterProgress = useLearnFlowStore((s) => s.chapterProgress);
-  const programme = programmeForLearner(profile?.classe, profile?.id, chapterProgress);
+  const catalogEpoch = usePublishedCatalog();
+  const programme = useMemo(
+    () => programmeForLearner(profile?.classe, profile?.id, chapterProgress),
+    [profile?.classe, profile?.id, chapterProgress, catalogEpoch],
+  );
   const [level, setLevel] = useState<0 | 1 | 2 | 3>(0);
   const [subject, setSubject] = useState<ProgrammeSubject | null>(null);
   const [theme, setTheme] = useState<ProgrammeTheme | null>(null);
