@@ -2,12 +2,12 @@
 
 Landing de présentation de l’app **LearnFlow** (collège / lycée, programme APC Togo), avec mockups téléphone custom.
 
-Dossier : `LearnFlow/Site-vitrine-Lf` (package npm : `site-vitrine-lf`).
+Dossier : `LearnFlow/site-vitrine-lf` (package npm : `site-vitrine-lf`).
 
 ## Lancer
 
 ```bash
-cd LearnFlow/Site-vitrine-Lf
+cd LearnFlow/site-vitrine-lf
 npm install
 npm run dev
 ```
@@ -32,6 +32,6 @@ Liste d’attente : `support@learnflow.tg`.
 
 ## Stack
 
-Next.js (App Router) · TypeScript · Tailwind CSS 4 · police Poppins · assets copiés depuis `LearnFlow/assets` (logo, Spira, badges, avatars, schémas).
+Next.js (App Router) · TypeScript · Tailwind CSS 4 · police Poppins · assets copiés depuis `LearnFlow/mobile/assets` (logo, Spira, badges, avatars, schémas).
 
 Les téléphones sont des cadres HTML/CSS (Dynamic Island, boutons volume/power, glare) + UI fidèle à l’app (accueil, quiz 10/10, ligues, Blitz, fiche SVT, sas parent).

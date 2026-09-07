@@ -1,6 +1,6 @@
 "use client";
 
-import { ScreenHeader } from "@/components/ui";
+import { AppMain, ScreenHeader } from "@/components/ui";
 import { PARENT_NOTES } from "@/data/mock";
 import { useLearnFlowStore } from "@/store/useLearnFlowStore";
 import { useAppTheme } from "@/theme/useAppTheme";
@@ -13,7 +13,7 @@ export default function ParentsPage() {
   return (
     <div>
       <ScreenHeader title="Espace parent" backHref="/app/profil" />
-      <div className="mx-auto max-w-xl space-y-4 px-4 py-6 md:px-8">
+      <AppMain narrow className="space-y-4 py-6">
         <p className="text-sm font-semibold" style={{ color: colors.textSecondary }}>
           Carnet de {profile.firstName}. Les SMS ne sont que des félicitations (10/10, Challenger) — jamais de surveillance de session.
         </p>
@@ -34,7 +34,7 @@ export default function ParentsPage() {
             </span>
           </div>
         ))}
-      </div>
+      </AppMain>
     </div>
   );
 }

@@ -47,7 +47,7 @@ export default function FillBlanksPage() {
     const total = queue.length;
     const perfect = score === total;
     return (
-      <div className="flex min-h-[70vh] flex-col items-center justify-center px-6 text-center">
+      <div className="flex min-h-[calc(100dvh-5.5rem)] flex-col items-center justify-center px-6 text-center lg:min-h-dvh">
         <Spira mood={spiraForScore(score, total)} size={88} message={perfect ? "Textes à trous maîtrisés." : "On reprend uniquement les phrases ratées."} />
         <p className="mt-3 text-3xl font-black">
           {score}/{total}
@@ -78,45 +78,47 @@ export default function FillBlanksPage() {
   if (!item) return null;
 
   return (
-    <div>
+    <div className="flex min-h-[calc(100dvh-5.5rem)] flex-col lg:min-h-dvh">
       <ScreenHeader title={chapterTitle(chapterId)} backHref="/app" />
-      <div className="mx-auto max-w-2xl px-5 py-5">
-        <p className="mb-4 text-right text-sm font-extrabold" style={{ color: colors.primary }}>
+      <div className="mx-auto flex min-h-0 w-full max-w-2xl flex-1 flex-col px-5">
+        <p className="shrink-0 pt-3 text-right text-sm font-extrabold" style={{ color: colors.primary }}>
           {idx + 1}/{queue.length}
         </p>
-      <p className="text-xl font-black leading-relaxed">
-        {item.before}
-        <span className="mx-1 rounded-lg px-2 py-0.5" style={{ background: colors.mathsBg, color: colors.primary }}>
-          {picked ?? "____"}
-        </span>
-        {item.after}
-      </p>
-      <div className="mt-6 grid grid-cols-2 gap-2">
-        {item.blank.options.map((opt) => {
-          const on = picked === opt;
-          const ok = locked && opt === item.blank.answer;
-          const ko = on && opt !== item.blank.answer;
-          return (
-            <button
-              key={opt}
-              type="button"
-              onClick={() => choose(opt)}
-              className="rounded-2xl border px-3 py-3 text-sm font-extrabold"
-              style={{
-                background: ok ? "#ECFDF5" : ko ? "#FEF2F2" : colors.white,
-                borderColor: ok ? "#10B981" : ko ? "#EF4444" : colors.border,
-              }}
-            >
-              {opt}
-            </button>
-          );
-        })}
-      </div>
-      {locked ? (
-        <div className="mt-6">
-          <PrimaryButton onClick={next}>Continuer</PrimaryButton>
+        <p className="shrink-0 pt-2 pb-0 text-lg font-black leading-relaxed sm:text-xl">
+          {item.before}
+          <span className="mx-1 rounded-lg px-2 py-0.5" style={{ background: colors.mathsBg, color: colors.primary }}>
+            {picked ?? "____"}
+          </span>
+          {item.after}
+        </p>
+        <div className={`flex min-h-0 flex-1 flex-col ${locked ? "justify-start pt-4" : "justify-center py-6"}`}>
+          <div className="grid shrink-0 grid-cols-2 gap-4 sm:gap-5">
+            {item.blank.options.map((opt) => {
+              const on = picked === opt;
+              const ok = locked && opt === item.blank.answer;
+              const ko = on && opt !== item.blank.answer;
+              return (
+                <button
+                  key={opt}
+                  type="button"
+                  onClick={() => choose(opt)}
+                  className="rounded-2xl border px-3 py-2 text-sm font-extrabold"
+                  style={{
+                    background: ok ? "#ECFDF5" : ko ? "#FEF2F2" : colors.white,
+                    borderColor: ok ? "#10B981" : ko ? "#EF4444" : colors.border,
+                  }}
+                >
+                  {opt}
+                </button>
+              );
+            })}
+          </div>
+          {locked ? (
+            <div className="mt-4 flex min-h-0 flex-1 flex-col justify-end pb-5">
+              <PrimaryButton onClick={next}>Continuer</PrimaryButton>
+            </div>
+          ) : null}
         </div>
-      ) : null}
       </div>
     </div>
   );

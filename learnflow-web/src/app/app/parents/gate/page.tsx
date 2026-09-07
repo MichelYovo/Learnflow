@@ -18,7 +18,7 @@ export default function ParentsGatePage() {
   const [error, setError] = useState(false);
 
   return (
-    <div className="mx-auto flex min-h-[70vh] max-w-md flex-col items-center justify-center px-6 text-center">
+    <div className="mx-auto flex min-h-[calc(100dvh-5.5rem)] max-w-md flex-col items-center justify-center px-6 text-center lg:min-h-dvh">
       <Spira scene={error ? "parents.error" : "parents.gate"} size={88} message="" />
       <h1 className="mt-3 text-2xl font-black">Sas parental</h1>
       <p className="mt-2 font-bold" style={{ color: colors.textMuted }}>

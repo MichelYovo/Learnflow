@@ -203,7 +203,7 @@ function QuizInner() {
   if (!q) return null;
 
   return (
-    <div className="mx-auto max-w-2xl">
+    <div className="mx-auto flex min-h-[calc(100dvh-5.5rem)] max-w-2xl flex-col lg:min-h-dvh">
       <div className="flex items-center justify-between px-4 py-4">
         <button type="button" onClick={() => router.back()} className="flex h-10 w-10 items-center justify-center" aria-label="Retour">
           <Icon name="arrow-left" size={20} color={colors.textDark} />
@@ -217,9 +217,16 @@ function QuizInner() {
         <div className="h-full" style={{ width: `${((current + 1) / queue.length) * 100}%`, background: colors.primary }} />
       </div>
 
-      <div className="space-y-4 px-5 py-5">
-        <h1 className="text-[18px] font-extrabold leading-[26px]">{q.enonceQuestion}</h1>
-        <div className="space-y-2.5">
+      <h1 className="shrink-0 px-5 pt-2 text-[17px] font-extrabold leading-6 sm:text-[18px] sm:leading-7">
+        {q.enonceQuestion}
+      </h1>
+
+      <div
+        className={`flex min-h-0 flex-1 flex-col overflow-y-auto px-5 ${
+          wrong ? "justify-start pt-4" : "justify-center py-6"
+        }`}
+      >
+        <div className="mt-5 flex shrink-0 flex-col gap-4 sm:gap-5">
           {q.optionsProposees.map((opt, i) => {
             const on = selected === i;
             const ok = on && i === q.indexReponseCorrecte;
@@ -229,7 +236,7 @@ function QuizInner() {
                 key={opt}
                 type="button"
                 onClick={() => pick(i)}
-                className="w-full rounded-2xl border-2 px-4 py-4 text-left font-bold"
+                className="w-full shrink-0 rounded-2xl border-2 px-3 py-2 text-left font-bold"
                 style={{
                   background: ok ? colors.svtBg : ko ? colors.angBg : colors.white,
                   borderColor: ok ? colors.secondary : ko ? colors.danger : colors.border,
@@ -243,30 +250,34 @@ function QuizInner() {
         </div>
 
         {wrong && selected !== null ? (
-          <div className="space-y-2 rounded-2xl border-2 p-3.5" style={{ background: colors.white, borderColor: colors.angBorder }}>
-            <Spira scene="quiz.wrong" size={64} message="" />
-            <p className="font-extrabold" style={{ color: colors.danger }}>
-              Pas tout à fait
-            </p>
-            <p className="text-[13px] font-medium leading-[18px]" style={{ color: colors.textSecondary }}>
-              {q.explicationPedagogique}
-            </p>
-            <button
-              type="button"
-              onClick={() => router.push(`/app/cours/${chapterId}`)}
-              className="text-[13px] font-extrabold"
-              style={{ color: colors.primary }}
-            >
-              Revoir ce point → {q.ancreCours ?? "cours"}
-            </button>
-            <button
-              type="button"
-              onClick={() => advance(score)}
-              className="w-full rounded-[14px] py-3.5 text-[15px] font-extrabold text-white"
-              style={{ background: colors.primary }}
-            >
-              Continuer
-            </button>
+          <div className="mt-4 flex min-h-0 flex-1 flex-col pb-5">
+            <div className="flex flex-1 flex-col justify-between space-y-2 rounded-2xl border-2 p-3.5" style={{ background: colors.white, borderColor: colors.angBorder }}>
+              <div className="space-y-2">
+                <Spira scene="quiz.wrong" size={52} message="" />
+                <p className="font-extrabold" style={{ color: colors.danger }}>
+                  Pas tout à fait
+                </p>
+                <p className="text-[13px] font-medium leading-[18px]" style={{ color: colors.textSecondary }}>
+                  {q.explicationPedagogique}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => router.push(`/app/cours/${chapterId}`)}
+                  className="text-[13px] font-extrabold"
+                  style={{ color: colors.primary }}
+                >
+                  Revoir ce point → {q.ancreCours ?? "cours"}
+                </button>
+              </div>
+              <button
+                type="button"
+                onClick={() => advance(score)}
+                className="w-full rounded-[14px] py-3.5 text-[15px] font-extrabold text-white"
+                style={{ background: colors.primary }}
+              >
+                Continuer
+              </button>
+            </div>
           </div>
         ) : null}
       </div>

@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Icon from "@/components/Icon";
-import { ScreenHeader } from "@/components/ui";
+import { APP_COL, ScreenHeader } from "@/components/ui";
 import { AGENDA_MODE_CONFIG, SUBJECTS } from "@/data/mock";
 import { useLearnFlowStore } from "@/store/useLearnFlowStore";
 import { useAppTheme } from "@/theme/useAppTheme";
@@ -138,7 +138,7 @@ export default function AgendaPage() {
         }
       />
 
-      <div className="flex border-b" style={{ background: colors.white, borderColor: colors.border }}>
+      <div className={`${APP_COL} flex border-b`} style={{ background: colors.white, borderColor: colors.border }}>
         {(["agenda", "timetable"] as const).map((key) => (
           <button key={key} type="button" onClick={() => setMainTab(key)} className="flex-1 pt-2.5 text-center">
             <span className="text-[13px] font-extrabold" style={{ color: mainTab === key ? colors.primary : colors.textMuted }}>
@@ -151,7 +151,7 @@ export default function AgendaPage() {
 
       {mainTab === "agenda" ? (
         <>
-          <div className="space-y-2 border-b px-3 pb-2 pt-2.5" style={{ background: colors.white, borderColor: colors.border }}>
+          <div className={`${APP_COL} space-y-2 border-b pb-2 pt-2.5`} style={{ background: colors.white, borderColor: colors.border }}>
             <div className="flex rounded-xl p-1" style={{ background: colors.surfaceAlt }}>
               {(["day", "week"] as const).map((v) => (
                 <button
@@ -165,7 +165,7 @@ export default function AgendaPage() {
                 </button>
               ))}
             </div>
-            <div className="flex gap-1">
+            <div className="flex gap-0.5 min-[380px]:gap-1">
               {WEEK_DAYS.map((d, i) => {
                 const has = sessions.some((s) => s.day === i);
                 const active = i === selectedDay;
@@ -174,13 +174,13 @@ export default function AgendaPage() {
                     key={d}
                     type="button"
                     onClick={() => setSelectedDay(i)}
-                    className="flex min-w-0 flex-1 flex-col items-center rounded-xl py-1.5"
+                    className="flex min-w-0 flex-1 flex-col items-center rounded-xl px-0.5 py-1 min-[380px]:py-1.5"
                     style={{ background: active ? colors.primary : "transparent" }}
                   >
-                    <span className="text-[8px] font-extrabold" style={{ color: active ? "rgba(255,255,255,0.75)" : colors.textMuted }}>
+                    <span className="text-[7px] font-extrabold min-[380px]:text-[8px]" style={{ color: active ? "rgba(255,255,255,0.75)" : colors.textMuted }}>
                       {d}
                     </span>
-                    <span className="text-[13px] font-extrabold" style={{ color: active ? "#fff" : i === todayIdx ? colors.primary : colors.textDark }}>
+                    <span className="text-[12px] font-extrabold min-[380px]:text-[13px]" style={{ color: active ? "#fff" : i === todayIdx ? colors.primary : colors.textDark }}>
                       {nums[i]}
                     </span>
                     <span className="mt-0.5 h-1.5 w-1.5 rounded-full" style={{ background: has ? (active ? "#fff" : colors.primary) : "transparent" }} />
@@ -190,7 +190,7 @@ export default function AgendaPage() {
             </div>
           </div>
 
-          <div className="space-y-3 px-4 py-4">
+          <div className={`${APP_COL} space-y-3 py-4`}>
             {view === "day" ? (
               daySessions.length === 0 ? (
                 <EmptyState
@@ -281,8 +281,8 @@ export default function AgendaPage() {
         </>
       ) : (
         <>
-          <div className="border-b px-3 pb-2 pt-2.5" style={{ background: colors.white, borderColor: colors.border }}>
-            <div className="flex gap-1">
+          <div className={`${APP_COL} border-b pb-2 pt-2.5`} style={{ background: colors.white, borderColor: colors.border }}>
+            <div className="flex gap-0.5 min-[380px]:gap-1">
               {WEEK_DAYS.slice(0, 5).map((d, i) => {
                 const has = timetable.some((c) => c.day === i);
                 const active = i === ttDay;
@@ -291,13 +291,13 @@ export default function AgendaPage() {
                     key={d}
                     type="button"
                     onClick={() => setTtDay(i)}
-                    className="flex min-w-0 flex-1 flex-col items-center rounded-xl py-1.5"
+                    className="flex min-w-0 flex-1 flex-col items-center rounded-xl px-0.5 py-1 min-[380px]:py-1.5"
                     style={{ background: active ? colors.primary : "transparent" }}
                   >
-                    <span className="text-[8px] font-extrabold" style={{ color: active ? "rgba(255,255,255,0.75)" : colors.textMuted }}>
+                    <span className="text-[7px] font-extrabold min-[380px]:text-[8px]" style={{ color: active ? "rgba(255,255,255,0.75)" : colors.textMuted }}>
                       {d}
                     </span>
-                    <span className="text-[13px] font-extrabold" style={{ color: active ? "#fff" : colors.textDark }}>
+                    <span className="text-[12px] font-extrabold min-[380px]:text-[13px]" style={{ color: active ? "#fff" : colors.textDark }}>
                       {nums[i]}
                     </span>
                     <span className="mt-0.5 h-1.5 w-1.5 rounded-full" style={{ background: has ? (active ? "#fff" : colors.primary) : "transparent" }} />
@@ -306,7 +306,7 @@ export default function AgendaPage() {
               })}
             </div>
           </div>
-          <div className="px-4 py-4">
+          <div className={`${APP_COL} py-4`}>
             {dayClasses.length === 0 ? (
               <EmptyState icon="book" title="Aucun cours ce jour" cta="Ajouter un cours" onCta={() => setShowAddClass(true)} />
             ) : (
@@ -346,11 +346,11 @@ export default function AgendaPage() {
         </>
       )}
 
-      <div className="pointer-events-none fixed inset-x-0 bottom-[88px] z-30 flex justify-center md:bottom-6">
+      <div className="pointer-events-none fixed inset-x-0 z-30 flex justify-center px-3 lg:bottom-6" style={{ bottom: "calc(5.5rem + env(safe-area-inset-bottom, 0px))" }}>
         <button
           type="button"
           onClick={openAdd}
-          className="pointer-events-auto flex items-center gap-2 rounded-full px-5 py-3.5 text-[13px] font-extrabold text-white shadow-lg"
+          className="pointer-events-auto flex max-w-[calc(100%-1.5rem)] items-center gap-2 rounded-full px-3.5 py-2.5 text-[12px] font-extrabold text-white shadow-lg min-[380px]:px-4 min-[380px]:py-3 min-[380px]:text-[13px] sm:px-5 sm:py-3.5"
           style={{ background: colors.primary }}
         >
           <Icon name="plus" size={16} color="#fff" />

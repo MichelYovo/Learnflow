@@ -2,8 +2,9 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Logo from "@/components/Logo";
 import Spira from "@/components/Spira";
-import { Page, PrimaryButton } from "@/components/ui";
+import { AuthStage, Page, PrimaryButton } from "@/components/ui";
 import { useLearnFlowStore } from "@/store/useLearnFlowStore";
 
 export default function SuccessPage() {
@@ -15,14 +16,19 @@ export default function SuccessPage() {
   }, [login]);
 
   return (
-    <Page className="flex flex-col items-center justify-center px-6">
-      <div className="w-full max-w-md text-center">
-        <Spira scene="auth.success" size={120} />
-        <h1 className="mt-4 text-2xl font-black">Compte prêt</h1>
-        <div className="mt-8">
-          <PrimaryButton onClick={() => router.replace("/focus")}>Entrer dans LearnFlow</PrimaryButton>
+    <Page>
+      <AuthStage>
+        <div className="lf-slide-in w-full text-center">
+          <Logo height="hero" float />
+          <div className="mt-4">
+            <Spira scene="auth.success" size={120} />
+          </div>
+          <h1 className="mt-4 text-2xl font-black">Compte prêt</h1>
+          <div className="mt-8">
+            <PrimaryButton onClick={() => router.replace("/focus")}>Entrer dans LearnFlow</PrimaryButton>
+          </div>
         </div>
-      </div>
+      </AuthStage>
     </Page>
   );
 }

@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Icon, { type IconName } from "@/components/Icon";
-import { ScreenHeader } from "@/components/ui";
+import { AppMain, ScreenHeader } from "@/components/ui";
 import { useLearnFlowStore } from "@/store/useLearnFlowStore";
 import { useAppTheme } from "@/theme/useAppTheme";
 import type { InboxKind, InboxNotification } from "@/types/learnflow";
@@ -44,7 +44,7 @@ export default function InboxPage() {
   return (
     <div>
       <ScreenHeader title="Notifications" backHref="/app" />
-      <div className="mx-auto max-w-xl space-y-2 px-5 py-5">
+      <AppMain narrow className="space-y-2 py-5">
         <div className="flex items-center justify-between">
           <p className="text-[13px] font-semibold" style={{ color: colors.textMuted }}>
             {unread > 0 ? `${unread} non lue${unread > 1 ? "s" : ""}` : "Tout est lu"}
@@ -100,7 +100,7 @@ export default function InboxPage() {
             );
           })
         )}
-      </div>
+      </AppMain>
     </div>
   );
 }

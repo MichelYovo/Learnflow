@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import AnalogieSpira from "@/components/AnalogieSpira";
 import Icon from "@/components/Icon";
-import { ScreenHeader } from "@/components/ui";
+import { AppMain, ScreenHeader } from "@/components/ui";
 import { countWords, ficheForChapter } from "@/data/fiches";
 import { chapterHas3dImage } from "@/data/schemas3d";
 import { useAppTheme } from "@/theme/useAppTheme";
@@ -43,7 +43,7 @@ export default function CoursePage() {
   return (
     <div>
       <ScreenHeader title={fiche.titre} backHref="/app/cours" />
-      <div className="mx-auto max-w-3xl space-y-4 px-5 py-5 pb-10">
+      <AppMain className="space-y-4 py-5 pb-10">
         <div className="flex gap-2.5">
           <button
             type="button"
@@ -199,7 +199,7 @@ export default function CoursePage() {
         >
           Passer le quizz d&apos;assimilation
         </button>
-      </div>
+      </AppMain>
     </div>
   );
 }

@@ -4,7 +4,7 @@ import Link from "next/link";
 import Icon from "@/components/Icon";
 import Logo from "@/components/Logo";
 import Spira from "@/components/Spira";
-import { ScreenHeader } from "@/components/ui";
+import { AppMain, ScreenHeader } from "@/components/ui";
 import { useAppTheme } from "@/theme/useAppTheme";
 
 export default function AboutPage() {
@@ -12,9 +12,9 @@ export default function AboutPage() {
   return (
     <div>
       <ScreenHeader title="À propos" backHref="/app/profil" />
-      <div className="mx-auto max-w-xl space-y-3.5 px-5 py-5">
+      <AppMain narrow className="space-y-3.5 py-5">
         <div className="flex flex-col items-center gap-2.5 py-4">
-          <Logo height={100} />
+          <Logo height={64} />
           <p className="text-[13px] font-semibold" style={{ color: colors.textMuted }}>
             Version 1.0.0 · Togo · APC
           </p>
@@ -54,7 +54,7 @@ export default function AboutPage() {
           <Icon name="shield" size={16} color={colors.primary} />
           Politique de confidentialité
         </Link>
-      </div>
+      </AppMain>
     </div>
   );
 }

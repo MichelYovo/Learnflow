@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Avatar from "@/components/Avatar";
 import Logo from "@/components/Logo";
-import { Page, PrimaryButton } from "@/components/ui";
+import { AuthStage, Page, PrimaryButton } from "@/components/ui";
 import { classLabel } from "@/data/mock";
 import { DEMO_PIN, pinsMatch } from "@/lib/pin";
 import { useLearnFlowStore } from "@/store/useLearnFlowStore";
@@ -32,14 +32,27 @@ export default function ProfilesPage() {
   };
 
   return (
-    <Page className="flex flex-col">
-      <div className="mx-auto flex w-full max-w-lg flex-1 flex-col px-6 py-10">
-        <Logo height={44} />
-        <h1 className="mt-8 text-2xl font-black">Qui révise aujourd&apos;hui ?</h1>
-        <p className="mt-2 text-sm font-semibold" style={{ color: colors.textMuted }}>
-          Chaque élève garde sa progression séparée. PIN démo : 1234
-        </p>
-        <div className="mt-6 space-y-3">
+    <Page>
+      <AuthStage
+        footer={
+          <div className="space-y-3">
+            <p className="text-center text-xs font-semibold" style={{ color: colors.textMuted }}>
+              Tests locaux : uniquement Kofi et Ama.
+            </p>
+            <Link href="/login" className="block text-center text-sm font-extrabold" style={{ color: colors.primary }}>
+              J&apos;ai déjà un compte
+            </Link>
+          </div>
+        }
+      >
+        <div className="flex flex-col items-center text-center">
+          <Logo height="hero" float />
+          <h1 className="mt-4 text-xl font-black sm:mt-5 sm:text-2xl">Qui révise aujourd&apos;hui ?</h1>
+          <p className="mt-1.5 text-sm font-semibold" style={{ color: colors.textMuted }}>
+            Chaque élève garde sa progression séparée. PIN démo : 1234
+          </p>
+        </div>
+        <div className="mt-5 space-y-2.5">
           {profiles.map((p) => (
             <button
               key={p.id}
@@ -84,13 +97,7 @@ export default function ProfilesPage() {
             </div>
           </div>
         ) : null}
-        <div className="mt-auto space-y-3 pt-8">
-          <PrimaryButton href="/signup">Créer un profil</PrimaryButton>
-          <Link href="/login" className="block text-center text-sm font-extrabold" style={{ color: colors.primary }}>
-            J&apos;ai déjà un compte
-          </Link>
-        </div>
-      </div>
+      </AuthStage>
     </Page>
   );
 }

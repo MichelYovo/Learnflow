@@ -22,7 +22,7 @@ export default function ModeWorkSelector({ selectedMode, guideInactive, onSelect
       <h2 className="mb-3.5 text-[18px] font-extrabold" style={{ color: colors.textDark }}>
         Modes
       </h2>
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 gap-2.5 min-[380px]:gap-3 md:grid-cols-4">
         {MODE_DEFINITIONS.map((def) => {
           const inactive = def.id === "guide" && guideInactive;
           const selected = selectedMode === def.id;
@@ -38,7 +38,7 @@ export default function ModeWorkSelector({ selectedMode, guideInactive, onSelect
                 setHelp(null);
                 onSelectMode(def.id);
               }}
-              className="min-h-[128px] rounded-3xl p-[18px] text-left transition"
+              className="min-h-[92px] rounded-3xl p-2.5 text-left min-[380px]:min-h-[100px] min-[380px]:p-3 sm:min-h-[128px] sm:p-[18px] [@media(hover:hover)]:hover:brightness-[.98] [@media(hover:hover)]:active:scale-[0.97]"
               style={{
                 background: def.bg,
                 border: `${selected ? 2 : 1}px solid ${selected ? def.color : def.border}`,
@@ -46,7 +46,7 @@ export default function ModeWorkSelector({ selectedMode, guideInactive, onSelect
               }}
             >
               <div className="mb-3.5 flex items-start justify-between">
-                <span className="flex h-[52px] w-[52px] items-center justify-center overflow-hidden rounded-[18px] bg-white">
+                <span className="flex h-11 w-11 items-center justify-center overflow-visible min-[380px]:h-[52px] min-[380px]:w-[52px]">
                   <Spira mood={spiraMoodForMode(def.id)} size={40} message="" />
                 </span>
                 {inactive ? <Icon name="alert-circle" size={16} color="#94A3B8" /> : null}

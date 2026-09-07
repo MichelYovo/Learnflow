@@ -3,9 +3,10 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Avatar from "@/components/Avatar";
+import AvatarPicker from "@/components/AvatarPicker";
 import Icon, { type IconName } from "@/components/Icon";
 import LeagueBadge from "@/components/LeagueBadge";
-import { AVATAR_IDS } from "@/data/avatars";
+import { AppBar, AppMain } from "@/components/ui";
 import { classLabel } from "@/data/mock";
 import { useLearnFlowStore } from "@/store/useLearnFlowStore";
 import { useAppTheme } from "@/theme/useAppTheme";
@@ -86,21 +87,21 @@ export default function ProfilPage() {
 
   return (
     <div>
-      <header className="sticky top-0 z-20 flex items-center justify-between border-b px-5 py-3.5 md:px-8" style={{ background: colors.white, borderColor: colors.border }}>
-        <h1 className="text-[22px] font-extrabold">Mon profil</h1>
+      <AppBar innerClassName="justify-between py-3.5">
+        <h1 className="truncate text-xl font-extrabold sm:text-[22px]">Mon profil</h1>
         <button
           type="button"
           onClick={() => (editing ? saveName() : (setDraftName(profile.nom), setEditing(true)))}
-          className="flex items-center gap-1.5 rounded-[14px] px-3.5 py-2.5 text-sm font-bold"
+          className="flex shrink-0 items-center gap-1.5 rounded-[14px] px-2.5 py-2 text-sm font-bold sm:px-3.5 sm:py-2.5"
           style={{ background: colors.surfaceAlt }}
         >
           <Icon name={editing ? "check" : "settings"} size={13} color={colors.textDark} />
           {editing ? "Enregistrer" : "Modifier"}
         </button>
-      </header>
+      </AppBar>
 
-      <div className="mx-auto max-w-2xl pb-10">
-        <div className="flex flex-col items-center px-5 pb-6 pt-7">
+      <AppMain className="pb-10">
+        <div className="flex flex-col items-center pb-6 pt-7">
           <button type="button" onClick={() => setPickerOpen(true)} className="relative mb-3">
             <Avatar avatarId={profile.avatarId} size={96} initials={profile.firstName} fallbackColor={profile.color} />
             <span className="absolute -bottom-0.5 -right-0.5 flex h-7 w-7 items-center justify-center rounded-full border-2" style={{ background: colors.primary, borderColor: colors.white }}>
@@ -111,19 +112,19 @@ export default function ProfilPage() {
             <input
               value={draftName}
               onChange={(e) => setDraftName(e.target.value)}
-              className="min-w-[200px] rounded-[14px] border-2 px-3.5 py-2 text-center text-lg font-extrabold outline-none"
+              className="w-full max-w-[min(280px,calc(100vw-2rem))] rounded-[14px] border-2 px-3.5 py-2 text-center text-lg font-extrabold outline-none"
               style={{ borderColor: colors.mathsBorder, background: colors.white, color: colors.textDark }}
             />
           ) : (
             <p className="text-[20px] font-extrabold">{profile.nom}</p>
           )}
-          <div className="mt-2.5 flex gap-2">
+          <div className="mt-2.5 flex flex-wrap justify-center gap-2">
             <span className="rounded-full border-2 border-[#BAE0FF] bg-[#E6F4FF] px-3 py-1 text-[13px] font-extrabold text-[#1677FF]">{grade}</span>
             <span className="rounded-full border-2 border-[#FDE68A] bg-[#FFFBEB] px-3 py-1 text-[13px] font-extrabold text-[#F59E0B]">Ligue {ligue.nomLigue}</span>
           </div>
         </div>
 
-        <div className="flex gap-2 px-5">
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
           {STATS_META.map((s) => (
             <div key={s.label} className="flex flex-1 flex-col items-center gap-1 rounded-[18px] border py-3.5" style={{ background: colors.white, borderColor: colors.border }}>
               <span className="flex h-8 w-8 items-center justify-center rounded-[10px]" style={{ background: s.bg }}>
@@ -137,16 +138,16 @@ export default function ProfilPage() {
           ))}
         </div>
 
-        <h2 className="mt-6 px-5 text-[18px] font-extrabold">Ma ligue</h2>
+        <h2 className="mt-6 text-[18px] font-extrabold">Ma ligue</h2>
         <button
           type="button"
           onClick={() => router.push("/app/ligue")}
-          className="mx-5 mt-3 flex w-[calc(100%-2.5rem)] items-center gap-3 rounded-3xl border p-4"
+          className="mt-3 flex w-full items-center gap-3 rounded-3xl border p-4"
           style={{ background: "#FFFBEB", borderColor: "#FDE68A" }}
         >
           <LeagueBadge nom={ligue.nomLigue} size={64} />
           <span className="min-w-0 flex-1 text-left">
-            <span className="mb-0.5 flex items-center gap-2">
+            <span className="mb-0.5 flex flex-wrap items-center gap-2">
               <span className="text-[16px] font-extrabold text-[#78350F]">Ligue {ligue.nomLigue}</span>
               <span className="rounded-full bg-[#F59E0B] px-2 py-0.5 text-[12px] font-extrabold text-white">Groupe {ligue.groupe}</span>
             </span>
@@ -163,14 +164,14 @@ export default function ProfilPage() {
           </span>
         </button>
 
-        <div className="mt-5 flex items-center justify-between px-5">
+        <div className="mt-5 flex items-center justify-between">
           <h2 className="text-[18px] font-extrabold">Trophées débloqués</h2>
           <button type="button" onClick={() => router.push("/app/ligue")} className="flex items-center gap-0.5 text-[15px] font-bold" style={{ color: colors.primary }}>
             Voir tout
             <Icon name="chevron-right" size={10} color={colors.primary} />
           </button>
         </div>
-        <div className="mt-2.5 flex gap-2 px-5">
+        <div className="mt-2.5 flex gap-2">
           {TROPHIES.map((t) => (
             <div key={t.label} className="flex flex-1 flex-col items-center gap-1.5 rounded-2xl border py-3.5" style={{ background: t.bg, borderColor: t.border }}>
               <Icon name={t.icon} size={18} color={t.color} />
@@ -187,8 +188,8 @@ export default function ProfilPage() {
           </div>
         </div>
 
-        <h2 className="mt-6 px-5 text-[18px] font-extrabold">Apparence</h2>
-        <div className="mx-5 mt-3 overflow-hidden rounded-3xl border" style={{ background: colors.white, borderColor: colors.border }}>
+        <h2 className="mt-6 text-[18px] font-extrabold">Apparence</h2>
+        <div className="mt-3 overflow-hidden rounded-3xl border" style={{ background: colors.white, borderColor: colors.border }}>
           <label className="flex items-center gap-3 px-3.5 py-3.5">
             <span className="flex h-9 w-9 items-center justify-center rounded-xl" style={{ background: darkMode ? "#0C1A33" : colors.mathsBg }}>
               <Icon name={darkMode ? "moon" : "sun"} size={16} color={colors.primary} />
@@ -231,8 +232,8 @@ export default function ProfilPage() {
           ) : null}
         </div>
 
-        <h2 className="mt-6 px-5 text-[18px] font-extrabold">Paramètres</h2>
-        <div className="mx-5 mt-3 overflow-hidden rounded-3xl border" style={{ background: colors.white, borderColor: colors.border }}>
+        <h2 className="mt-6 text-[18px] font-extrabold">Paramètres</h2>
+        <div className="mt-3 overflow-hidden rounded-3xl border" style={{ background: colors.white, borderColor: colors.border }}>
           {SETTINGS.map((s, i) => (
             <button
               key={s.key}
@@ -257,25 +258,14 @@ export default function ProfilPage() {
             </button>
           ))}
         </div>
-      </div>
+      </AppMain>
 
-      {pickerOpen ? (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-slate-900/45 p-4 md:items-center">
-          <div className="w-full max-w-md rounded-3xl p-5" style={{ background: colors.white }}>
-            <p className="mb-3 text-lg font-extrabold">Choisir un avatar</p>
-            <div className="flex flex-wrap gap-2">
-              {AVATAR_IDS.map((id) => (
-                <button key={id} type="button" onClick={() => { updateProfileAvatar(id); setPickerOpen(false); }} className="rounded-full" style={{ outline: profile.avatarId === id ? `3px solid ${colors.primary}` : "none" }}>
-                  <Avatar avatarId={id} size={52} />
-                </button>
-              ))}
-            </div>
-            <button type="button" onClick={() => setPickerOpen(false)} className="mt-4 w-full rounded-2xl py-3 text-sm font-extrabold" style={{ background: colors.surfaceAlt }}>
-              Fermer
-            </button>
-          </div>
-        </div>
-      ) : null}
+      <AvatarPicker
+        open={pickerOpen}
+        selectedId={profile.avatarId}
+        onSelect={updateProfileAvatar}
+        onClose={() => setPickerOpen(false)}
+      />
 
       {confirm ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/45 p-4">

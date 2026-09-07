@@ -3,14 +3,14 @@
 Version web élève de LearnFlow — collège et lycée, programme **APC Togo**.  
 Fiches, flashcards, quiz 10/10, quatre modes de révision, ligues et Spira.
 
-Même produit que l’app mobile (`LearnFlow/`), adaptée au navigateur : **Next.js 16 · React 19 · Tailwind 4 · Zustand**.
+Même produit que l’app mobile (`LearnFlow/mobile`), adaptée au navigateur : **Next.js 16 · React 19 · Tailwind 4 · Zustand**.
 
 ## Lancer
 
 Prérequis : Node.js 20+, npm.
 
 ```bash
-cd learnflow-web
+cd LearnFlow/learnflow-web
 npm install
 npm run dev
 ```

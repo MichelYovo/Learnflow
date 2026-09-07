@@ -25,7 +25,7 @@ export default function FloatingChatbot() {
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="fixed bottom-24 right-4 z-50 flex h-14 w-14 items-center justify-center rounded-full shadow-lg md:bottom-6 md:right-6"
+        className="fixed right-[max(12px,env(safe-area-inset-right))] bottom-[calc(5.25rem+env(safe-area-inset-bottom,0px))] z-50 flex h-12 w-12 items-center justify-center rounded-full shadow-lg sm:h-14 sm:w-14 lg:bottom-6 lg:right-6"
         style={{ background: colors.primary }}
         aria-label="Tuteur local"
       >
@@ -33,8 +33,11 @@ export default function FloatingChatbot() {
       </button>
       {open ? (
         <div
-          className="fixed bottom-[152px] right-4 z-50 w-[min(360px,calc(100vw-2rem))] overflow-hidden rounded-3xl border shadow-xl md:bottom-24 md:right-6"
-          style={{ background: colors.white, borderColor: colors.border }}
+          className="fixed right-[max(8px,env(safe-area-inset-right))] bottom-[calc(8.5rem+env(safe-area-inset-bottom,0px))] z-50 w-[min(360px,calc(100vw-1rem))] overflow-hidden rounded-3xl border shadow-xl lg:bottom-24 lg:right-6"
+          style={{
+            background: colors.white,
+            borderColor: colors.border,
+          }}
         >
           <div className="flex items-center gap-3 border-b px-4 py-3" style={{ borderColor: colors.border }}>
             <Spira scene="tutor.ready" size={44} message="" />

@@ -18,7 +18,7 @@ export default function SplashPage() {
 
   return (
     <Page className="flex flex-col items-center justify-center gap-8">
-      <Logo height={56} />
+      <Logo height="hero" float />
       <Spira scene="splash" size={120} message="On révise. On maîtrise." />
       <p className="text-sm font-bold" style={{ color: colors.textMuted }}>
         Programme APC Togo · collège & lycée

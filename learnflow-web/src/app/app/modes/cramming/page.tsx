@@ -4,7 +4,7 @@ import { Suspense, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Icon from "@/components/Icon";
 import Spira from "@/components/Spira";
-import { ScreenHeader, CardButton } from "@/components/ui";
+import { AppMain, ScreenHeader, CardButton } from "@/components/ui";
 import { crammingChaptersForClass } from "@/data/programme";
 import { useLearnFlowStore } from "@/store/useLearnFlowStore";
 import { useAppTheme } from "@/theme/useAppTheme";
@@ -19,7 +19,7 @@ function CrammingInner() {
   const [chapterId, setChapterId] = useState(chapters.some((c) => c.id === initial) ? initial : chapters[0]?.id ?? "digest");
 
   return (
-    <div>
+    <div className="flex min-h-[calc(100dvh-5.5rem)] flex-col lg:min-h-dvh">
       <ScreenHeader
         title="Cramming"
         backHref="/app"
@@ -29,7 +29,7 @@ function CrammingInner() {
           </button>
         }
       />
-      <div className="mx-auto max-w-xl space-y-4 px-4 py-6 md:px-8">
+      <AppMain narrow fill className="space-y-4 py-6">
         <div className="flex justify-center">
           <Spira scene="mode.cramming" size={96} message="" />
         </div>
@@ -53,7 +53,7 @@ function CrammingInner() {
         </div>
         <CardButton href={`/app/quiz/assimilation/${chapterId}?loop=1`} icon="quiz" iconBg={colors.hgBg} iconColor={colors.accent} title="Quizz d'assimilation" />
         <CardButton href={`/app/trous/${chapterId}`} icon="pen" iconBg={colors.frBg} iconColor={colors.violet} title="Textes à trous" />
-      </div>
+      </AppMain>
     </div>
   );
 }

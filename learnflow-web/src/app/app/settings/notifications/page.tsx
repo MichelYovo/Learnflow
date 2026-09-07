@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Icon from "@/components/Icon";
-import { ScreenHeader, SettingsToggleRow } from "@/components/ui";
+import { AppMain, ScreenHeader, SettingsToggleRow } from "@/components/ui";
 import { useLearnFlowStore } from "@/store/useLearnFlowStore";
 import { useAppTheme } from "@/theme/useAppTheme";
 
@@ -14,7 +14,7 @@ export default function NotificationsSettingsPage() {
   return (
     <div>
       <ScreenHeader title="Notifications" backHref="/app/profil" />
-      <div className="mx-auto max-w-xl space-y-3 px-5 py-5">
+      <AppMain narrow className="space-y-3 py-5">
         <p className="text-[13px] font-medium leading-[18px]" style={{ color: colors.textSecondary }}>
           Choisis les rappels LearnFlow. Les préférences sont enregistrées sur cet appareil.
         </p>
@@ -70,7 +70,7 @@ export default function NotificationsSettingsPage() {
         <p className="text-[11px] font-semibold" style={{ color: colors.textMuted }}>
           État : {prefs.studyReminders ? "rappels d'étude activés" : "rappels d'étude désactivés"}.
         </p>
-      </div>
+      </AppMain>
     </div>
   );
 }

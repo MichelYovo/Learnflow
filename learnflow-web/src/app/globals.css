@@ -11,10 +11,15 @@
 
 html {
   height: 100%;
+  max-width: 100%;
+  overflow-x: clip;
 }
 
 body {
   min-height: 100%;
+  min-height: 100dvh;
+  max-width: 100%;
+  overflow-x: clip;
   background: #fafaf9;
   color: #1c1917;
   font-family: var(--font-poppins), ui-sans-serif, system-ui, sans-serif;
@@ -32,12 +37,209 @@ html.dark body {
 button,
 a {
   cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  tap-highlight-color: transparent;
 }
 
 input,
 textarea,
 select {
   font-family: inherit;
+}
+
+.lf-tabbar {
+  position: fixed;
+  inset-inline: 0;
+  bottom: 0;
+  z-index: 40;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.lf-tabbar-bar {
+  pointer-events: auto;
+  display: flex;
+  align-items: flex-end;
+  min-height: 56px;
+  overflow: visible;
+  padding-bottom: max(8px, env(safe-area-inset-bottom, 0px));
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
+}
+
+.lf-tabbar-slot {
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 52px;
+  overflow: visible;
+}
+
+.lf-tabbar-fab,
+.lf-tabbar-fab:visited,
+.lf-tabbar-fab:hover,
+.lf-tabbar-fab:active,
+.lf-tabbar-fab:focus,
+.lf-tabbar-fab:focus-visible {
+  pointer-events: auto;
+  position: absolute;
+  left: 50%;
+  bottom: calc(28px + env(safe-area-inset-bottom, 0px));
+  z-index: 2;
+  display: flex;
+  width: clamp(44px, 12vw, 56px);
+  height: clamp(44px, 12vw, 56px);
+  transform: translate(-50%, 0);
+  align-items: center;
+  justify-content: center;
+  overflow: visible;
+  border: none !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  background-color: transparent !important;
+  box-shadow: none !important;
+  outline: none !important;
+  opacity: 1 !important;
+  filter: none !important;
+  -webkit-tap-highlight-color: transparent !important;
+  tap-highlight-color: transparent !important;
+}
+
+.lf-tabbar-fab *,
+.lf-tabbar-fab:hover *,
+.lf-tabbar-fab:active * {
+  background: transparent !important;
+  background-color: transparent !important;
+  box-shadow: none !important;
+  filter: none !important;
+}
+
+.lf-tabbar-fab img {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+  max-width: none !important;
+  object-fit: contain;
+  background: transparent !important;
+  pointer-events: none;
+}
+
+@media (hover: none) {
+  a:hover,
+  button:hover {
+    filter: none;
+  }
+}
+
+@keyframes lf-logo-in {
+  from {
+    opacity: 0;
+    transform: scale(0.86) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes lf-logo-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes lf-spira-bob {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-8px) scale(1.04);
+  }
+}
+
+@keyframes lf-spira-bob-sm {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-3px) scale(1.03);
+  }
+}
+
+@keyframes lf-slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.lf-logo-in {
+  animation: lf-logo-in 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.lf-logo-float {
+  animation: lf-logo-float 2.4s ease-in-out infinite;
+}
+
+.lf-spira-bob {
+  animation: lf-spira-bob 1.44s ease-in-out infinite;
+}
+
+.lf-spira-bob-sm {
+  animation: lf-spira-bob-sm 1.44s ease-in-out infinite;
+}
+
+.lf-spira-3d {
+  filter:
+    brightness(1.08)
+    saturate(1.12)
+    drop-shadow(0 8px 6px rgba(15, 23, 42, 0.1))
+    drop-shadow(0 20px 24px rgba(15, 23, 42, 0.2));
+}
+
+.lf-spira-3d img {
+  background: transparent !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.lf-slide-in {
+  animation: lf-slide-in 0.42s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.lf-flip-scene {
+  perspective: 1100px;
+}
+
+.lf-flip-inner {
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.lf-flip-inner.is-flipped {
+  transform: rotateY(180deg);
+}
+
+.lf-flip-face {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.lf-flip-back {
+  position: absolute;
+  inset: 0;
+  transform: rotateY(180deg);
 }
 
 @media (prefers-reduced-motion: reduce) {

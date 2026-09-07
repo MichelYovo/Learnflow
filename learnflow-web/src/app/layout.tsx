@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Poppins } from "next/font/google";
 import AuthGuard from "@/components/AuthGuard";
 import { ThemeSync } from "@/components/useHydrated";
@@ -26,10 +26,17 @@ export const metadata: Metadata = {
   },
 };
 
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: "#1677FF",
+};
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="fr" className={`${poppins.variable} h-full antialiased`}>
-      <body className="min-h-full font-sans">
+    <html lang="fr" className={`${poppins.variable} h-dvh antialiased`}>
+      <body className="h-dvh min-h-dvh font-sans">
         <ThemeSync />
         <AuthGuard>{children}</AuthGuard>
       </body>

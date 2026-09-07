@@ -55,10 +55,10 @@ export default function ModeGuidePage() {
 
   if (liveDue.length === 0 && !started) {
     return (
-      <div>
+      <div className="flex min-h-[calc(100dvh-5.5rem)] flex-col lg:min-h-dvh">
         <ScreenHeader title="Mode Guidé" backHref="/app" />
-        <div className="mx-auto flex min-h-[60vh] max-w-xl flex-col items-center justify-center gap-6 px-7">
-          <Spira scene="mode.guide.empty" size={96} message={speech} />
+        <div className="lf-slide-in mx-auto my-auto flex w-full max-w-xl flex-col items-center justify-center gap-6 px-6 py-8 sm:px-7 sm:py-10">
+          <Spira scene="mode.guide.empty" size={112} message={speech} />
           <button type="button" onClick={() => router.push("/app")} className="text-base font-extrabold" style={{ color: colors.primary }}>
             Retour accueil
           </button>
@@ -69,7 +69,7 @@ export default function ModeGuidePage() {
 
   if (!started) {
     return (
-      <div>
+      <div className="flex min-h-[calc(100dvh-5.5rem)] flex-col lg:min-h-dvh">
         <ScreenHeader
           title="Mode Guidé"
           backHref="/app"
@@ -79,8 +79,8 @@ export default function ModeGuidePage() {
             </button>
           }
         />
-        <div className="mx-auto flex min-h-[60vh] max-w-xl flex-col items-center justify-center gap-6 px-7">
-          <Spira scene="mode.guide" size={96} message={speech} />
+        <div className="lf-slide-in mx-auto my-auto flex w-full max-w-xl flex-col items-center justify-center gap-6 px-6 py-8 sm:px-7 sm:py-10">
+          <Spira scene="mode.guide" size={112} message={speech} />
           <div className="w-full max-w-xs">
             <PrimaryButton
               onClick={() => {
@@ -100,10 +100,10 @@ export default function ModeGuidePage() {
 
   if (done) {
     return (
-      <div>
+      <div className="flex min-h-[calc(100dvh-5.5rem)] flex-col lg:min-h-dvh">
         <ScreenHeader title="Mode Guidé" backHref="/app" />
-        <div className="mx-auto flex min-h-[60vh] max-w-xl flex-col items-center justify-center gap-6 px-7">
-          <Spira scene="mode.guide.done" size={88} />
+        <div className="lf-slide-in mx-auto my-auto flex w-full max-w-xl flex-col items-center justify-center gap-6 px-6 py-8 sm:px-7 sm:py-10">
+          <Spira scene="mode.guide.done" size={104} />
           <div className="w-full max-w-xs">
             <PrimaryButton onClick={() => router.push("/app")}>Terminer</PrimaryButton>
           </div>
@@ -113,7 +113,7 @@ export default function ModeGuidePage() {
   }
 
   return (
-    <div>
+    <div className="flex min-h-[calc(100dvh-5.5rem)] flex-col lg:min-h-dvh">
       <ScreenHeader
         title="Mode Guidé"
         backHref="/app"
@@ -123,17 +123,30 @@ export default function ModeGuidePage() {
           </span>
         }
       />
-      <div className="mx-auto max-w-xl px-6 py-4">
+      <div key={idx} className="lf-slide-in mx-auto flex w-full max-w-xl flex-col px-5 pt-4 pb-6 sm:px-6">
         <div className="mb-2 flex justify-center">
-          <Spira mood={mood} size={56} message={speech} />
+          <Spira mood={mood} size={64} message={speech} />
         </div>
         <button
           type="button"
           onClick={() => setFlipped((v) => !v)}
-          className="flex min-h-[240px] w-full items-center justify-center rounded-[28px] p-7 text-center text-2xl font-extrabold leading-8"
-          style={{ background: colors.white }}
+          className="lf-flip-scene w-full"
+          aria-label={flipped ? "Retourner la carte" : "Voir la réponse"}
         >
-          {flipped ? card.verso : card.recto}
+          <div className={`lf-flip-inner min-h-[240px] ${flipped ? "is-flipped" : ""}`}>
+            <div
+              className="lf-flip-face flex min-h-[240px] items-center justify-center rounded-[28px] p-7 text-center text-2xl font-extrabold leading-8"
+              style={{ background: colors.white }}
+            >
+              {card.recto}
+            </div>
+            <div
+              className="lf-flip-face lf-flip-back flex min-h-[240px] items-center justify-center rounded-[28px] p-7 text-center text-2xl font-extrabold leading-8"
+              style={{ background: colors.white }}
+            >
+              {card.verso}
+            </div>
+          </div>
         </button>
         {flipped ? (
           <div className="mt-6 flex gap-2.5">
