@@ -1,35 +1,51 @@
 const ITEMS = [
   {
-    q: "Ça marche vraiment sans internet ?",
-    a: "Oui. LearnFlow est offline-first : cours, fiches, quiz, flashcards et ligue (cache local) restent disponibles dans le bus, à la maison ou à l’école. La sync cloud (ligue, profils) est optionnelle.",
+    q: "C’est quoi LearnFlow ?",
+    a: "C’est une app pour collégiens et lycéens. Tu y trouves tes cours, des quiz et des jeux de révision. L’idée est simple : tu ne « valides » un chapitre que quand tu l’as vraiment compris — c’est-à-dire 10/10 au quiz.",
   },
   {
-    q: "C’est quel programme ?",
-    a: "Le programme APC Togo, collège et lycée : 6e jusqu’à Terminale D. Mathématiques, SVT, Physique-Chimie, Histoire-Géo, Français, Anglais et EDHC. Les cours affichés dépendent de la classe.",
+    q: "C’est pour quelle classe ?",
+    a: "De la 6e jusqu’à la Terminale. Les cours suivent le programme officiel du Togo. Tu as Maths, SVT, Physique-Chimie, Histoire-Géo, Français, Anglais et EDHC — selon ta classe.",
   },
   {
-    q: "Pourquoi 10/10 ?",
-    a: "Un chapitre n’est validé que lorsqu’il est vraiment acquis. Le quizz d’assimilation (10 questions) doit être parfait pour débloquer le Grand Quizz. En cas d’erreur, on reboucle uniquement sur les questions ratées.",
+    q: "Comment je commence ?",
+    a: "Tu télécharges l’app, tu crées ton profil (ton prénom, ta classe, tes matières), et tu choisis un mode. Ensuite tu lis le cours, tu t’entraînes, puis tu fais le quiz. Pas besoin de tout comprendre d’un coup : l’app te guide.",
   },
   {
-    q: "Spira, c’est l’intelligence artificielle ?",
-    a: "Non. Spira est la mascotte : une scène et une humeur par écran. Le tuteur IA est un canal distinct, avec 5 requêtes cloud par jour, puis une FAQ locale.",
+    q: "Pourquoi il faut 10/10 ?",
+    a: "Parce que « presque » ne suffit pas le jour du devoir. 9/10, ce n’est pas encore validé. Si tu te trompes, tu ne recommences pas tout : tu revois seulement les questions ratées, jusqu’à tout bon.",
   },
   {
-    q: "Plusieurs élèves sur le même téléphone ?",
-    a: "Oui. Profils multiples, déverrouillage par PIN à 4 chiffres stocké localement (jamais envoyé hors appareil en mode démo).",
+    q: "Et si je rate le quiz ?",
+    a: "Ce n’est pas grave. Spira est un peu triste, tu relis le cours, et tu réessaies les questions que tu as manquées. Quand tu as 10/10, le chapitre est validé — et tu peux passer à la suite.",
   },
   {
-    q: "À quoi sert le SMS ?",
-    a: "Si l’option est activée, LearnFlow envoie un SMS de félicitations au parent uniquement après un 10/10 ou un badge CHALLENGER. Jamais de surveillance de session, jamais de notes en temps réel. Ça se coupe dans Confidentialité.",
+    q: "Je ne sais pas quel mode choisir.",
+    a: "Libre si tu as le temps et que tu veux lire tranquillement. Guidé si tu ne sais pas par où commencer : l’app te propose ce qu’il faut réviser aujourd’hui. Cramming si tu as un devoir demain. Blitz si tu veux un défi de 60 secondes, tout seul ou contre un ami.",
   },
   {
-    q: "Les ligues, c’est obligatoire ?",
-    a: "Non. C’est de la motivation, sans la pression : classement hebdo du groupe, paliers Bronze → Diamant, gel de ligue, et tu contrôles la visibilité de ton prénom.",
+    q: "Spira, c’est qui ?",
+    a: "C’est la mascotte de LearnFlow — un personnage qui t’accompagne. Il n’est pas un robot qui fait tes devoirs. Il change d’humeur : joyeux quand tu réussis, calme quand tu lis, déterminé avant un devoir. Comme un copain dans l’app.",
   },
   {
-    q: "Où télécharger l’app ?",
-    a: "LearnFlow 1.0.0 est une app Expo (Android / iOS). Les boutons stores s’activeront dès que les liens publics seront en ligne. Tu peux écrire à support@learnflow.tg pour la liste d’attente.",
+    q: "Ça marche sans internet ?",
+    a: "Oui. Une fois l’app installée, tu peux lire tes cours et faire tes quiz dans le bus, à la maison ou à l’école, même s’il n’y a pas de réseau.",
+  },
+  {
+    q: "Mes parents voient tout ce que je fais ?",
+    a: "Non. Ils ne voient pas tes écrans, ni tes notes en direct. Si tu (ou tes parents) activez l’option, ils reçoivent seulement un SMS de félicitations quand tu valides un chapitre à 10/10. Tu peux couper ça quand tu veux.",
+  },
+  {
+    q: "On peut être plusieurs sur le même téléphone ?",
+    a: "Oui. Chaque élève a son propre profil, avec sa classe et sa progression. Tu déverrouilles le tien avec un code à 4 chiffres, pour que personne ne mélange vos révisions.",
+  },
+  {
+    q: "Je suis obligé de faire les ligues ?",
+    a: "Non. Les ligues, c’est pour s’amuser : tu gagnes des points, tu montes de palier (Bronze, Argent, Or…), tu vois tes camarades. Si tu n’aimes pas le classement, tu n’es pas obligé d’y aller, et tu peux cacher ton prénom.",
+  },
+  {
+    q: "Comment je télécharge l’app ?",
+    a: "Bientôt sur Android et iPhone. En attendant, clique sur « Préviens-moi » en haut de la page, ou écris à support@learnflow.tg — on te dira dès que c’est en ligne.",
   },
 ];
 

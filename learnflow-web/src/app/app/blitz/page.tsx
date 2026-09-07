@@ -1,11 +1,11 @@
 "use client";
 
-import { Suspense, useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Icon from "@/components/Icon";
 import Spira from "@/components/Spira";
 import { BLITZ_DIFFICULTES, blitzDeck, parseChallengeInput } from "@/engine/blitzChallenge";
-import { playSfx } from "@/lib/sfx";
+import { playSfx, preloadSfx } from "@/lib/sfx";
 import { useLearnFlowStore } from "@/store/useLearnFlowStore";
 import type { DifficulteFlash } from "@/types/learnflow";
 
@@ -116,31 +116,58 @@ function BlitzInner() {
   const [score, setScore] = useState(0);
   const [answered, setAnswered] = useState(0);
   const [xp, setXp] = useState(0);
+  const [ringing, setRinging] = useState(false);
   const q = deck.questions[qIdx % deck.questions.length];
   const critical = phase === "playing" && timeLeft <= 10;
   const warning = phase === "playing" && timeLeft <= 20;
+  const warnedRef = useRef(false);
+  const endedRef = useRef(false);
+  const scoreRef = useRef(score);
+  const answeredRef = useRef(answered);
+  scoreRef.current = score;
+  answeredRef.current = answered;
+
+  useEffect(() => {
+    preloadSfx();
+  }, []);
 
   useEffect(() => {
     if (phase !== "playing") return;
+    endedRef.current = false;
+    warnedRef.current = false;
+    const started = Date.now();
     const t = setInterval(() => {
-      setTimeLeft((s) => {
-        if (s <= 1) {
-          clearInterval(t);
-          playSfx("times-up");
-          const gained = recordBlitz(score, answered, difficulte);
-          setXp(gained);
-          setPhase("done");
-          return 0;
-        }
-        if (s === 11) playSfx("warn");
-        return s - 1;
-      });
-    }, 1000);
+      const elapsed = (Date.now() - started) / 1000;
+      const left = Math.max(0, DURATION - elapsed);
+      setTimeLeft(left);
+      if (left <= 10 && left > 0 && !warnedRef.current) {
+        warnedRef.current = true;
+        playSfx("warn");
+      }
+      if (left <= 0 && !endedRef.current) {
+        endedRef.current = true;
+        clearInterval(t);
+        setTimeLeft(0);
+        playSfx("timesUp");
+        setRinging(true);
+      }
+    }, 50);
     return () => clearInterval(t);
-  }, [phase, answered, difficulte, recordBlitz, score]);
+  }, [phase]);
+
+  useEffect(() => {
+    if (!ringing) return;
+    const t = setTimeout(() => {
+      const gained = recordBlitz(scoreRef.current, answeredRef.current, difficulte);
+      setXp(gained);
+      setPhase("done");
+      setRinging(false);
+    }, 1150);
+    return () => clearTimeout(t);
+  }, [ringing, difficulte, recordBlitz]);
 
   const pick = (i: number) => {
-    if (selected !== null || phase !== "playing") return;
+    if (selected !== null || phase !== "playing" || ringing) return;
     setSelected(i);
     const ok = i === q.indexReponseCorrecte;
     playSfx(ok ? "correct" : "wrong");
@@ -161,6 +188,9 @@ function BlitzInner() {
   };
 
   const start = () => {
+    endedRef.current = false;
+    warnedRef.current = false;
+    setRinging(false);
     setTimeLeft(DURATION);
     setScore(0);
     setAnswered(0);
@@ -311,7 +341,12 @@ function BlitzInner() {
       <div className="flex min-h-0 flex-1 flex-col px-4 py-3 md:px-10 md:py-5">
         <div className="flex items-center justify-between gap-4">
           <Spira scene={critical ? "mode.blitz.panic" : "mode.blitz.play"} size={56} message="" />
-          <BlitzRing progress={timeLeft / DURATION} critical={critical} warning={warning} label={String(timeLeft)} />
+          <BlitzRing
+            progress={timeLeft / DURATION}
+            critical={critical}
+            warning={warning}
+            label={String(Math.ceil(timeLeft))}
+          />
           <p className="min-w-[72px] text-right text-sm font-extrabold text-red-200/80 md:text-base">
             {score} pts
             <span className="mt-0.5 block text-xs font-bold text-white/40">Q{answered + 1}</span>
@@ -340,6 +375,10 @@ function BlitzInner() {
                 <button
                   key={opt}
                   type="button"
+                  onPointerDown={(e) => {
+                    if (e.button !== 0) return;
+                    pick(i);
+                  }}
                   onClick={() => pick(i)}
                   className="flex min-h-[56px] flex-1 items-center rounded-2xl border-2 px-5 text-left text-base font-bold md:min-h-[72px] md:rounded-3xl md:px-6 md:text-xl"
                   style={{
@@ -355,6 +394,16 @@ function BlitzInner() {
           </div>
         </div>
       </div>
+      {ringing ? (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center">
+          <div className="absolute inset-0 animate-pulse bg-red-500/45" />
+          <div className="relative flex flex-col items-center gap-1.5 rounded-[22px] border-[1.5px] border-red-200/65 bg-black/80 px-[22px] py-4">
+            <Icon name="timer" size={22} color="#FECACA" />
+            <p className="text-lg font-black tracking-[0.18em] text-red-200">TEMPS ÉCOULÉ</p>
+            <p className="text-xs font-bold text-red-200/80">Le chrono a sonné</p>
+          </div>
+        </div>
+      ) : null}
     </Arena>
   );
 }

@@ -7,11 +7,11 @@ import { SUPPORT_MAILTO } from "../../lib/brand";
 import StoreButtons from "./StoreButtons";
 
 const LINKS = [
-  { href: "/#produit", label: "Produit" },
-  { href: "/#modes", label: "Modes" },
+  { href: "/#parcours", label: "Comment ça marche" },
+  { href: "/#modes", label: "Les 4 modes" },
   { href: "/#ligues", label: "Ligues" },
-  { href: "/#sms", label: "SMS" },
-  { href: "/#faq", label: "FAQ" },
+  { href: "/#parents", label: "Parents" },
+  { href: "/#faq", label: "Questions" },
 ];
 
 export default function Header() {
@@ -30,19 +30,19 @@ export default function Header() {
             className="h-14 w-auto sm:h-16"
           />
         </Link>
-        <nav className="hidden items-center gap-7 md:flex" aria-label="Sections">
+        <nav className="hidden items-center gap-5 lg:flex" aria-label="Sections">
           {LINKS.map((l) => (
             <a key={l.href} href={l.href} className="text-sm font-semibold text-[#64748B] transition hover:text-[#1677FF]">
               {l.label}
             </a>
           ))}
         </nav>
-        <div className="hidden md:block">
+        <div className="hidden lg:block">
           <StoreButtons compact />
         </div>
         <button
           type="button"
-          className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border-2 border-[#F0EFEE] bg-white md:hidden"
+          className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border-2 border-[#F0EFEE] bg-white lg:hidden"
           aria-expanded={open}
           aria-label={open ? "Fermer le menu" : "Ouvrir le menu"}
           onClick={() => setOpen((v) => !v)}
@@ -56,7 +56,7 @@ export default function Header() {
         </button>
       </div>
       {open ? (
-        <div className="border-t border-[#F0EFEE] bg-white px-5 py-4 md:hidden">
+        <div className="border-t border-[#F0EFEE] bg-white px-5 py-4 lg:hidden">
           <nav className="flex flex-col gap-3" aria-label="Mobile">
             {LINKS.map((l) => (
               <a

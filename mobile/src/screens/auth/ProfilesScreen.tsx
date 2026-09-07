@@ -52,7 +52,7 @@ export default function ProfilesScreen({ navigation }: Props) {
       <ScrollView style={{ flex: 1 }} contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
           <View style={styles.brandRow}>
-            <Logo height={88} />
+            <Logo height={88} float />
           </View>
           <Text style={[styles.title, { color: colors.textDark }]}>Qui révise aujourd'hui ?</Text>
           <Text style={styles.sub}>Chaque élève garde sa progression séparée.</Text>

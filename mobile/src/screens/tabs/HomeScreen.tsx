@@ -13,7 +13,7 @@ import MesMatieres from "../../components/MesMatieres";
 import ModeWorkSelector from "../../components/ModeWorkSelector";
 import FloatingChatbot from "../../components/FloatingChatbot";
 import { HomeSkeleton } from "../../components/ui";
-import { WEEK_BARS } from "../../data/mock";
+import { WEEK_BARS, AGENDA_MODE_CONFIG } from "../../data/mock";
 import { continueLessonForClass, programmeForClass, subjectShortcutsForClass } from "../../data/programme";
 import { cardsDueToday } from "../../engine/spacedRepetition";
 import { useLearnFlowStore } from "../../store/useLearnFlowStore";
@@ -196,6 +196,9 @@ export default function HomeScreen() {
                 <Text style={[styles.sessionSubject, { color: colors.textDark }]} numberOfLines={1}>
                   {s.subject}
                 </Text>
+                <Text style={[styles.sessionMode, { color: AGENDA_MODE_CONFIG[s.mode].color }]}>
+                  {AGENDA_MODE_CONFIG[s.mode].label}
+                </Text>
               </View>
             ))}
           </View>
@@ -335,6 +338,7 @@ const styles = StyleSheet.create({
   sessionRow: { flexDirection: "row", alignItems: "center", gap: 14, paddingVertical: 6 },
   sessionTime: { width: 52, fontSize: 15, fontWeight: "700" },
   sessionSubject: { flex: 1, fontSize: 16, fontWeight: "700" },
+  sessionMode: { fontSize: 12, fontWeight: "800" },
   hero: { borderRadius: 24, paddingVertical: 22, paddingHorizontal: 22, flexDirection: "row", alignItems: "center", minWidth: "100%" },
   heroTitle: { color: "#FFFFFF", fontSize: 20, fontWeight: "800" },
   heroSub: { color: "rgba(255,255,255,0.9)", fontSize: 15, marginTop: 6, fontWeight: "600" },

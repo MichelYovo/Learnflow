@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useRef } from "react";
-import { Pressable, StyleSheet, View } from "react-native";
+import { AccessibilityInfo, Pressable, StyleSheet, View } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import Animated, {
   Easing,
   runOnJS,
@@ -15,6 +16,7 @@ import Logo from "./Logo";
 export const INTRO_HOLD_MS = 170_000;
 const SHORT_HOLD_MS = 1_600;
 const FLASH_MS = 420;
+const STORAGE_KEY = "lf-intro-flash";
 
 type Props = {
   onFinish: () => void;
@@ -36,45 +38,74 @@ export default function AnimatedSplash({ onFinish, ready = true, cinematic = fal
   const done = useCallback(() => {
     if (finished.current) return;
     finished.current = true;
+    if (cinematic) {
+      void AsyncStorage.setItem(STORAGE_KEY, "1").catch(() => undefined);
+    }
     onFinishRef.current();
-  }, []);
+  }, [cinematic]);
 
   useEffect(() => {
     if (!ready) return;
+    let cancelled = false;
     finished.current = false;
     screenOpacity.value = 1;
     gra.value = 0;
     bim.value = 0;
 
-    const holdMs = cinematic ? INTRO_HOLD_MS : SHORT_HOLD_MS;
-
-    if (cinematic) {
-      gra.value = withDelay(
-        holdMs,
-        withSequence(
-          withTiming(0.85, { duration: 50, easing: Easing.out(Easing.quad) }),
-          withTiming(0.04, { duration: 50 })
-        )
+    const play = (holdMs: number, withFlash: boolean) => {
+      if (withFlash) {
+        gra.value = withDelay(
+          holdMs,
+          withSequence(
+            withTiming(0.85, { duration: 50, easing: Easing.out(Easing.quad) }),
+            withTiming(0.04, { duration: 50 })
+          )
+        );
+        bim.value = withDelay(
+          holdMs + 100,
+          withSequence(
+            withTiming(1, { duration: 70, easing: Easing.out(Easing.quad) }),
+            withTiming(1, { duration: 90 }),
+            withTiming(0, { duration: 180 })
+          )
+        );
+      }
+      screenOpacity.value = withDelay(
+        holdMs + (withFlash ? FLASH_MS - 180 : 0),
+        withTiming(0, { duration: withFlash ? 180 : 420, easing: Easing.out(Easing.quad) }, (ok) => {
+          if (ok) runOnJS(done)();
+        })
       );
-      bim.value = withDelay(
-        holdMs + 100,
-        withSequence(
-          withTiming(1, { duration: 70, easing: Easing.out(Easing.quad) }),
-          withTiming(1, { duration: 90 }),
-          withTiming(0, { duration: 180 })
-        )
-      );
-    }
+      return setTimeout(done, holdMs + FLASH_MS + 400);
+    };
 
-    screenOpacity.value = withDelay(
-      holdMs + (cinematic ? FLASH_MS - 180 : 0),
-      withTiming(0, { duration: cinematic ? 180 : 420, easing: Easing.out(Easing.quad) }, (ok) => {
-        if (ok) runOnJS(done)();
-      })
-    );
+    let fallback: ReturnType<typeof setTimeout> | undefined;
 
-    const fallback = setTimeout(done, holdMs + FLASH_MS + 400);
-    return () => clearTimeout(fallback);
+    const start = async () => {
+      if (!cinematic) {
+        fallback = play(SHORT_HOLD_MS, false);
+        return;
+      }
+      try {
+        const seen = await AsyncStorage.getItem(STORAGE_KEY);
+        if (cancelled) return;
+        if (seen === "1") {
+          done();
+          return;
+        }
+        const reduce = await AccessibilityInfo.isReduceMotionEnabled();
+        if (cancelled) return;
+        fallback = play(reduce ? 80 : INTRO_HOLD_MS, !reduce);
+      } catch {
+        if (!cancelled) fallback = play(INTRO_HOLD_MS, true);
+      }
+    };
+
+    void start();
+    return () => {
+      cancelled = true;
+      if (fallback) clearTimeout(fallback);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ready, cinematic]);
 

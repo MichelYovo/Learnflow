@@ -14,7 +14,7 @@ export default function SplashScreen({ navigation }: Props) {
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: colors.surface }]} edges={["top", "bottom"]}>
       <View style={styles.content}>
-        <Logo height={88} />
+        <Logo height={88} float />
         <Text style={[styles.tag, { color: colors.primary }]}>Programme APC Togo</Text>
         <Text style={[styles.lead, { color: colors.textSecondary }]}>
           Fiches, quiz 10/10 et ligues — collège et lycée, même hors ligne.

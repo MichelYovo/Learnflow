@@ -1,11 +1,11 @@
 "use client";
 
-import { useRef, useState, Suspense } from "react";
+import { useEffect, useRef, useState, Suspense } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import Icon from "@/components/Icon";
 import Spira from "@/components/Spira";
 import { questionsForChapter } from "@/data/modeContent";
-import { playSfx } from "@/lib/sfx";
+import { playSfx, preloadSfx } from "@/lib/sfx";
 import { useLearnFlowStore } from "@/store/useLearnFlowStore";
 import { useAppTheme } from "@/theme/useAppTheme";
 
@@ -28,6 +28,10 @@ function QuizInner() {
   const [done, setDone] = useState(false);
   const [result, setResult] = useState<{ xp: number; unlocked: boolean; challenger: boolean } | null>(null);
   const q = queue[current];
+
+  useEffect(() => {
+    preloadSfx();
+  }, []);
 
   const advance = (nextScore: number) => {
     if (current + 1 >= queue.length) {
@@ -235,6 +239,10 @@ function QuizInner() {
               <button
                 key={opt}
                 type="button"
+                onPointerDown={(e) => {
+                  if (e.button !== 0) return;
+                  pick(i);
+                }}
                 onClick={() => pick(i)}
                 className="w-full shrink-0 rounded-2xl border-2 px-3 py-2 text-left font-bold"
                 style={{

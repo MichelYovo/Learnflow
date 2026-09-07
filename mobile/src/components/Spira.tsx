@@ -59,7 +59,7 @@ export default function Spira({ mood, scene, size = 64, message, animated = true
   const { colors } = useAppTheme();
   const fromScene = scene ? resolveSpiraScene(scene) : null;
   const id = resolveSpiraMood(mood ?? fromScene?.mood ?? "neutre");
-  const text = message ?? fromScene?.message;
+  const text = message === "" ? undefined : (message ?? fromScene?.message);
   const t = useSharedValue(0);
 
   useEffect(() => {
@@ -105,10 +105,10 @@ const styles = StyleSheet.create({
   stage: {
     overflow: "visible",
     shadowColor: "#0F172A",
-    shadowOpacity: 0.2,
-    shadowRadius: 14,
-    shadowOffset: { width: 0, height: 10 },
-    elevation: 0,
+    shadowOpacity: 0.22,
+    shadowRadius: 20,
+    shadowOffset: { width: 0, height: 12 },
+    elevation: 8,
   },
   bubble: {
     borderRadius: 20,

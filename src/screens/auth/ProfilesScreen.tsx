@@ -19,7 +19,6 @@ type Props = NativeStackScreenProps<AuthStackParamList, "Profiles">;
 export default function ProfilesScreen({ navigation }: Props) {
   const selectProfile = useLearnFlowStore((s) => s.selectProfile);
   const profiles = useLearnFlowStore((s) => s.profiles);
-  const multiOn = useLearnFlowStore((s) => s.settings.multiProfileEnabled);
   const { colors } = useAppTheme();
   const [pending, setPending] = useState<ProfileEleve | null>(null);
   const [pinError, setPinError] = useState<string | null>(null);
@@ -50,10 +49,10 @@ export default function ProfilesScreen({ navigation }: Props) {
 
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: colors.surface }]}>
-      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+      <ScrollView style={{ flex: 1 }} contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
           <View style={styles.brandRow}>
-            <Logo height={88} />
+            <Logo height={88} float />
           </View>
           <Text style={[styles.title, { color: colors.textDark }]}>Qui révise aujourd'hui ?</Text>
           <Text style={styles.sub}>Chaque élève garde sa progression séparée.</Text>
@@ -101,21 +100,12 @@ export default function ProfilesScreen({ navigation }: Props) {
             </Pressable>
           ))}
 
-          <Pressable style={[styles.addCard, { backgroundColor: colors.mathsBg, borderColor: colors.mathsBorder }]} onPress={() => navigation.navigate("SignUp", { requirePin: multiOn })}>
-            <View style={styles.addAvatar}>
-              <Icon name="user" size={22} color={colors.primary} />
-            </View>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.addTitle}>Ajouter un profil</Text>
-              <Text style={styles.addSub}>Nouveau compte pour un autre élève</Text>
-            </View>
-          </Pressable>
-
           <View style={styles.infoBanner}>
             <Icon name="lightbulb" size={16} color={colors.accent} />
             <Text style={styles.infoText}>
-              Profils démo (Kofi, Ama) : PIN <Text style={styles.infoBold}>1234</Text>. Les profils restent{" "}
-              <Text style={styles.infoBold}>locaux</Text> — aucun réseau n'est requis.
+              Tests locaux : uniquement <Text style={styles.infoBold}>Kofi</Text> et{" "}
+              <Text style={styles.infoBold}>Ama</Text>. PIN <Text style={styles.infoBold}>1234</Text>. Les
+              profils restent <Text style={styles.infoBold}>locaux</Text> — aucun réseau n'est requis.
             </Text>
           </View>
         </View>
@@ -148,9 +138,9 @@ export default function ProfilesScreen({ navigation }: Props) {
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.surface },
-  scroll: { paddingBottom: 16 },
-  header: { paddingHorizontal: 24, paddingTop: 28, paddingBottom: 20, alignItems: "center" },
-  brandRow: { flexDirection: "row", alignItems: "center", gap: 10, marginBottom: 22 },
+  scroll: { flexGrow: 1, paddingBottom: 16 },
+  header: { paddingHorizontal: 24, paddingTop: 8, paddingBottom: 12, alignItems: "center" },
+  brandRow: { flexDirection: "row", alignItems: "center", gap: 10, marginBottom: 12 },
   logo: {
     width: 36,
     height: 36,
@@ -192,29 +182,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  addCard: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 14,
-    borderWidth: 2,
-    borderStyle: "dashed",
-    borderColor: colors.mathsBorder,
-    borderRadius: 24,
-    padding: 16,
-    backgroundColor: "#F8F8FF",
-  },
-  addAvatar: {
-    width: 56,
-    height: 56,
-    borderRadius: 16,
-    backgroundColor: colors.mathsBg,
-    borderWidth: 2,
-    borderColor: colors.mathsBorder,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  addTitle: { fontSize: 14, fontWeight: "800", color: colors.primary },
-  addSub: { fontSize: 11, color: colors.textMuted, marginTop: 2 },
   infoBanner: {
     flexDirection: "row",
     alignItems: "flex-start",

@@ -18,10 +18,10 @@ export const MODES = [
   {
     id: "libre",
     label: "Mode Libre",
-    sub: "Assimilation sereine",
+    sub: "Tu as le temps",
     purpose:
-      "Pour l'élève calme, à jour : comprendre et approfondir à son rythme, sans pression de temps.",
-    hint: "Fiches · Analogies · Schémas SVT",
+      "Tu lis à ton rythme, sans chrono. Idéal le soir, le week-end, ou quand tu veux vraiment comprendre un chapitre.",
+    hint: "Cours · Schémas · Pas de stress",
     color: "#10B981",
     bg: "#ECFDF5",
     border: "#A7F3D0",
@@ -30,10 +30,10 @@ export const MODES = [
   {
     id: "guide",
     label: "Mode Guidé",
-    sub: "Pilote automatique",
+    sub: "Tu ne sais pas par où commencer",
     purpose:
-      "Routine quotidienne : Spira ne présente que ce que tu es sur le point d'oublier (algo des J).",
-    hint: "Spira · répétition",
+      "L’app te propose ce qu’il faut réviser aujourd’hui — surtout ce que tu risques d’oublier. Tu suis, c’est tout.",
+    hint: "Une petite routine chaque jour",
     color: "#1677FF",
     bg: "#E6F4FF",
     border: "#BAE0FF",
@@ -42,10 +42,10 @@ export const MODES = [
   {
     id: "cramming",
     label: "Cramming",
-    sub: "Veille de devoir",
+    sub: "Devoir demain",
     purpose:
-      "Une matière, un chapitre : quizz d'assimilation (10 questions) + textes à trous, sans chrono.",
-    hint: "Quizz · Trous",
+      "Un chapitre, des quiz, des textes à trous. Pas de chrono : tu te concentres jusqu’à tout retenir.",
+    hint: "Quiz · Mots manquants",
     color: "#F59E0B",
     bg: "#FFFBEB",
     border: "#FDE68A",
@@ -54,10 +54,10 @@ export const MODES = [
   {
     id: "blitz",
     label: "Blitz 60s",
-    sub: "Survive 60s",
+    sub: "Un défi rapide",
     purpose:
-      "60 secondes, mix de chapitres. Choisis Facile, Moyen ou Difficile, puis envoie le code défi sur WhatsApp.",
-    hint: "Difficulté · WhatsApp",
+      "60 secondes, questions mêlées. Facile, Moyen ou Difficile — puis tu peux défier un ami sur WhatsApp.",
+    hint: "Contre la montre · Entre amis",
     color: "#EF4444",
     bg: "#FEF2F2",
     border: "#FECACA",
@@ -74,14 +74,14 @@ export const TIERS = [
 ] as const;
 
 export const SPIRA_MOODS = [
-  { id: "joyeux", label: "Joyeux", role: "Succès, 10/10, Challenger" },
-  { id: "calme", label: "Calme", role: "Mode Libre, cours" },
-  { id: "confiant", label: "Confiant", role: "Mode Guidé, ligue" },
-  { id: "determine", label: "Déterminé", role: "Cramming, veille de devoir" },
-  { id: "enerve", label: "Énervé", role: "Blitz 60s" },
-  { id: "surpris", label: "Surpris", role: "Découverte, « aha »" },
-  { id: "timide", label: "Timide", role: "Profil, contenus verrouillés" },
-  { id: "triste", label: "Triste", role: "Erreur, 10/10 raté" },
-  { id: "neutre", label: "Neutre", role: "Tuteur IA, attente" },
-  { id: "fatigue", label: "Fatigué", role: "Repos Instant T" },
+  { id: "joyeux", label: "Joyeux", role: "Quand tu as 10/10" },
+  { id: "calme", label: "Calme", role: "Quand tu lis un cours" },
+  { id: "confiant", label: "Confiant", role: "Quand tu suis le guidé" },
+  { id: "determine", label: "Déterminé", role: "La veille d’un devoir" },
+  { id: "enerve", label: "Énervé", role: "Pendant le Blitz 60 s" },
+  { id: "surpris", label: "Surpris", role: "Quand ça « clique »" },
+  { id: "timide", label: "Timide", role: "Quand un chapitre est encore fermé" },
+  { id: "triste", label: "Triste", role: "Quand tu rates une question" },
+  { id: "neutre", label: "Neutre", role: "Quand tu cherches une aide" },
+  { id: "fatigue", label: "Fatigué", role: "Quand tu as besoin d’une pause" },
 ] as const;

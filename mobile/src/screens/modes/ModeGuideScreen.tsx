@@ -1,13 +1,16 @@
 import React, { useMemo, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
 import { SafeAreaView } from "react-native-safe-area-context";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
+import FlipCard from "../../components/FlipCard";
 import Icon from "../../components/Icon";
 import Spira from "../../components/Spira";
+import { SlideIn } from "../../components/ui";
 import { spiraForFlashRating, type SpiraMoodId } from "../../data/spira";
 import { cardsDueToday, daysUntilNext } from "../../engine/spacedRepetition";
 import { useLearnFlowStore } from "../../store/useLearnFlowStore";
-import { colors } from "../../theme/colors";
+import { useAppTheme } from "../../theme/useAppTheme";
 import type { DifficulteFlash } from "../../types/learnflow";
 import type { RootStackParamList } from "../../navigation/types";
 
@@ -20,6 +23,7 @@ function spiraAfterRating(d: DifficulteFlash, days: number) {
 }
 
 export default function ModeGuideScreen({ navigation }: Props) {
+  const { colors } = useAppTheme();
   const flashcards = useLearnFlowStore((s) => s.flashcards);
   const rateFlashcard = useLearnFlowStore((s) => s.rateFlashcard);
   const liveDue = useMemo(() => cardsDueToday(flashcards), [flashcards]);
@@ -53,152 +57,154 @@ export default function ModeGuideScreen({ navigation }: Props) {
     }
   };
 
+  const header = (right?: React.ReactNode) => (
+    <View style={styles.header}>
+      <Pressable onPress={() => navigation.goBack()} style={[styles.back, { backgroundColor: colors.white }]}>
+        <Icon name="arrow-left" size={18} color={colors.textDark} />
+      </Pressable>
+      <Text style={[styles.title, { color: colors.textDark, flex: 1 }]}>Mode Guidé</Text>
+      {right}
+    </View>
+  );
+
   if (liveDue.length === 0 && !started) {
     return (
-      <SafeAreaView style={styles.safe}>
-        <View style={styles.header}>
-          <Pressable onPress={() => navigation.goBack()} style={styles.back}>
-            <Icon name="arrow-left" size={18} color={colors.textDark} />
-          </Pressable>
-          <View>
-            <Text style={styles.title}>Mode Guidé</Text>
+      <SafeAreaView style={[styles.safe, { backgroundColor: colors.surface }]}>
+        {header()}
+        <SlideIn id="empty">
+          <View style={styles.center}>
+            <Spira scene="mode.guide.empty" size={112} message={speech} />
+            <Pressable onPress={() => navigation.goBack()}>
+              <Text style={[styles.ghostText, { color: colors.primary }]}>Retour accueil</Text>
+            </Pressable>
           </View>
-        </View>
-        <View style={styles.center}>
-          <Spira scene="mode.guide.empty" size={96} message={speech} />
-          <Pressable style={styles.ghost} onPress={() => navigation.goBack()}>
-            <Text style={styles.ghostText}>Retour accueil</Text>
-          </Pressable>
-        </View>
+        </SlideIn>
       </SafeAreaView>
     );
   }
 
   if (!started) {
     return (
-      <SafeAreaView style={styles.safe}>
-        <View style={styles.header}>
-          <Pressable onPress={() => navigation.goBack()} style={styles.back}>
-            <Icon name="arrow-left" size={18} color={colors.textDark} />
-          </Pressable>
-          <View>
-            <Text style={styles.title}>Mode Guidé</Text>
-          </View>
-        </View>
-        <View style={styles.center}>
-          <Spira scene="mode.guide" size={96} message={speech} />
+      <SafeAreaView style={[styles.safe, { backgroundColor: colors.surface }]}>
+        {header(
           <Pressable
-            style={styles.primary}
-            onPress={() => {
-              setDeck(liveDue);
-              setStarted(true);
-              setMood("confiant");
-              setSpeech("");
-            }}
+            onPress={() => navigation.navigate("SessionCustomize", { mode: "Guide" })}
+            style={[styles.gear, { backgroundColor: colors.white }]}
           >
-            <Text style={styles.primaryText}>Lancer l'entretien</Text>
+            <Icon name="settings" size={16} color={colors.textDark} />
           </Pressable>
-        </View>
+        )}
+        <SlideIn id="start">
+          <View style={styles.center}>
+            <Spira scene="mode.guide" size={112} message={speech} />
+            <Pressable
+              style={styles.btnWrap}
+              onPress={() => {
+                setDeck(liveDue);
+                setStarted(true);
+                setMood("confiant");
+                setSpeech("");
+              }}
+            >
+              <LinearGradient colors={[colors.primary, colors.primaryDark]} style={styles.primary}>
+                <Text style={styles.primaryText}>Lancer l'entretien</Text>
+              </LinearGradient>
+            </Pressable>
+          </View>
+        </SlideIn>
       </SafeAreaView>
     );
   }
 
   if (done) {
     return (
-      <SafeAreaView style={styles.safe}>
-        <View style={styles.center}>
-          <Spira scene="mode.guide.done" size={88} />
-          <Pressable style={styles.primary} onPress={() => navigation.goBack()}>
-            <Text style={styles.primaryText}>Terminer</Text>
-          </Pressable>
-        </View>
+      <SafeAreaView style={[styles.safe, { backgroundColor: colors.surface }]}>
+        {header()}
+        <SlideIn id="done">
+          <View style={styles.center}>
+            <Spira scene="mode.guide.done" size={104} />
+            <Pressable style={styles.btnWrap} onPress={() => navigation.goBack()}>
+              <LinearGradient colors={[colors.primary, colors.primaryDark]} style={styles.primary}>
+                <Text style={styles.primaryText}>Terminer</Text>
+              </LinearGradient>
+            </Pressable>
+          </View>
+        </SlideIn>
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={styles.safe}>
-      <View style={styles.header}>
-        <Pressable onPress={() => navigation.goBack()} style={styles.back}>
-          <Icon name="arrow-left" size={18} color={colors.textDark} />
-        </Pressable>
-        <View style={{ flex: 1 }}>
-          <Text style={styles.title}>Mode Guidé</Text>
-          <Text style={styles.meta}>
-            {idx + 1}/{deck.length}
-          </Text>
+    <SafeAreaView style={[styles.safe, { backgroundColor: colors.surface }]}>
+      {header(
+        <Text style={[styles.meta, { color: colors.primary }]}>
+          {idx + 1}/{deck.length}
+        </Text>
+      )}
+      <SlideIn id={idx}>
+        <View style={styles.play}>
+          <View style={styles.spiraRow}>
+            <Spira mood={mood} size={64} message={speech} />
+          </View>
+          <FlipCard front={card.recto} back={card.verso} flipped={flipped} onPress={() => setFlipped((v) => !v)} />
+          {flipped ? (
+            <View style={styles.rates}>
+              {(["Difficile", "Moyen", "Facile"] as DifficulteFlash[]).map((d) => (
+                <Pressable
+                  key={d}
+                  onPress={() => rate(d)}
+                  style={[
+                    styles.rateBtn,
+                    {
+                      backgroundColor: colors.white,
+                      borderColor: d === "Facile" ? colors.secondary : d === "Moyen" ? colors.accent : colors.danger,
+                    },
+                  ]}
+                >
+                  <Text
+                    style={{
+                      fontWeight: "800",
+                      color: d === "Facile" ? colors.secondary : d === "Moyen" ? colors.accent : colors.danger,
+                    }}
+                  >
+                    {d}
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
+          ) : null}
         </View>
-      </View>
-
-      <View style={styles.play}>
-      <View style={styles.spiraRow}>
-        <Spira mood={mood} size={56} message={speech} />
-      </View>
-
-      <Pressable style={styles.card} onPress={() => setFlipped(!flipped)}>
-        <Text style={styles.cardText}>{flipped ? card.verso : card.recto}</Text>
-      </Pressable>
-
-      {flipped ? (
-        <View style={styles.rates}>
-          {(["Difficile", "Moyen", "Facile"] as DifficulteFlash[]).map((d) => (
-            <Pressable
-              key={d}
-              onPress={() => rate(d)}
-              style={[
-                styles.rateBtn,
-                {
-                  borderColor: d === "Facile" ? colors.secondary : d === "Moyen" ? colors.accent : colors.danger,
-                },
-              ]}
-            >
-              <Text
-                style={{
-                  fontWeight: "800",
-                  color: d === "Facile" ? colors.secondary : d === "Moyen" ? colors.accent : colors.danger,
-                }}
-              >
-                {d}
-              </Text>
-            </Pressable>
-          ))}
-        </View>
-      ) : null}
-      </View>
+      </SlideIn>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.surface },
+  safe: { flex: 1 },
   header: { flexDirection: "row", alignItems: "center", gap: 12, padding: 16 },
   back: {
     width: 40,
     height: 40,
     borderRadius: 14,
-    backgroundColor: colors.white,
     alignItems: "center",
     justifyContent: "center",
   },
-  title: { fontWeight: "800", fontSize: 22, color: colors.textDark },
-  meta: { fontSize: 15, fontWeight: "700", color: colors.primary, marginTop: 2 },
+  gear: {
+    width: 40,
+    height: 40,
+    borderRadius: 14,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  title: { fontWeight: "800", fontSize: 22 },
+  meta: { fontSize: 15, fontWeight: "700" },
   center: { flex: 1, alignItems: "center", justifyContent: "center", padding: 28, gap: 24 },
-  primary: { backgroundColor: colors.primary, borderRadius: 18, paddingVertical: 18, paddingHorizontal: 32, alignItems: "center", minWidth: 220 },
-  primaryText: { color: colors.white, fontWeight: "800", fontSize: 17 },
-  ghost: { paddingVertical: 10 },
-  ghostText: { color: colors.primary, fontWeight: "800", fontSize: 16 },
+  btnWrap: { borderRadius: 18, overflow: "hidden", minWidth: 220 },
+  primary: { paddingVertical: 18, paddingHorizontal: 32, alignItems: "center" },
+  primaryText: { color: "#FFFFFF", fontWeight: "800", fontSize: 17 },
+  ghostText: { fontWeight: "800", fontSize: 16 },
   spiraRow: { alignItems: "center", paddingHorizontal: 16, marginBottom: 8 },
   play: { paddingTop: 4 },
-  card: {
-    marginHorizontal: 24,
-    minHeight: 240,
-    backgroundColor: colors.white,
-    borderRadius: 28,
-    padding: 28,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  cardText: { fontSize: 24, fontWeight: "800", color: colors.textDark, textAlign: "center", lineHeight: 32 },
   rates: { flexDirection: "row", gap: 10, padding: 24 },
-  rateBtn: { flex: 1, borderWidth: 1.5, borderRadius: 16, paddingVertical: 16, alignItems: "center", backgroundColor: colors.white },
+  rateBtn: { flex: 1, borderWidth: 1.5, borderRadius: 16, paddingVertical: 16, alignItems: "center" },
 });

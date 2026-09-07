@@ -9,16 +9,21 @@ export default function Footer() {
         <div>
           <Image src="/brand/logo-light.png" alt="LearnFlow" width={260} height={70} className="h-14 w-auto" />
           <p className="mt-4 max-w-sm text-sm font-medium leading-relaxed text-[#64748B]">
-            Application mobile d’apprentissage pour collégiens et lycéens du Togo. Programme APC, règle du 10/10,
-            offline-first.
+            L’app de révision pour collégiens et lycéens du Togo. Tes cours, des quiz, et un chapitre validé seulement
+            à 10/10. Même sans internet.
           </p>
         </div>
         <div>
-          <p className="text-xs font-extrabold uppercase tracking-widest text-[#A8A29E]">Produit</p>
+          <p className="text-xs font-extrabold uppercase tracking-widest text-[#A8A29E]">Sur cette page</p>
           <ul className="mt-3 space-y-2 text-sm font-semibold text-[#1C1917]">
             <li>
+              <Link href="/#parcours" className="hover:text-[#1677FF]">
+                Comment ça marche
+              </Link>
+            </li>
+            <li>
               <Link href="/#modes" className="hover:text-[#1677FF]">
-                Quatre modes
+                Les 4 modes
               </Link>
             </li>
             <li>
@@ -27,8 +32,13 @@ export default function Footer() {
               </Link>
             </li>
             <li>
-              <Link href="/#sms" className="hover:text-[#1677FF]">
-                SMS de fierté
+              <Link href="/#parents" className="hover:text-[#1677FF]">
+                Parents
+              </Link>
+            </li>
+            <li>
+              <Link href="/#faq" className="hover:text-[#1677FF]">
+                Questions
               </Link>
             </li>
           </ul>
@@ -55,7 +65,7 @@ export default function Footer() {
         </div>
       </div>
       <div className="border-t border-[#F0EFEE] py-5 text-center text-xs font-semibold text-[#A8A29E]">
-        LearnFlow Togo · APC · Version 1.0.0 · tg.learnflow.app
+        LearnFlow Togo · Collège et lycée · Version 1.0.0
       </div>
     </footer>
   );

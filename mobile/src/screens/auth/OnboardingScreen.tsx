@@ -4,6 +4,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { SafeAreaView } from "react-native-safe-area-context";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import Spira from "../../components/Spira";
+import { SlideIn } from "../../components/ui";
 import { useLearnFlowStore } from "../../store/useLearnFlowStore";
 import { useAppTheme } from "../../theme/useAppTheme";
 import type { SpiraScene } from "../../data/spira";
@@ -66,11 +67,13 @@ export default function OnboardingScreen({ navigation }: Props) {
         </Pressable>
       </View>
 
-      <View style={styles.stage}>
-        <Spira key={slide.scene} scene={slide.scene} size={128} />
-        <Text style={[styles.title, { color: colors.textDark }]}>{slide.title}</Text>
-        <Text style={[styles.body, { color: colors.textSecondary }]}>{slide.body}</Text>
-      </View>
+      <SlideIn id={step}>
+        <View style={styles.stage}>
+          <Spira key={slide.scene} scene={slide.scene} size={128} />
+          <Text style={[styles.title, { color: colors.textDark }]}>{slide.title}</Text>
+          <Text style={[styles.body, { color: colors.textSecondary }]}>{slide.body}</Text>
+        </View>
+      </SlideIn>
 
       <View style={styles.footer}>
         <Pressable onPress={next} accessibilityRole="button" style={styles.btnWrap}>

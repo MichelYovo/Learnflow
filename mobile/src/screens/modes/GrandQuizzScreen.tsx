@@ -111,6 +111,7 @@ export default function GrandQuizzScreen({ navigation, route }: Props) {
         {q.optionsProposees.map((opt, i) => (
           <Pressable
             key={i}
+            onPressIn={() => pick(i)}
             onPress={() => pick(i)}
             style={[
               styles.opt,

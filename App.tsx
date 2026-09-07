@@ -8,6 +8,7 @@ import { useColorScheme } from "nativewind";
 import RootNavigator from "./src/navigation/RootNavigator";
 import AnimatedSplash from "./src/components/AnimatedSplash";
 import OfflineBootstrap from "./src/providers/OfflineBootstrap";
+import { preloadSfx } from "./src/lib/sfx";
 import { useLearnFlowStore } from "./src/store/useLearnFlowStore";
 import { useAppTheme } from "./src/theme/useAppTheme";
 
@@ -38,6 +39,11 @@ export default function App() {
       clearTimeout(t);
     };
   }, [hydrated, persistApi]);
+
+  useEffect(() => {
+    if (!hydrated) return;
+    preloadSfx();
+  }, [hydrated]);
 
   const onSplashFinish = useCallback(() => setSplashDone(true), []);
 

@@ -389,6 +389,7 @@ export default function BlitzScreen({ navigation, route }: Props) {
           return (
           <Pressable
             key={i}
+            onPressIn={() => pick(i)}
             onPress={() => pick(i)}
             style={[
               styles.opt,

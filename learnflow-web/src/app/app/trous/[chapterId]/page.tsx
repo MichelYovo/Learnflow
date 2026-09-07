@@ -1,12 +1,12 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Spira from "@/components/Spira";
 import { ScreenHeader, PrimaryButton } from "@/components/ui";
 import { chapterTitle, clozeForChapter } from "@/data/modeContent";
 import { spiraForScore } from "@/data/spira";
-import { playSfx } from "@/lib/sfx";
+import { playSfx, preloadSfx } from "@/lib/sfx";
 import { useAppTheme } from "@/theme/useAppTheme";
 
 export default function FillBlanksPage() {
@@ -22,6 +22,10 @@ export default function FillBlanksPage() {
   const [wrong, setWrong] = useState<typeof items>([]);
   const [done, setDone] = useState(false);
   const item = queue[Math.min(idx, Math.max(queue.length - 1, 0))];
+
+  useEffect(() => {
+    preloadSfx();
+  }, []);
 
   const choose = (opt: string) => {
     if (locked) return;
@@ -101,6 +105,10 @@ export default function FillBlanksPage() {
                 <button
                   key={opt}
                   type="button"
+                  onPointerDown={(e) => {
+                    if (e.button !== 0) return;
+                    choose(opt);
+                  }}
                   onClick={() => choose(opt)}
                   className="rounded-2xl border px-3 py-2 text-sm font-extrabold"
                   style={{

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Icon from "@/components/Icon";
 import Spira from "@/components/Spira";
@@ -8,7 +8,7 @@ import { PrimaryButton } from "@/components/ui";
 import { GRAND_QUIZZ } from "@/data/mock";
 import { spiraForScore } from "@/data/spira";
 import { calculerXP } from "@/engine/xp";
-import { playSfx } from "@/lib/sfx";
+import { playSfx, preloadSfx } from "@/lib/sfx";
 import { useLearnFlowStore } from "@/store/useLearnFlowStore";
 import { useAppTheme } from "@/theme/useAppTheme";
 
@@ -25,6 +25,10 @@ export default function GrandQuizzPage() {
   const [score, setScore] = useState(0);
   const [done, setDone] = useState(false);
   const q = questions[current];
+
+  useEffect(() => {
+    preloadSfx();
+  }, []);
 
   if (!canAccess) {
     return (
@@ -110,6 +114,10 @@ export default function GrandQuizzPage() {
               <button
                 key={opt}
                 type="button"
+                onPointerDown={(e) => {
+                  if (e.button !== 0) return;
+                  pick(i);
+                }}
                 onClick={() => pick(i)}
                 className="w-full shrink-0 rounded-2xl border-2 px-3 py-2 text-left font-bold"
                 style={{

@@ -25,19 +25,15 @@ import { isSupabaseConfigured, supabase } from "../../lib/supabase";
 
 type Props = NativeStackScreenProps<AuthStackParamList, "SignUp">;
 
-export default function SignUpScreen({ navigation, route }: Props) {
+export default function SignUpScreen({ navigation }: Props) {
   const signUp = useLearnFlowStore((s) => s.signUp);
   const { colors } = useAppTheme();
-  const requirePin = Boolean(route.params?.requirePin);
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [classe, setClasse] = useState<ClasseAPC | "">("");
-  const [multiProfileOn, setMultiProfileOn] = useState(requirePin);
-  const [pin, setPin] = useState("");
-  const [pinConfirm, setPinConfirm] = useState("");
   const [showPw, setShowPw] = useState(false);
   const [error, setError] = useState("");
 
@@ -73,24 +69,12 @@ export default function SignUpScreen({ navigation, route }: Props) {
       }
     }
     const chosenClasse = classe || "3eme";
-    if (multiProfileOn) {
-      if (!/^\d{4}$/.test(pin)) {
-        setError("Choisis un code PIN à 4 chiffres pour ce profil.");
-        return;
-      }
-      if (pin !== pinConfirm) {
-        setError("Les codes PIN ne correspondent pas.");
-        return;
-      }
-    }
     setError("");
     signUp({
       firstName: firstName.trim() || "Élève",
       lastName: lastName.trim() || provider,
       email: email.trim() || `${provider}@learnflow.tg`,
       classe: chosenClasse,
-      pin: multiProfileOn ? pin : undefined,
-      multiProfile: multiProfileOn,
       provider,
     });
     if (isSupabaseConfigured && provider === "email") {
@@ -101,12 +85,11 @@ export default function SignUpScreen({ navigation, route }: Props) {
 
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: colors.surface }]} edges={["top", "bottom"]}>
+      <Pressable onPress={() => navigation.navigate("Splash")} style={[styles.backBtn, { backgroundColor: colors.surfaceAlt }]}>
+        <Icon name="arrow-left" size={18} color={colors.textDark} />
+      </Pressable>
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
-        <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
-          <Pressable onPress={() => navigation.goBack()} style={[styles.backBtn, { backgroundColor: colors.surfaceAlt }]}>
-            <Icon name="arrow-left" size={18} color={colors.textDark} />
-          </Pressable>
-
+        <ScrollView style={{ flex: 1 }} contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
           <Logo height={76} style={{ alignSelf: "center" }} />
           <Text style={styles.title}>Créer un compte</Text>
           <Text style={[styles.sub, { color: colors.textSecondary }]}>Inscris-toi pour commencer à apprendre.</Text>
@@ -189,80 +172,6 @@ export default function SignUpScreen({ navigation, route }: Props) {
             </View>
           </View>
 
-          <Pressable
-            onPress={() => {
-              setMultiProfileOn((v) => {
-                const next = !v;
-                if (!next) {
-                  setPin("");
-                  setPinConfirm("");
-                }
-                return next;
-              });
-            }}
-            style={[
-              styles.multiCard,
-              { backgroundColor: colors.white, borderColor: colors.border },
-              multiProfileOn && { borderColor: colors.primary, backgroundColor: colors.mathsBg },
-            ]}
-            accessibilityRole="button"
-            accessibilityState={{ selected: multiProfileOn }}
-            accessibilityLabel="Activer plusieurs profils sur cet appareil"
-          >
-            <View style={[styles.multiIcon, { backgroundColor: colors.mathsBg }]}>
-              <Icon name="people" size={20} color={colors.primary} />
-            </View>
-            <View style={{ flex: 1 }}>
-              <Text style={[styles.multiTitle, { color: colors.textDark }]}>
-                Plusieurs élèves sur ce téléphone ?
-              </Text>
-              <Text style={[styles.multiSub, { color: colors.textMuted }]}>
-                Active le multi-profil. Un PIN protège ce compte ; les autres s’ajoutent ensuite.
-              </Text>
-            </View>
-            <View
-              style={[
-                styles.multiBadge,
-                { backgroundColor: multiProfileOn ? colors.primary : colors.surfaceAlt },
-              ]}
-            >
-              <Text style={[styles.multiBadgeText, { color: multiProfileOn ? colors.onPrimary : colors.textMuted }]}>
-                {multiProfileOn ? "Oui" : "Non"}
-              </Text>
-            </View>
-          </Pressable>
-
-          {multiProfileOn ? (
-            <>
-              <View style={styles.field}>
-                <Text style={[styles.label, { color: colors.textDark }]}>Code PIN de ce profil (4 chiffres)</Text>
-                <TextInput
-                  style={[styles.input, { backgroundColor: colors.surfaceAlt, borderColor: colors.border, color: colors.textDark, letterSpacing: 8, textAlign: "center" }]}
-                  placeholder="••••"
-                  placeholderTextColor="#CBD5E1"
-                  keyboardType="number-pad"
-                  maxLength={4}
-                  secureTextEntry
-                  value={pin}
-                  onChangeText={(t) => setPin(t.replace(/\D/g, "").slice(0, 4))}
-                />
-              </View>
-              <View style={styles.field}>
-                <Text style={[styles.label, { color: colors.textDark }]}>Confirmer le PIN</Text>
-                <TextInput
-                  style={[styles.input, { backgroundColor: colors.surfaceAlt, borderColor: colors.border, color: colors.textDark, letterSpacing: 8, textAlign: "center" }]}
-                  placeholder="••••"
-                  placeholderTextColor="#CBD5E1"
-                  keyboardType="number-pad"
-                  maxLength={4}
-                  secureTextEntry
-                  value={pinConfirm}
-                  onChangeText={(t) => setPinConfirm(t.replace(/\D/g, "").slice(0, 4))}
-                />
-              </View>
-            </>
-          ) : null}
-
           {error ? <Text style={styles.error}>{error}</Text> : null}
 
           <Pressable onPress={() => submit("email")} style={styles.btnWrap}>
@@ -272,22 +181,21 @@ export default function SignUpScreen({ navigation, route }: Props) {
           </Pressable>
 
           <SocialAuth mode="signup" onProvider={(p) => submit(p)} />
-
-          <Text style={styles.footer}>
-            Déjà inscrit ?{" "}
-            <Text style={styles.link} onPress={() => navigation.navigate("Login")}>
-              Se connecter
-            </Text>
-          </Text>
         </ScrollView>
       </KeyboardAvoidingView>
+      <Text style={styles.footer}>
+        Déjà inscrit ?{" "}
+        <Text style={styles.link} onPress={() => navigation.navigate("Login")}>
+          Se connecter
+        </Text>
+      </Text>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.white },
-  scroll: { paddingHorizontal: 24, paddingBottom: 32, gap: 12 },
+  scroll: { flexGrow: 1, paddingHorizontal: 24, paddingTop: 8, paddingBottom: 16, gap: 10 },
   backBtn: {
     width: 40,
     height: 40,
@@ -296,10 +204,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     marginTop: 4,
-    marginBottom: 8,
+    marginBottom: 4,
+    marginLeft: 24,
   },
-  title: { fontSize: 28, fontWeight: "800", color: colors.primary, letterSpacing: -0.4 },
-  sub: { color: "#64748B", fontSize: 13, marginTop: -4, marginBottom: 8 },
+  title: { fontSize: 28, fontWeight: "800", color: colors.primary, letterSpacing: -0.4, textAlign: "center" },
+  sub: { color: "#64748B", fontSize: 13, marginTop: -4, marginBottom: 8, textAlign: "center" },
   field: { gap: 6 },
   label: { fontSize: 12, fontWeight: "700", color: "#374151" },
   input: {
@@ -326,33 +235,10 @@ const styles = StyleSheet.create({
   classChipOn: { borderColor: colors.primary, backgroundColor: colors.mathsBg },
   classText: { fontSize: 13, fontWeight: "800", color: "#78716C" },
   classTextOn: { color: colors.primary },
-  multiCard: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    borderWidth: 2,
-    borderRadius: 18,
-    padding: 14,
-  },
-  multiIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 14,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  multiTitle: { fontSize: 14, fontWeight: "800" },
-  multiSub: { fontSize: 11, fontWeight: "500", marginTop: 2, lineHeight: 15 },
-  multiBadge: {
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 999,
-  },
-  multiBadgeText: { fontSize: 11, fontWeight: "800" },
   error: { color: colors.danger, fontSize: 12, fontWeight: "700" },
   btnWrap: { borderRadius: 16, overflow: "hidden", marginTop: 4 },
   btn: { paddingVertical: 16, alignItems: "center" },
   btnText: { color: colors.white, fontWeight: "800", fontSize: 16 },
-  footer: { textAlign: "center", color: "#64748B", fontSize: 13, marginTop: 4 },
+  footer: { textAlign: "center", color: "#64748B", fontSize: 13, marginTop: 4, paddingHorizontal: 24, paddingTop: 8, paddingBottom: 8 },
   link: { color: colors.primary, fontWeight: "800" },
 });

@@ -135,6 +135,7 @@ export default function FillBlanksScreen({ navigation, route }: Props) {
             return (
               <Pressable
                 key={opt}
+                onPressIn={() => choose(opt)}
                 onPress={() => choose(opt)}
                 style={[
                   styles.opt,

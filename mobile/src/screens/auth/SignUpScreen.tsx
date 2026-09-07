@@ -85,7 +85,7 @@ export default function SignUpScreen({ navigation }: Props) {
 
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: colors.surface }]} edges={["top", "bottom"]}>
-      <Pressable onPress={() => navigation.goBack()} style={[styles.backBtn, { backgroundColor: colors.surfaceAlt }]}>
+      <Pressable onPress={() => navigation.navigate("Splash")} style={[styles.backBtn, { backgroundColor: colors.surfaceAlt }]}>
         <Icon name="arrow-left" size={18} color={colors.textDark} />
       </Pressable>
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : undefined}>

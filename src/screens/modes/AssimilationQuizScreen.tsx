@@ -212,6 +212,7 @@ export default function AssimilationQuizScreen({ navigation, route }: Props) {
             return (
               <Pressable
                 key={i}
+                onPressIn={() => pick(i)}
                 onPress={() => pick(i)}
                 style={[
                   styles.opt,

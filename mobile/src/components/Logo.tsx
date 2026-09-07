@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
   Image,
   useWindowDimensions,
@@ -7,6 +7,14 @@ import {
   type StyleProp,
   type ViewStyle,
 } from "react-native";
+import Animated, {
+  Easing,
+  useAnimatedStyle,
+  useSharedValue,
+  withRepeat,
+  withSequence,
+  withTiming,
+} from "react-native-reanimated";
 import { useAppTheme } from "../theme/useAppTheme";
 
 const LOGO_DARK = require("../../assets/logo-dark.png");
@@ -22,6 +30,8 @@ type Props = {
   variant?: "auto" | "onDark" | "onLight" | "mark";
   /** Agrandit le glyphe (utile si le PNG a beaucoup de marge) */
   scale?: number;
+  /** Légère flottement, pour splash / profils */
+  float?: boolean;
   style?: StyleProp<ViewStyle>;
   imageStyle?: StyleProp<ImageStyle>;
 };
@@ -36,6 +46,7 @@ export default function Logo({
   height = 52,
   variant = "auto",
   scale = 1,
+  float = false,
   style,
   imageStyle,
 }: Props) {
@@ -48,19 +59,40 @@ export default function Logo({
   const width = Math.min(naturalW, maxW);
   const displayH = isMark ? height : Math.max(28, Math.round((width / naturalW) * height));
   const source = isMark ? LOGO_MARK : useDarkAsset ? LOGO_DARK : LOGO_LIGHT;
+  const bob = useSharedValue(0);
+
+  useEffect(() => {
+    if (!float) return;
+    bob.value = withRepeat(
+      withSequence(
+        withTiming(-6, { duration: 1200, easing: Easing.inOut(Easing.quad) }),
+        withTiming(0, { duration: 1200, easing: Easing.inOut(Easing.quad) })
+      ),
+      -1,
+      false
+    );
+  }, [bob, float]);
+
+  const floatStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: bob.value }],
+  }));
+
+  const wrap = (
+    <Image
+      source={source}
+      style={[
+        { width, height: displayH },
+        scale !== 1 ? { transform: [{ scale }] } : null,
+        imageStyle,
+      ]}
+      resizeMode="contain"
+      accessibilityLabel="LearnFlow"
+    />
+  );
 
   return (
     <View style={[{ alignItems: "center", justifyContent: "center" }, style]}>
-      <Image
-        source={source}
-        style={[
-          { width, height: displayH },
-          scale !== 1 ? { transform: [{ scale }] } : null,
-          imageStyle,
-        ]}
-        resizeMode="contain"
-        accessibilityLabel="LearnFlow"
-      />
+      {float ? <Animated.View style={floatStyle}>{wrap}</Animated.View> : wrap}
     </View>
   );
 }

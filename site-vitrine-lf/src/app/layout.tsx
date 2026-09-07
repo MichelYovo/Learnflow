@@ -12,26 +12,26 @@ const poppins = Poppins({
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
   title: {
-    default: "LearnFlow — Un chapitre n’est validé qu’à 10/10",
+    default: "LearnFlow — Tes cours, compris pour de vrai",
     template: "%s · LearnFlow",
   },
   description:
-    "App mobile collège et lycée, programme APC Togo. Fiches, flashcards, règle du 10/10, quatre modes, ligues et Spira. Offline-first.",
+    "L’app de révision pour collégiens et lycéens du Togo. Cours, quiz, règle du 10/10, quatre modes et Spira. Ça marche même sans internet.",
   applicationName: "LearnFlow",
   keywords: ["LearnFlow", "Togo", "APC", "révisions", "collège", "lycée", "offline", "quiz"],
   authors: [{ name: "LearnFlow Togo" }],
   openGraph: {
-    title: "LearnFlow — Un chapitre n’est validé qu’à 10/10",
+    title: "LearnFlow — Tes cours, compris pour de vrai",
     description:
-      "Application élève collège-lycée APC Togo. Maîtrise, pas survol. Offline, ligues, Spira.",
+      "Révisions collège et lycée au Togo. Un chapitre n’est validé qu’à 10/10. Même sans internet.",
     locale: "fr_TG",
     type: "website",
     siteName: "LearnFlow",
   },
   twitter: {
     card: "summary_large_image",
-    title: "LearnFlow — Un chapitre n’est validé qu’à 10/10",
-    description: "App collège-lycée APC Togo. Offline-first. Règle du 10/10.",
+    title: "LearnFlow — Tes cours, compris pour de vrai",
+    description: "App collège-lycée au Togo. Un chapitre validé seulement à 10/10. Même sans internet.",
   },
   icons: {
     icon: [

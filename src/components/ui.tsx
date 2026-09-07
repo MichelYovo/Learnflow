@@ -1,5 +1,5 @@
-import React, { useEffect } from "react";
-import { Pressable, Text, View, type ViewProps } from "react-native";
+import React, { useEffect, type ReactNode } from "react";
+import { Pressable, ScrollView, Text, View, type ViewProps } from "react-native";
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -176,4 +176,58 @@ export function SectionLabel({ children }: { children: string }) {
       {children}
     </Text>
   );
+}
+
+/** Colonne auth comme le web `AuthStage` : top / contenu / footer collé. */
+export function AuthStage({
+  children,
+  top,
+  footer,
+}: {
+  children: ReactNode;
+  top?: ReactNode;
+  footer?: ReactNode;
+}) {
+  return (
+    <View style={{ flex: 1, width: "100%", maxWidth: 480, alignSelf: "center", paddingHorizontal: 20, paddingVertical: 16 }}>
+      {top ? <View>{top}</View> : null}
+      <ScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={{ flexGrow: 1, justifyContent: footer ? "flex-start" : "center", paddingVertical: 16 }}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
+        {children}
+      </ScrollView>
+      {footer ? <View style={{ paddingTop: 12 }}>{footer}</View> : null}
+    </View>
+  );
+}
+
+/** Apparition slide comme `.lf-slide-in` web. */
+export function SlideIn({
+  children,
+  id,
+  style,
+}: {
+  children: ReactNode;
+  id: string | number;
+  style?: object;
+}) {
+  const y = useSharedValue(18);
+  const o = useSharedValue(0);
+
+  useEffect(() => {
+    y.value = 18;
+    o.value = 0;
+    y.value = withTiming(0, { duration: 420, easing: Easing.out(Easing.cubic) });
+    o.value = withTiming(1, { duration: 420, easing: Easing.out(Easing.cubic) });
+  }, [id, o, y]);
+
+  const anim = useAnimatedStyle(() => ({
+    opacity: o.value,
+    transform: [{ translateY: y.value }, { scale: 0.98 + 0.02 * o.value }],
+  }));
+
+  return <Animated.View style={[{ flex: 1 }, style, anim]}>{children}</Animated.View>;
 }

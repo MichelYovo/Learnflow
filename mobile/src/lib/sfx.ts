@@ -11,12 +11,18 @@ const SOURCES: Record<SfxKind, number> = {
   timesUp: require("../../assets/sfx/times-up.wav"),
 };
 
-const players: Partial<Record<SfxKind, AudioPlayer>> = {};
+const POOL = 2;
+const players: Partial<Record<SfxKind, AudioPlayer[]>> = {};
+const cursor: Partial<Record<SfxKind, number>> = {};
 let modeReady = false;
 let modePromise: Promise<void> | null = null;
 
 function soundsEnabled() {
   return useLearnFlowStore.getState().settings.notifications.sounds;
+}
+
+function volumeFor(kind: SfxKind) {
+  return kind === "timesUp" ? 1 : kind === "correct" ? 0.95 : 0.88;
 }
 
 function ensureMode() {
@@ -34,16 +40,49 @@ function ensureMode() {
         modePromise = null;
       });
   }
-  return modePromise;
+  return modePromise ?? Promise.resolve();
 }
 
-function getPlayer(kind: SfxKind) {
+function poolFor(kind: SfxKind) {
   if (!players[kind]) {
-    const p = createAudioPlayer(SOURCES[kind]);
-    p.volume = kind === "timesUp" ? 1 : kind === "correct" ? 0.95 : 0.88;
-    players[kind] = p;
+    const list: AudioPlayer[] = [];
+    for (let i = 0; i < POOL; i++) {
+      const p = createAudioPlayer(SOURCES[kind]);
+      p.volume = volumeFor(kind);
+      list.push(p);
+    }
+    players[kind] = list;
+    cursor[kind] = 0;
   }
   return players[kind]!;
+}
+
+function nextPlayer(kind: SfxKind) {
+  const list = poolFor(kind);
+  const i = cursor[kind] ?? 0;
+  cursor[kind] = (i + 1) % list.length;
+  return list[i]!;
+}
+
+function restart(p: AudioPlayer) {
+  try {
+    const busy = Boolean((p as AudioPlayer & { playing?: boolean }).playing);
+    const t = (p as AudioPlayer & { currentTime?: number }).currentTime ?? 0;
+    if (busy) p.pause();
+    if (busy || t > 0.02) {
+      void p.seekTo(0).then(() => {
+        p.play();
+      });
+      return;
+    }
+    p.play();
+  } catch {
+    try {
+      p.play();
+    } catch {
+      /* audio optional */
+    }
+  }
 }
 
 async function haptic(kind: SfxKind) {
@@ -66,7 +105,7 @@ async function haptic(kind: SfxKind) {
 export function preloadSfx() {
   if (!soundsEnabled()) return;
   void ensureMode().then(() => {
-    (Object.keys(SOURCES) as SfxKind[]).forEach((k) => getPlayer(k));
+    (Object.keys(SOURCES) as SfxKind[]).forEach((k) => poolFor(k));
   });
 }
 
@@ -74,14 +113,10 @@ export function preloadSfx() {
 export function playSfx(kind: SfxKind) {
   if (!soundsEnabled()) return;
   void haptic(kind);
-  void ensureMode()
-    .then(async () => {
-      const p = getPlayer(kind);
-      p.pause();
-      await p.seekTo(0);
-      p.play();
-    })
-    .catch(() => {
-      /* audio optional */
-    });
+  const fire = () => restart(nextPlayer(kind));
+  if (modeReady) {
+    fire();
+    return;
+  }
+  void ensureMode().then(fire).catch(() => undefined);
 }

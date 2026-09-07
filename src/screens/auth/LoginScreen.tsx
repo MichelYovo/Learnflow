@@ -66,12 +66,11 @@ export default function LoginScreen({ navigation }: Props) {
 
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: colors.surface }]} edges={["top", "bottom"]}>
+      <Pressable onPress={() => navigation.navigate("Splash")} style={[styles.backBtn, { backgroundColor: colors.surfaceAlt }]}>
+        <Icon name="arrow-left" size={18} color={colors.textDark} />
+      </Pressable>
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
-        <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
-          <Pressable onPress={() => navigation.goBack()} style={[styles.backBtn, { backgroundColor: colors.surfaceAlt }]}>
-            <Icon name="arrow-left" size={18} color={colors.textDark} />
-          </Pressable>
-
+        <ScrollView style={{ flex: 1 }} contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
           <Logo height={76} style={{ alignSelf: "center" }} />
           <Text style={styles.title}>Bon retour !</Text>
           <Text style={[styles.sub, { color: colors.textSecondary }]}>Reprends là où tu t'es arrêté.</Text>
@@ -121,22 +120,21 @@ export default function LoginScreen({ navigation }: Props) {
           <Pressable onPress={() => navigation.navigate("Profiles")}>
             <Text style={styles.linkCenter}>Choisir un profil local</Text>
           </Pressable>
-
-          <Text style={[styles.footer, { color: colors.textSecondary }]}>
-            Pas encore de compte ?{" "}
-            <Text style={styles.link} onPress={() => navigation.navigate("SignUp")}>
-              S'inscrire
-            </Text>
-          </Text>
         </ScrollView>
       </KeyboardAvoidingView>
+      <Text style={[styles.footer, { color: colors.textSecondary }]}>
+        Pas encore de compte ?{" "}
+        <Text style={styles.link} onPress={() => navigation.navigate("SignUp")}>
+          S'inscrire
+        </Text>
+      </Text>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.white },
-  scroll: { paddingHorizontal: 24, paddingBottom: 32, gap: 14 },
+  scroll: { flexGrow: 1, paddingHorizontal: 24, paddingTop: 8, paddingBottom: 16, gap: 12 },
   backBtn: {
     width: 40,
     height: 40,
@@ -145,10 +143,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     marginTop: 4,
-    marginBottom: 8,
+    marginBottom: 4,
+    marginLeft: 24,
   },
-  title: { fontSize: 28, fontWeight: "800", color: colors.primary, letterSpacing: -0.4 },
-  sub: { color: "#64748B", fontSize: 13, marginTop: -6, marginBottom: 8 },
+  title: { fontSize: 28, fontWeight: "800", color: colors.primary, letterSpacing: -0.4, textAlign: "center" },
+  sub: { color: "#64748B", fontSize: 13, marginTop: -6, marginBottom: 8, textAlign: "center" },
   field: { gap: 6 },
   label: { fontSize: 12, fontWeight: "700", color: "#374151" },
   pwHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
@@ -168,7 +167,7 @@ const styles = StyleSheet.create({
   btn: { paddingVertical: 16, alignItems: "center" },
   btnText: { color: colors.white, fontWeight: "800", fontSize: 16 },
   linkCenter: { textAlign: "center", color: colors.primary, fontWeight: "700" },
-  footer: { textAlign: "center", color: "#64748B", fontSize: 13 },
+  footer: { textAlign: "center", color: "#64748B", fontSize: 13, paddingHorizontal: 24, paddingTop: 8, paddingBottom: 8 },
   link: { color: colors.primary, fontWeight: "800" },
   error: { color: colors.danger, fontSize: 12, fontWeight: "700" },
 });
