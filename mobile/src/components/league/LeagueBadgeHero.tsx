@@ -1,75 +1,76 @@
 import React from "react";
-import { Image, StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 import type { LeagueTierMeta } from "../../data/mock";
 import { useAppTheme } from "../../theme/useAppTheme";
-import { Card } from "../ui";
-import { LEAGUE_BADGE_IMAGES } from "./badgeAssets";
+import { LeagueBadgeCircle } from "./LeagueBadge";
 
 type Props = {
   tier: LeagueTierMeta;
   title: string;
   subtitle: string;
+  subtitleColor?: string;
+  rank?: number | null;
+  dimmed?: boolean;
 };
 
-/** Hero badge — met en valeur le badge 3D confectionné */
-export default function LeagueBadgeHero({ tier, title, subtitle }: Props) {
-  const { colors, darkMode } = useAppTheme();
+export default function LeagueBadgeHero({ tier, title, subtitle, subtitleColor, rank, dimmed }: Props) {
+  const { colors } = useAppTheme();
 
   return (
-    <Card
-      className="p-5"
-      style={{
-        marginHorizontal: 16,
-        marginBottom: 12,
-        alignItems: "center",
-        overflow: "hidden",
-        backgroundColor: darkMode ? "#1E293B" : colors.white,
-      }}
-    >
-      <View
-        style={[
-          styles.glow,
-          {
-            backgroundColor: tier.color,
-            opacity: darkMode ? 0.18 : 0.12,
-          },
-        ]}
-      />
-      <Image
-        source={LEAGUE_BADGE_IMAGES[tier.badgeKey]}
-        style={styles.badge}
-        resizeMode="contain"
-      />
+    <View style={[styles.card, { backgroundColor: colors.white }]}>
+      <View style={styles.badgeWrap}>
+        <LeagueBadgeCircle nom={tier.id} size={108} selected dimmed={dimmed} />
+        {rank != null ? (
+          <View style={[styles.rankPill, { backgroundColor: tier.color, borderColor: colors.white }]}>
+            <Text style={styles.rankText}>#{rank}</Text>
+          </View>
+        ) : null}
+      </View>
       <Text style={[styles.title, { color: colors.textDark }]}>{title}</Text>
-      <Text style={[styles.subtitle, { color: colors.textMuted }]}>{subtitle}</Text>
-    </Card>
+      <Text style={[styles.subtitle, { color: subtitleColor ?? colors.textMuted }]}>{subtitle}</Text>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  glow: {
+  card: {
+    marginHorizontal: 16,
+    marginBottom: 12,
+    borderRadius: 20,
+    paddingHorizontal: 20,
+    paddingTop: 24,
+    paddingBottom: 20,
+    alignItems: "center",
+    overflow: "hidden",
+  },
+  badgeWrap: {
+    position: "relative",
+    paddingBottom: 12,
+    marginBottom: 4,
+  },
+  rankPill: {
     position: "absolute",
-    width: 180,
-    height: 180,
-    borderRadius: 90,
-    top: 8,
+    bottom: 4,
+    alignSelf: "center",
+    left: "50%",
+    transform: [{ translateX: -22 }],
+    minWidth: 44,
+    borderRadius: 999,
+    paddingHorizontal: 10,
+    paddingVertical: 2,
+    borderWidth: 3,
+    zIndex: 2,
   },
-  badge: {
-    width: 132,
-    height: 132,
-    marginBottom: 8,
-  },
+  rankText: { color: "#FFFFFF", fontSize: 12, fontWeight: "900", textAlign: "center" },
   title: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: "800",
-    letterSpacing: -0.3,
     textAlign: "center",
   },
   subtitle: {
     fontSize: 13,
+    fontWeight: "600",
     marginTop: 4,
     textAlign: "center",
-    lineHeight: 18,
-    paddingHorizontal: 8,
   },
 });
