@@ -763,7 +763,7 @@ export const useLearnFlowStore = create<LearnFlowState>()(
       completeOnboarding: () => set({ onboardingCompleted: true }),
     }),
     {
-      name: "learnflow-store-v6",
+      name: "learnflow-store-v7",
       storage: createJSONStorage(() => AsyncStorage),
       merge: (persisted, current) => {
         try {

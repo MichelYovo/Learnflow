@@ -13,7 +13,7 @@ import MesMatieres from "../../components/MesMatieres";
 import ModeWorkSelector from "../../components/ModeWorkSelector";
 import FloatingChatbot from "../../components/FloatingChatbot";
 import { HomeSkeleton } from "../../components/ui";
-import { AGENDA_MODE_CONFIG, EMPTY_WEEK_CHART, LOCAL_TEST_PROFILE_IDS, WEEK_BARS } from "../../data/mock";
+import { AGENDA_MODE_CONFIG, EMPTY_WEEK_CHART } from "../../data/mock";
 import { continueLessonForLearner, programmeForLearner, subjectShortcutsForLearner } from "../../data/programme";
 import { cardsDueToday } from "../../engine/spacedRepetition";
 import { useLearnFlowStore } from "../../store/useLearnFlowStore";
@@ -28,17 +28,6 @@ type Nav = CompositeNavigationProp<
   NativeStackNavigationProp<RootStackParamList>
 >;
 
-const WEEK_CHART: { label: string; height: number; color: string; today?: boolean }[] = [
-  { label: "L", height: 34, color: "#BFDBFE" },
-  { label: "M", height: 64, color: "#3B82F6" },
-  { label: "M", height: 46, color: "#BFDBFE" },
-  { label: "J", height: 84, color: "#2563EB" },
-  { label: "V", height: 76, color: "#3B82F6" },
-  { label: "S", height: 38, color: "#BFDBFE" },
-  { label: "D", height: 16, color: "#1D4ED8", today: true },
-];
-
-
 export default function HomeScreen() {
   const nav = useNavigation<Nav>();
   const profile = useLearnFlowStore((s) => s.getActiveProfile());
@@ -50,9 +39,8 @@ export default function HomeScreen() {
   const flashcards = useLearnFlowStore((s) => s.flashcards);
   const inbox = useLearnFlowStore((s) => s.inbox);
   const { colors, darkMode } = useAppTheme();
-  const isDemo = LOCAL_TEST_PROFILE_IDS.includes(String(profile.id));
-  const weekXp = isDemo ? WEEK_BARS.reduce((a, b) => a + b.xp, 0) : ligue.scoreHebdo;
-  const weekChart = isDemo ? WEEK_CHART : EMPTY_WEEK_CHART;
+  const weekXp = ligue.scoreHebdo;
+  const weekChart = EMPTY_WEEK_CHART;
   const nextLigue =
     ligue.nomLigue === "Bronze"
       ? "Argent"
@@ -226,7 +214,7 @@ export default function HomeScreen() {
             </View>
             <View style={[styles.statCell, styles.statBorder, { borderRightColor: darkMode ? colors.border : "#E5E7EB" }]}>
               <Text style={[styles.statValue, { color: darkMode ? colors.textDark : "#0F172A" }]}>
-                {isDemo ? "4.2h" : "0h"}
+                { "0h" }
               </Text>
               <Text style={styles.statLabel}>d'étude</Text>
             </View>

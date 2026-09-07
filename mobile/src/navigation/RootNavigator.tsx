@@ -12,7 +12,6 @@ import type { AuthStackParamList, MainTabParamList, RootStackParamList } from ".
 
 import SplashScreen from "../screens/auth/SplashScreen";
 import OnboardingScreen from "../screens/auth/OnboardingScreen";
-import ProfilesScreen from "../screens/auth/ProfilesScreen";
 import SignUpScreen from "../screens/auth/SignUpScreen";
 import LoginScreen from "../screens/auth/LoginScreen";
 import OTPScreen from "../screens/auth/OTPScreen";
@@ -84,7 +83,6 @@ function AuthNavigator() {
     >
       <AuthStack.Screen name="Onboarding" component={OnboardingScreen} />
       <AuthStack.Screen name="Splash" component={SplashScreen} />
-      <AuthStack.Screen name="Profiles" component={ProfilesScreen} />
       <AuthStack.Screen name="SignUp" component={SignUpScreen} />
       <AuthStack.Screen name="Login" component={LoginScreen} />
       <AuthStack.Screen name="OTP" component={OTPScreen} />

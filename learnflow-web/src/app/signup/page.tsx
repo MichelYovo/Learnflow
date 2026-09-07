@@ -9,6 +9,7 @@ import ParentPhoneField from "@/components/ParentPhoneField";
 import SocialAuth from "@/components/SocialAuth";
 import { AuthStage, Page, PrimaryButton } from "@/components/ui";
 import { CLASSES } from "@/data/mock";
+import { advanceFromSession } from "@/lib/advanceAuth";
 import { isValidTogoLocal, toTogoE164 } from "@/lib/phoneTogo";
 import { savePendingAuth } from "@/lib/pendingAuth";
 import { getBrowserSupabase } from "@/lib/supabase";
@@ -20,6 +21,7 @@ export default function SignUpPage() {
   const { colors } = useAppTheme();
   const router = useRouter();
   const signUp = useLearnFlowStore((s) => s.signUp);
+  const applyCloudUser = useLearnFlowStore((s) => s.applyCloudUser);
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
@@ -87,6 +89,31 @@ export default function SignUpPage() {
       setError("Supabase n’est pas configuré. Ajoute les clés puis réessaie.");
       return;
     }
+    const { data, error: signUpError } = await supabase.auth.signUp({
+      email: email.trim().toLowerCase(),
+      password,
+      options: {
+        data: {
+          first_name: firstName.trim(),
+          last_name: lastName.trim(),
+          class_level: chosenClasse,
+        },
+      },
+    });
+    if (signUpError) {
+      setBusy(false);
+      const msg = signUpError.message.toLowerCase();
+      if (msg.includes("already") || msg.includes("registered")) {
+        setError("Ce compte existe déjà. Connecte-toi.");
+        return;
+      }
+      setError(signUpError.message);
+      return;
+    }
+    if (data.session) {
+      await advanceFromSession(applyCloudUser, (path) => router.replace(path));
+      return;
+    }
     router.push(`/otp?email=${encodeURIComponent(email.trim().toLowerCase())}`);
   };
 
@@ -117,7 +144,7 @@ export default function SignUpPage() {
           </p>
         </div>
 
-        <Field label="Prénom" value={firstName} onChange={setFirstName} placeholder="Kofi" className="mt-6" />
+        <Field label="Prénom" value={firstName} onChange={setFirstName} placeholder="Kodjo" className="mt-6" />
         <Field label="Nom" value={lastName} onChange={setLastName} placeholder="Adjei" className="mt-3" />
         <Field label="Adresse email" value={email} onChange={setEmail} type="email" placeholder="kofi@learnflow.tg" className="mt-3" />
 
@@ -181,7 +208,7 @@ export default function SignUpPage() {
 
         <div className="mt-4">
           <PrimaryButton onClick={() => void submit("email")} disabled={busy}>
-            {busy ? "Envoi du code…" : "S'inscrire"}
+            {busy ? "Inscription…" : "S'inscrire"}
           </PrimaryButton>
         </div>
 

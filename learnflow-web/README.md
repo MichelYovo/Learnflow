@@ -22,20 +22,13 @@ npm run build
 npm start
 ```
 
-## Comptes démo
+## Connexion
 
-| Élève | Classe | PIN |
-|---|---|---|
-| Kofi Adjei | 3ème | `1234` |
-| Ama Kofi | Tle D | `1234` |
-
-OTP démo : `123456`.
-
-Sans cloud : tout reste dans `localStorage` (offline-first, comme le mobile sans Supabase).
+Inscription ou connexion **Google** (ou email). Le compte est enregistré dans Supabase (`student_profiles`, `league_scores`, activité). Pas de profils de simulation.
 
 ## Parcours
 
-1. Onboarding → splash → profils (PIN) ou inscription  
+1. Onboarding → splash → inscription / Google  
 2. Mode concentration  
 3. Accueil, Cours (matière → thème → chapitre → leçons), Ligues, Profil  
 4. Agenda (révisions + emploi du temps)  

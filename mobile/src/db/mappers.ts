@@ -67,17 +67,17 @@ export async function seedDemoProfilesIfEmpty(): Promise<LocalProfile[]> {
   return loadProfiles();
 }
 
-/** Retire Kofi / Ama et tout profil local non cloud. */
+/** Retire tout profil local de simulation (Kofi, Ama, ids courts). */
 export async function pruneExtraLocalProfiles(): Promise<void> {
+  try {
+    await deleteAllLocalSimulationProfiles();
+  } catch {
+    /* ignore */
+  }
   const rows = await loadProfiles();
   const keep = rows.filter((row) => isCloudProfileId(row.id)).map((row) => row.id);
   if (keep.length === 0) {
     await deleteProfilesNotIn(["__none__"]);
-    try {
-      await deleteAllLocalSimulationProfiles();
-    } catch {
-      /* ignore */
-    }
     return;
   }
   await deleteProfilesNotIn(keep);
@@ -85,7 +85,9 @@ export async function pruneExtraLocalProfiles(): Promise<void> {
 
 async function deleteAllLocalSimulationProfiles(): Promise<void> {
   const { withDatabase } = await import("./client");
-  await withDatabase((db) => db.runAsync("DELETE FROM LocalProfiles WHERE length(id) < 20"));
+  await withDatabase((db) =>
+    db.runAsync("DELETE FROM LocalProfiles WHERE id IN ('1', '2') OR length(id) < 20")
+  );
 }
 
 /** Conservé no-op : plus de PIN démo. */

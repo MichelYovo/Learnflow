@@ -11,13 +11,12 @@ import { classLabel } from "@/data/mock";
 import { useLearnFlowStore } from "@/store/useLearnFlowStore";
 import { useAppTheme } from "@/theme/useAppTheme";
 
-const SETTINGS: { key: string; href?: string; action?: "logout" | "switch"; icon: IconName; label: string; danger?: boolean }[] = [
+const SETTINGS: { key: string; href?: string; action?: "logout"; icon: IconName; label: string; danger?: boolean }[] = [
   { key: "focus", href: "/focus", icon: "moon", label: "Mode concentration" },
   { key: "notifications", href: "/app/settings/notifications", icon: "bell", label: "Notifications" },
   { key: "privacy", href: "/app/settings/privacy", icon: "shield", label: "Confidentialité" },
   { key: "rate", href: "/app/settings/rate", icon: "star", label: "Évaluer l'app" },
   { key: "about", href: "/app/settings/about", icon: "compass", label: "À propos" },
-  { key: "switch", action: "switch", icon: "user", label: "Changer de profil" },
   { key: "logout", action: "logout", icon: "log-out", label: "Déconnexion", danger: true },
 ];
 
@@ -53,7 +52,7 @@ export default function ProfilPage() {
   const [pinDraft, setPinDraft] = useState("");
   const [pinConfirm, setPinConfirm] = useState("");
   const [pinError, setPinError] = useState("");
-  const [confirm, setConfirm] = useState<"logout" | "switch" | null>(null);
+  const [confirm, setConfirm] = useState<"logout" | null>(null);
 
   const grade = profile.gradeLabel ?? classLabel(profile.classe);
   const nextLigue =
@@ -260,8 +259,8 @@ export default function ProfilPage() {
               key={s.key}
               type="button"
               onClick={() => {
-                if (s.action === "logout" || s.action === "switch") {
-                  setConfirm(s.action);
+                if (s.action === "logout") {
+                  setConfirm("logout");
                   return;
                 }
                 if (s.href) router.push(s.href);
@@ -291,9 +290,9 @@ export default function ProfilPage() {
       {confirm ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/45 p-4">
           <div className="w-full max-w-sm rounded-3xl p-5" style={{ background: colors.white }}>
-            <p className="text-lg font-extrabold">{confirm === "logout" ? "Déconnexion" : "Changer de profil"}</p>
+            <p className="text-lg font-extrabold">Déconnexion</p>
             <p className="mt-2 text-sm font-semibold" style={{ color: colors.textSecondary }}>
-              {confirm === "logout" ? "Revenir à l'écran d'accueil ?" : "Revenir à la sélection des profils ?"}
+              Revenir à l&apos;écran de connexion ?
             </p>
             <div className="mt-4 flex gap-2">
               <button type="button" onClick={() => setConfirm(null)} className="flex-1 rounded-2xl py-3 text-sm font-extrabold" style={{ background: colors.surfaceAlt }}>
@@ -303,12 +302,12 @@ export default function ProfilPage() {
                 type="button"
                 onClick={() => {
                   logout();
-                  router.replace("/profiles");
+                  router.replace("/splash");
                 }}
                 className="flex-1 rounded-2xl py-3 text-sm font-extrabold text-white"
-                style={{ background: confirm === "logout" ? colors.danger : colors.primary }}
+                style={{ background: colors.danger }}
               >
-                {confirm === "logout" ? "Se déconnecter" : "Changer"}
+                Se déconnecter
               </button>
             </div>
           </div>

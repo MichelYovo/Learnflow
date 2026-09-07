@@ -36,7 +36,7 @@ npm start
 Même protocole que le site vitrine : Next.js App Router · TypeScript · Tailwind CSS 4 · Poppins · palette `#1677FF`.
 
 Auth : email + mot de passe, session cookie HTTP-only signée (HMAC).  
-Données élèves / ligues : lecture optionnelle du même projet **Supabase** que l’app mobile (`student_profiles`, `league_scores`). Sans cloud, le tableau de bord affiche un jeu de démo (Kofi, Ama, classement).
+Données élèves / ligues : lecture du même projet **Supabase** que l’app (`student_profiles`, `league_scores`, `activity_events`). Sans cloud, le tableau reste vide — plus de jeu de démo.
 
 ## Cloud (optionnel)
 

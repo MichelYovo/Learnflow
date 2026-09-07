@@ -20,11 +20,11 @@ type Nav = CompositeNavigationProp<
   NativeStackNavigationProp<RootStackParamList>
 >;
 
-type SettingKey = "focus" | "notifications" | "privacy" | "rate" | "about" | "switch" | "logout";
+type SettingKey = "focus" | "notifications" | "privacy" | "rate" | "about" | "logout";
 
 const SETTINGS: {
   key: SettingKey;
-  icon: "moon" | "bell" | "shield" | "star" | "compass" | "user" | "log-out";
+  icon: "moon" | "bell" | "shield" | "star" | "compass" | "log-out";
   label: string;
   getSub: (ctx: { notifOn: boolean; leagueVisible: boolean; rating: number | null }) => string;
   danger?: boolean;
@@ -59,12 +59,6 @@ const SETTINGS: {
     icon: "compass",
     label: "À propos",
     getSub: () => "Version 1.0.0 · LearnFlow Togo",
-  },
-  {
-    key: "switch",
-    icon: "user",
-    label: "Changer de profil",
-    getSub: () => "PIN local · plusieurs élèves sur l'appareil",
   },
   {
     key: "logout",
@@ -120,12 +114,6 @@ export default function ProfilScreen() {
     else if (key === "privacy") nav.navigate("PrivacySettings");
     else if (key === "about") nav.navigate("About");
     else if (key === "rate") nav.navigate("RateApp");
-    else if (key === "switch") {
-      Alert.alert("Changer de profil", "Revenir à la sélection des profils ?", [
-        { text: "Annuler", style: "cancel" },
-        { text: "Changer", onPress: logout },
-      ]);
-    }
     else if (key === "logout") {
       Alert.alert("Déconnexion", "Revenir à l'écran d'accueil ?", [
         { text: "Annuler", style: "cancel" },

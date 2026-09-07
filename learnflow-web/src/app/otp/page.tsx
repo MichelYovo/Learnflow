@@ -4,9 +4,10 @@ import { Suspense, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Logo from "@/components/Logo";
 import { AuthStage, Page, PrimaryButton } from "@/components/ui";
-import { settleVerifiedUser } from "@/lib/authFinish";
+import { advanceFromSession } from "@/lib/advanceAuth";
 import { sendEmailOtp, verifyEmailOtp } from "@/lib/emailOtp";
 import { loadPendingAuth } from "@/lib/pendingAuth";
+import { getBrowserSupabase } from "@/lib/supabase";
 import { useLearnFlowStore } from "@/store/useLearnFlowStore";
 import { useAppTheme } from "@/theme/useAppTheme";
 
@@ -21,7 +22,6 @@ function OTPInner() {
   const [info, setInfo] = useState("Envoi du code…");
   const [busy, setBusy] = useState(false);
   const sent = useRef(false);
-  const sending = useRef(false);
 
   useEffect(() => {
     const pending = loadPendingAuth();
@@ -32,42 +32,38 @@ function OTPInner() {
       setError("Adresse email manquante. Repars de la connexion.");
       return;
     }
-    if (sending.current) return;
-    sending.current = true;
-    const shouldCreate = pending?.flow === "signup";
-    void sendEmailOtp(nextEmail, {
-      shouldCreateUser: shouldCreate,
-      data: pending?.firstName
-        ? {
-            first_name: pending.firstName,
-            last_name: pending.lastName ?? "",
-            class_level: pending.classe ?? "",
-          }
-        : undefined,
-    }).then((result) => {
+
+    const supabase = getBrowserSupabase();
+    void (async () => {
+      if (supabase) {
+        const { data } = await supabase.auth.getSession();
+        if (data.session?.user) {
+          setInfo("Compte déjà vérifié, on continue…");
+          await advanceFromSession(applyCloudUser, (path) => router.replace(path));
+          return;
+        }
+      }
+      const shouldCreate = pending?.flow === "signup";
+      const result = await sendEmailOtp(nextEmail, {
+        shouldCreateUser: shouldCreate,
+        data: pending?.firstName
+          ? {
+              first_name: pending.firstName,
+              last_name: pending.lastName ?? "",
+              class_level: pending.classe ?? "",
+            }
+          : undefined,
+      });
       if (result.error) {
         setError(result.error);
         setInfo("");
-        sending.current = false;
         return;
       }
-      setInfo(`Un code à 6 chiffres a été envoyé à ${nextEmail}.`);
-    });
-  }, [params]);
+      setInfo(`Un code à 6 chiffres a été envoyé à ${nextEmail}. Regarde aussi les spams.`);
+    })();
+  }, [applyCloudUser, params, router]);
 
-  const afterVerify = async () => {
-    const settled = await settleVerifiedUser();
-    if (settled.next === "login") {
-      router.replace(settled.error === "config" ? "/login?error=config" : "/login");
-      return;
-    }
-    if (settled.next === "complete-profile") {
-      router.replace("/complete-profile");
-      return;
-    }
-    applyCloudUser(settled.user, { fresh: settled.fresh, authenticate: false });
-    router.replace("/success");
-  };
+  const afterVerify = () => advanceFromSession(applyCloudUser, (path) => router.replace(path));
 
   const submit = async (value: string) => {
     if (sent.current || busy) return;
@@ -97,13 +93,13 @@ function OTPInner() {
     setError("");
     setBusy(true);
     const pending = loadPendingAuth();
-    const result = await sendEmailOtp(email, { shouldCreateUser: pending?.flow === "signup" });
+    const result = await sendEmailOtp(email, { shouldCreateUser: pending?.flow === "signup", force: true });
     setBusy(false);
     if (result.error) {
       setError(result.error);
       return;
     }
-    setInfo(`Nouveau code envoyé à ${email}.`);
+    setInfo(`Nouveau code envoyé à ${email}. Regarde aussi les spams.`);
   };
 
   return (

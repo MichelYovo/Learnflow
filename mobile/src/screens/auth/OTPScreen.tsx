@@ -1,12 +1,13 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { Pressable, StyleSheet, Text, TextInput } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { SafeAreaView } from "react-native-safe-area-context";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import Logo from "../../components/Logo";
-import { settleVerifiedUser } from "../../lib/authFinish";
+import { advanceFromSession } from "../../lib/advanceAuth";
 import { sendEmailOtp, verifyEmailOtp } from "../../lib/emailOtp";
 import { loadPendingAuth } from "../../lib/pendingAuth";
+import { isSupabaseConfigured, supabase } from "../../lib/supabase";
 import { useLearnFlowStore } from "../../store/useLearnFlowStore";
 import { colors } from "../../theme/colors";
 import { useAppTheme } from "../../theme/useAppTheme";
@@ -23,7 +24,6 @@ export default function OTPScreen({ navigation, route }: Props) {
   const [info, setInfo] = useState("Envoi du code…");
   const [busy, setBusy] = useState(false);
   const sent = useRef(false);
-  const sending = useRef(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -37,36 +37,32 @@ export default function OTPScreen({ navigation, route }: Props) {
         setError("Adresse email manquante. Repars de la connexion.");
         return;
       }
-      if (sending.current) return;
-      sending.current = true;
+      if (isSupabaseConfigured) {
+        const { data } = await supabase.auth.getSession();
+        if (cancelled) return;
+        if (data.session?.user) {
+          setInfo("Compte déjà vérifié, on continue…");
+          const settled = await advanceFromSession(navigation, applyCloudUser);
+          if (settled.error && !cancelled) {
+            setError(settled.error);
+            setInfo("");
+          }
+          return;
+        }
+      }
       const result = await sendEmailOtp(nextEmail, { shouldCreateUser: pending?.flow === "signup" });
       if (cancelled) return;
       if (result.error) {
         setError(result.error);
         setInfo("");
-        sending.current = false;
         return;
       }
-      setInfo(`Un code à 6 chiffres a été envoyé à ${nextEmail}.`);
+      setInfo(`Un code à 6 chiffres a été envoyé à ${nextEmail}. Regarde aussi les spams.`);
     })();
     return () => {
       cancelled = true;
     };
-  }, [route.params?.email]);
-
-  const afterVerify = async () => {
-    const settled = await settleVerifiedUser();
-    if (settled.next === "login") {
-      navigation.replace("Login");
-      return;
-    }
-    if (settled.next === "complete-profile") {
-      navigation.replace("CompleteProfile");
-      return;
-    }
-    applyCloudUser(settled.user, { fresh: settled.fresh, authenticate: false });
-    navigation.replace("Success");
-  };
+  }, [applyCloudUser, navigation, route.params?.email]);
 
   const submit = async (value: string) => {
     if (sent.current || busy) return;
@@ -88,7 +84,12 @@ export default function OTPScreen({ navigation, route }: Props) {
       setError(result.error);
       return;
     }
-    await afterVerify();
+    const settled = await advanceFromSession(navigation, applyCloudUser);
+    if (settled.error) {
+      sent.current = false;
+      setBusy(false);
+      setError(settled.error);
+    }
   };
 
   const resend = async () => {
@@ -96,13 +97,13 @@ export default function OTPScreen({ navigation, route }: Props) {
     setError("");
     setBusy(true);
     const pending = await loadPendingAuth();
-    const result = await sendEmailOtp(email, { shouldCreateUser: pending?.flow === "signup" });
+    const result = await sendEmailOtp(email, { shouldCreateUser: pending?.flow === "signup", force: true });
     setBusy(false);
     if (result.error) {
       setError(result.error);
       return;
     }
-    setInfo(`Nouveau code envoyé à ${email}.`);
+    setInfo(`Nouveau code envoyé à ${email}. Regarde aussi les spams.`);
   };
 
   return (

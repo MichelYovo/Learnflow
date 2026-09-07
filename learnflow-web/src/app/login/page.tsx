@@ -7,8 +7,10 @@ import Icon from "@/components/Icon";
 import Logo from "@/components/Logo";
 import SocialAuth from "@/components/SocialAuth";
 import { AuthStage, Page, PrimaryButton } from "@/components/ui";
+import { advanceFromSession } from "@/lib/advanceAuth";
 import { savePendingAuth } from "@/lib/pendingAuth";
 import { getBrowserSupabase } from "@/lib/supabase";
+import { useLearnFlowStore } from "@/store/useLearnFlowStore";
 import { useAppTheme } from "@/theme/useAppTheme";
 
 function LoginInner() {
@@ -21,8 +23,9 @@ function LoginInner() {
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const googleError = params.get("error");
+  const applyCloudUser = useLearnFlowStore((s) => s.applyCloudUser);
 
-  const goOtp = async () => {
+  const goApp = async () => {
     setError("");
     if (!email.includes("@")) {
       setError("Entre l’adresse email de ton compte.");
@@ -48,7 +51,7 @@ function LoginInner() {
       return;
     }
     savePendingAuth({ email: email.trim().toLowerCase(), flow: "login" });
-    router.push(`/otp?email=${encodeURIComponent(email.trim().toLowerCase())}`);
+    await advanceFromSession(applyCloudUser, (path) => router.replace(path));
   };
 
   return (
@@ -116,8 +119,8 @@ function LoginInner() {
         </label>
 
         <div className="mt-5">
-          <PrimaryButton onClick={() => void goOtp()} disabled={busy}>
-            {busy ? "Vérification…" : "Se connecter"}
+          <PrimaryButton onClick={() => void goApp()} disabled={busy}>
+            {busy ? "Connexion…" : "Se connecter"}
           </PrimaryButton>
         </div>
 

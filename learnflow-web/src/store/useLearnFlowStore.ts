@@ -695,7 +695,7 @@ export const useLearnFlowStore = create<LearnFlowState>()(
       completeOnboarding: () => set({ onboardingCompleted: true }),
     }),
     {
-      name: "learnflow-web-store-v2",
+      name: "learnflow-web-store-v3",
       storage: createJSONStorage(() => {
         if (typeof window === "undefined") {
           return {

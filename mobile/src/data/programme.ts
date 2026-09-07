@@ -1,5 +1,4 @@
 import type { ChapterProgress, ProgrammeChapter, ProgrammeSubject, ProgrammeTheme, SubjectShortcut } from "../types/learnflow";
-import { isCloudProfileId, LOCAL_TEST_PROFILE_IDS } from "./mock";
 import { PROGRAMME_3EME } from "./programme3eme";
 import { PROGRAMME_TLE } from "./programmeTle";
 import { packSubject, packTheme, SUBJECT_STYLE, type SubjectId } from "./programmeBuild";
@@ -21,10 +20,6 @@ export function isTleClass(classe?: string): boolean {
 
 export function programmeForClass(classe?: string): ProgrammeSubject[] {
   return isTleClass(classe) ? PROGRAMME_TLE : PROGRAMME_3EME;
-}
-
-function isDemoProfile(profileId?: string): boolean {
-  return !!profileId && LOCAL_TEST_PROFILE_IDS.includes(String(profileId)) && !isCloudProfileId(profileId);
 }
 
 /** Tous les cours à 0 %, première leçon ouverte. */
@@ -79,7 +74,7 @@ export function programmeForLearner(
   chapterProgress: Record<string, ChapterProgress> = {}
 ): ProgrammeSubject[] {
   const base = programmeForClass(classe);
-  const source = isDemoProfile(profileId) ? base : programmeStartingFresh(base);
+  const source = programmeStartingFresh(base);
   return applyChapterProgress(source, chapterProgress);
 }
 

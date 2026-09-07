@@ -36,7 +36,6 @@ export type RootStackParamList = {
 export type AuthStackParamList = {
   Onboarding: undefined;
   Splash: undefined;
-  Profiles: undefined;
   SignUp: { requirePin?: boolean } | undefined;
   Login: undefined;
   OTP: { email?: string; flow?: "login" | "signup" | "google" } | undefined;

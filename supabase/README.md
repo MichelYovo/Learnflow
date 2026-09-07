@@ -229,16 +229,17 @@ Redémarre `npm run dev` dans `admin` (port 3001).
 
 ---
 
-## Étape 6b — Activer l’email (code à 6 chiffres)
+## Étape 6b — Email (inscription seulement)
 
-Sans ça, Google connecte tout de suite et le code n’arrive pas.
+Google et le mot de passe n’envoient **plus** de second code : la session suffit.
 
-1. Supabase → **Authentication** → **Providers** → **Email** → **Enable**.
-2. **Authentication** → **Email Templates** → **Magic Link**.
-3. Dans le mail, garde bien `{{ .Token }}` (c’est le code à 6 chiffres).
-4. Tu peux désactiver **Confirm email** : le code OTP suffit déjà à vérifier l’adresse.
+Pour l’inscription par email, désactive **Confirm email** (Authentication → Providers → Email) : le compte s’ouvre tout de suite, sans attendre un mail.
 
-Après Google **ou** email + mot de passe, LearnFlow envoie ce code, puis ouvre l’app.
+Si tu laisses la confirmation activée :
+
+1. **Authentication** → **Email Templates** → **Magic Link**.
+2. Ajoute `{{ .Token }}` dans le mail (code à 6 chiffres).
+3. Vérifie aussi les **spams**. L’email par défaut de Supabase est souvent filtré.
 
 ---
 
@@ -246,10 +247,9 @@ Après Google **ou** email + mot de passe, LearnFlow envoie ce code, puis ouvre 
 
 1. Web : `http://localhost:3002` → Connexion → **Continuer avec Google**.
 2. Google doit demander **quel compte** utiliser (même si tu es déjà connecté).
-3. Ensuite : écran **Vérification** — un code à 6 chiffres arrive sur l’email Google.
-4. Premier compte : écran **classe + numéro parent (+228)**.
-5. L’élève démarre en **ligue Bronze**, stats à **0**, cours de sa classe sans progression.
-6. Admin `http://localhost:3001` : l’élève et l’activité apparaissent (source « Supabase »).
+3. Premier compte : écran **classe + numéro parent (+228)** — **pas** d’écran code email.
+4. L’élève démarre en **ligue Bronze**, stats à **0**, cours de sa classe sans progression.
+5. Admin `http://localhost:3001` : l’élève et l’activité apparaissent (source « Supabase »).
 
 ### Classement réel (après le SQL)
 
@@ -271,6 +271,7 @@ Il faut `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY`. Un nouvel élève sans XP 
 | Message / symptôme | Cause fréquente |
 |---|---|
 | « Google n’est pas encore configuré » | `.env.local` web manquant, ou serveur pas redémarré |
+| Code email qui n’arrive pas | Google / mot de passe n’ont plus besoin de code. Pour l’inscription : désactive **Confirm email** |
 | Redirect mismatch / `redirect_uri_mismatch` | L’URI `https://xxxx.supabase.co/auth/v1/callback` n’est pas dans Google Cloud |
 | Écran Google « app not verified » / accès bloqué | Ajoute ton Gmail en **Test user** (étape 3a) |
 | SQL `uuid = text` | Ancien `schema.sql` — relance la version actuelle |

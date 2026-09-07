@@ -14,20 +14,7 @@ export type AdminStudent = {
   parentPhone?: string;
 };
 
-export const SEED_STUDENTS: AdminStudent[] = [
-  { id: "1", name: "Kofi Adjei", email: "kofi@learnflow.tg", classe: "3eme", xpTotale: 2840, weeklyXp: 2840, streak: 5, lessonsDone: 34, leagueTier: "Or", color: "#1677FF", bg: "#E6F4FF" },
-  { id: "2", name: "Ama Kofi", email: "ama@learnflow.tg", classe: "Tle", xpTotale: 3120, weeklyXp: 2100, streak: 7, lessonsDone: 22, leagueTier: "Platine", color: "#10B981", bg: "#ECFDF5" },
-  { id: "3", name: "Ama Mensah", email: "ama.mensah@learnflow.tg", classe: "1ere", xpTotale: 4210, weeklyXp: 4210, streak: 12, lessonsDone: 48, leagueTier: "Diamant", color: "#F59E0B", bg: "#FFFBEB" },
-  { id: "4", name: "Kwame Asante", email: "kwame@learnflow.tg", classe: "Tle", xpTotale: 3940, weeklyXp: 3940, streak: 8, lessonsDone: 41, leagueTier: "Diamant", color: "#8B5CF6", bg: "#F5F3FF" },
-  { id: "5", name: "Efua Boateng", email: "efua@learnflow.tg", classe: "3eme", xpTotale: 2720, weeklyXp: 2720, streak: 7, lessonsDone: 31, leagueTier: "Or", color: "#10B981", bg: "#ECFDF5" },
-  { id: "6", name: "Yaw Darko", email: "yaw@learnflow.tg", classe: "4eme", xpTotale: 2490, weeklyXp: 2490, streak: 3, lessonsDone: 28, leagueTier: "Argent", color: "#EF4444", bg: "#FEF2F2" },
-  { id: "7", name: "Akua Owusu", email: "akua@learnflow.tg", classe: "2nde", xpTotale: 2180, weeklyXp: 2180, streak: 6, lessonsDone: 24, leagueTier: "Argent", color: "#06B6D4", bg: "#ECFEFF" },
-  { id: "8", name: "Kojo Asante", email: "kojo@learnflow.tg", classe: "5eme", xpTotale: 1950, weeklyXp: 1950, streak: 2, lessonsDone: 19, leagueTier: "Bronze", color: "#F97316", bg: "#FFF7ED" },
-  { id: "9", name: "Adwoa Mensah", email: "adwoa@learnflow.tg", classe: "6eme", xpTotale: 1740, weeklyXp: 1740, streak: 4, lessonsDone: 16, leagueTier: "Bronze", color: "#EC4899", bg: "#FDF2F8" },
-  { id: "10", name: "Nana Addo", email: "nana@learnflow.tg", classe: "1ere", xpTotale: 1680, weeklyXp: 1680, streak: 1, lessonsDone: 15, leagueTier: "Bronze", color: "#6366F1", bg: "#EEF2FF" },
-  { id: "11", name: "Abena Serwaa", email: "abena@learnflow.tg", classe: "3eme", xpTotale: 1620, weeklyXp: 1620, streak: 9, lessonsDone: 21, leagueTier: "Argent", color: "#14B8A6", bg: "#F0FDFA" },
-  { id: "12", name: "Fiifi Mensah", email: "fiifi@learnflow.tg", classe: "Tle", xpTotale: 1540, weeklyXp: 1540, streak: 5, lessonsDone: 18, leagueTier: "Or", color: "#F43F5E", bg: "#FFF1F2" },
-];
+export const SEED_STUDENTS: AdminStudent[] = [];
 
 export const SEED_LEAGUES = SEED_STUDENTS.map((s, i) => ({
   studentId: s.id,

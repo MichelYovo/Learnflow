@@ -59,7 +59,7 @@ La session Auth est persistée dans AsyncStorage ; le sync se relance à la reco
 LearnFlow vise la **maîtrise**, pas le survol : un chapitre n’est validé qu’à **10/10**.  
 Spira (mascotte) accompagne chaque écran. Le tuteur IA est un canal distinct, avec quota cloud.
 
-**Classes** : 6e → Terminale D (`6eme` … `Tle`). Démo : **Kofi (3ème)** et **Ama (Tle D)**.  
+**Classes** : 6e → Terminale D (`6eme` … `Tle`), selon le compte Google / email de l’élève.  
 **Matières** : Mathématiques, SVT, PCT, Histoire-Géo, Français, Anglais, ECM.  
 Les cours affichés dépendent de la classe. En SVT, les chapitres cœur, ADN, neurone, synapse et rein ont un **modèle 3D** annoté.
 
@@ -71,9 +71,8 @@ Les cours affichés dépendent de la classe. En SVT, les chapitres cœur, ADN, n
 
 1. **Onboarding** — Spira présente la règle 10/10, les 4 modes, les ligues, l’offline.
 2. **Splash** — intro LearnFlow.
-3. **Profils** — multi-élèves sur le même appareil ; déverrouillage par **PIN 4 chiffres** (SHA-256, hors ligne).
-4. **Inscription** — prénom, nom, email, mot de passe (≥ 8), classe, avatar, PIN. Auth sociale (Google / Apple / Facebook) branchée côté UI ; le profil local est toujours créé.
-5. **Connexion** → **OTP** (démo : `123456`) → **Succès**.
+3. **Inscription / Google** — le compte est enregistré dans Supabase (profil + ligue Bronze).
+4. **Connexion** → **OTP** email si besoin → **Succès**.
 
 Le store `isAuthenticated` bascule ensuite vers l’app principale.
 
@@ -270,8 +269,7 @@ Sans Supabase configuré, tout reste local.
 
 ### PIN local
 
-`src/lib/pin.ts` : SHA-256 de `profileId:pin`, comparaison en temps constant.  
-PIN démo des profils seed : voir `DEMO_PIN` dans `src/db/mappers.ts`.
+`src/lib/pin.ts` : SHA-256 de `profileId:pin`, comparaison en temps constant.
 
 ---
 

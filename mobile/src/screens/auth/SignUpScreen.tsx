@@ -18,6 +18,7 @@ import ParentPhoneField from "../../components/ParentPhoneField";
 import SocialAuth from "../../components/SocialAuth";
 import { CLASSES } from "../../data/mock";
 import { signInWithGoogle } from "../../lib/googleAuth";
+import { advanceFromSession } from "../../lib/advanceAuth";
 import { isValidTogoLocal, toTogoE164 } from "../../lib/phoneTogo";
 import { savePendingAuth } from "../../lib/pendingAuth";
 import { useLearnFlowStore } from "../../store/useLearnFlowStore";
@@ -31,6 +32,7 @@ type Props = NativeStackScreenProps<AuthStackParamList, "SignUp">;
 
 export default function SignUpScreen({ navigation }: Props) {
   const signUp = useLearnFlowStore((s) => s.signUp);
+  const applyCloudUser = useLearnFlowStore((s) => s.applyCloudUser);
   const { colors } = useAppTheme();
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -54,13 +56,15 @@ export default function SignUpScreen({ navigation }: Props) {
       }
       const { data } = await supabase.auth.getSession();
       const nextEmail = data.session?.user.email ?? "";
-      setBusy(false);
       if (!nextEmail) {
+        setBusy(false);
         setError("Impossible de lire l’email Google.");
         return;
       }
       await savePendingAuth({ email: nextEmail, flow: "google" });
-      navigation.navigate("OTP", { email: nextEmail, flow: "google" });
+      const settled = await advanceFromSession(navigation, applyCloudUser);
+      setBusy(false);
+      if (settled.error) setError(settled.error);
       return;
     }
     if (provider !== "email") {
@@ -126,6 +130,33 @@ export default function SignUpScreen({ navigation }: Props) {
       parentPhone: toTogoE164(parentLocal),
       password,
     });
+    const { data, error: signUpError } = await supabase.auth.signUp({
+      email: email.trim().toLowerCase(),
+      password,
+      options: {
+        data: {
+          first_name: firstName.trim(),
+          last_name: lastName.trim(),
+          class_level: chosenClasse,
+        },
+      },
+    });
+    if (signUpError) {
+      setBusy(false);
+      const msg = signUpError.message.toLowerCase();
+      if (msg.includes("already") || msg.includes("registered")) {
+        setError("Ce compte existe déjà. Connecte-toi.");
+        return;
+      }
+      setError(signUpError.message);
+      return;
+    }
+    if (data.session) {
+      const settled = await advanceFromSession(navigation, applyCloudUser);
+      setBusy(false);
+      if (settled.error) setError(settled.error);
+      return;
+    }
     navigation.navigate("OTP", { email: email.trim().toLowerCase(), flow: "signup" });
   };
 
@@ -144,7 +175,7 @@ export default function SignUpScreen({ navigation }: Props) {
             <Text style={[styles.label, { color: colors.textDark }]}>Prénom</Text>
             <TextInput
               style={[styles.input, { backgroundColor: colors.surfaceAlt, borderColor: colors.border, color: colors.textDark }]}
-              placeholder="Kofi"
+              placeholder="Kodjo"
               placeholderTextColor="#CBD5E1"
               value={firstName}
               onChangeText={setFirstName}

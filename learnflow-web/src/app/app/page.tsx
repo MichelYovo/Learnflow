@@ -8,7 +8,7 @@ import Icon from "@/components/Icon";
 import LeagueBadge from "@/components/LeagueBadge";
 import MesMatieres from "@/components/MesMatieres";
 import ModeWorkSelector from "@/components/ModeWorkSelector";
-import { EMPTY_WEEK_CHART, LOCAL_TEST_PROFILE_IDS, WEEK_BARS } from "@/data/mock";
+import { EMPTY_WEEK_CHART } from "@/data/mock";
 import { continueLessonForLearner, programmeForLearner, subjectShortcutsForLearner } from "@/data/programme";
 import { cardsDueToday } from "@/engine/spacedRepetition";
 import { useLearnFlowStore } from "@/store/useLearnFlowStore";
@@ -16,16 +16,6 @@ import { useAppTheme } from "@/theme/useAppTheme";
 import { MODE_DEFAULT_TOOLS, appModeToSessionMode, type AppMode } from "@/types/modes";
 import { AGENDA_MODE_CONFIG } from "@/data/mock";
 import { AppBar, AppMain } from "@/components/ui";
-
-const WEEK_CHART = [
-  { label: "L", height: 34, color: "#BFDBFE" },
-  { label: "M", height: 64, color: "#3B82F6" },
-  { label: "M", height: 46, color: "#BFDBFE" },
-  { label: "J", height: 84, color: "#2563EB" },
-  { label: "V", height: 76, color: "#3B82F6" },
-  { label: "S", height: 38, color: "#BFDBFE" },
-  { label: "D", height: 16, color: "#1D4ED8", today: true },
-];
 
 export default function AccueilPage() {
   const router = useRouter();
@@ -38,9 +28,8 @@ export default function AccueilPage() {
   const flashcards = useLearnFlowStore((s) => s.flashcards);
   const inbox = useLearnFlowStore((s) => s.inbox);
   const { colors, darkMode } = useAppTheme();
-  const isDemo = LOCAL_TEST_PROFILE_IDS.includes(String(profile.id));
-  const weekXp = isDemo ? WEEK_BARS.reduce((a, b) => a + b.xp, 0) : ligue.scoreHebdo;
-  const weekChart = isDemo ? WEEK_CHART : EMPTY_WEEK_CHART;
+  const weekXp = ligue.scoreHebdo;
+  const weekChart = EMPTY_WEEK_CHART;
   const continueLesson = continueLessonForLearner(profile.classe, profile.id, chapterProgress);
   const shortcuts = subjectShortcutsForLearner(profile.classe, profile.id, chapterProgress);
   const [selectedMode, setSelectedMode] = useState<AppMode | null>(null);
@@ -156,7 +145,7 @@ export default function AccueilPage() {
           <div className="mt-5 flex">
             {[
               [String(totalDone), "leçons", colors.textDark],
-              [isDemo ? "4.2h" : "0h", "d'étude", colors.textDark],
+              ["0h", "d'étude", colors.textDark],
               [`+${weekXp}`, "XP", "#F59E0B"],
             ].map(([v, l, c], i) => (
               <div key={l} className={`flex flex-1 flex-col items-center ${i < 2 ? "border-r" : ""}`} style={{ borderColor: darkMode ? colors.border : "#E5E7EB" }}>

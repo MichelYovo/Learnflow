@@ -19,7 +19,7 @@ export default async function DashboardPage() {
       <main className="flex-1 space-y-6 p-6">
         <div className="flex items-center justify-between">
           <p className="text-sm font-semibold text-[#64748B]">
-            Source : {data.source === "cloud" ? "Supabase (élèves réels)" : "jeu de données local (démo)"}
+            Source : {data.source === "cloud" ? "Supabase (élèves réels)" : "Supabase non configuré"}
           </p>
         </div>
         <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">

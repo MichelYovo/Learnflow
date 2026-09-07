@@ -9,7 +9,6 @@ import { useHydrated } from "./useHydrated";
 const AUTH_PATHS = [
   "/onboarding",
   "/splash",
-  "/profiles",
   "/login",
   "/signup",
   "/otp",
@@ -37,7 +36,7 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
       router.replace("/onboarding");
       return;
     }
-    if (onboardingCompleted && !isAuthenticated && isApp) {
+    if (onboardingCompleted && !isAuthenticated && (isApp || pathname === "/profiles")) {
       router.replace("/splash");
       return;
     }

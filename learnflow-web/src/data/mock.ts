@@ -546,24 +546,7 @@ export function beginnerLeagueBoard(
   ];
 }
 
-/** Anciens comptes de test — plus utilisés. Conservé vide pour ne pas recréer Kofi / Ama. */
-export const PROFILES_DEMO: {
-  id: string;
-  nom: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  classe: "3eme" | "Tle";
-  gradeLabel: string;
-  xpTotale: number;
-  streak: number;
-  rang: number;
-  lessonsDone: number;
-  color: string;
-  bg: string;
-  avatarId?: string;
-}[] = [];
-
+/** Anciens comptes de test — plus utilisés. */
 export const LOCAL_TEST_PROFILE_IDS: string[] = [];
 
 export function isCloudProfileId(id: string | number): boolean {

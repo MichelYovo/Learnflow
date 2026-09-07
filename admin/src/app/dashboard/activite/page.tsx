@@ -12,7 +12,7 @@ export default async function ActivitePage() {
       <TopBar title="Activité live" email={session?.email ?? ""} />
       <main className="flex-1 p-6">
         <p className="mb-5 text-sm font-medium text-[#64748B]">
-          {data.events.length} mouvements · source {data.source === "cloud" ? "Supabase (web + mobile)" : "locale (démo)"}
+          {data.events.length} mouvements · source {data.source === "cloud" ? "Supabase (web + mobile)" : "non configuré"}
         </p>
         <ActivityTable events={data.events} />
       </main>

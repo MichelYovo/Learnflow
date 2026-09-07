@@ -19,22 +19,25 @@ import { colors } from "../../theme/colors";
 import { useAppTheme } from "../../theme/useAppTheme";
 import type { AuthStackParamList } from "../../navigation/types";
 import { signInWithGoogle } from "../../lib/googleAuth";
+import { advanceFromSession } from "../../lib/advanceAuth";
 import { savePendingAuth } from "../../lib/pendingAuth";
 import { isSupabaseConfigured, supabase } from "../../lib/supabase";
+import { useLearnFlowStore } from "../../store/useLearnFlowStore";
 
 type Props = NativeStackScreenProps<AuthStackParamList, "Login">;
 
 export default function LoginScreen({ navigation }: Props) {
   const { colors } = useAppTheme();
+  const applyCloudUser = useLearnFlowStore((s) => s.applyCloudUser);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPw, setShowPw] = useState(false);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
 
-  const goOtp = (nextEmail: string) => {
-    setError("");
-    navigation.navigate("OTP", { email: nextEmail, flow: "login" });
+  const finishSession = async () => {
+    const result = await advanceFromSession(navigation, applyCloudUser);
+    if (result.error) setError(result.error);
   };
 
   const goApp = async (provider?: "google" | "apple" | "facebook") => {
@@ -49,13 +52,14 @@ export default function LoginScreen({ navigation }: Props) {
       }
       const { data } = await supabase.auth.getSession();
       const nextEmail = data.session?.user.email ?? "";
-      setBusy(false);
       if (!nextEmail) {
+        setBusy(false);
         setError("Impossible de lire l’email Google.");
         return;
       }
       await savePendingAuth({ email: nextEmail, flow: "google" });
-      navigation.navigate("OTP", { email: nextEmail, flow: "google" });
+      await finishSession();
+      setBusy(false);
       return;
     }
     if (provider) {
@@ -79,13 +83,14 @@ export default function LoginScreen({ navigation }: Props) {
       email: email.trim(),
       password,
     });
-    setBusy(false);
     if (authError) {
+      setBusy(false);
       setError("Email ou mot de passe incorrect.");
       return;
     }
     await savePendingAuth({ email: email.trim().toLowerCase(), flow: "login" });
-    goOtp(email.trim().toLowerCase());
+    await finishSession();
+    setBusy(false);
   };
 
   return (
