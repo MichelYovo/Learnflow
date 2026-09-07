@@ -69,7 +69,7 @@ export default function OnboardingPage() {
           </PrimaryButton>
         }
       >
-        <div key={step} className="lf-slide-in flex flex-col items-center gap-[18px] px-2 text-center">
+        <div key={step} className="lf-slide-in mx-auto flex w-full max-w-xl flex-col items-center justify-center gap-6 px-2 text-center">
           <Spira scene={slide.scene} size={128} />
           <h1 className="text-[22px] font-extrabold tracking-tight sm:text-[28px]">{slide.title}</h1>
           <p className="max-w-md text-[15px] font-medium leading-6 sm:text-[17px] sm:leading-[26px]" style={{ color: colors.textSecondary }}>

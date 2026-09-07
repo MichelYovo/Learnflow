@@ -3,47 +3,32 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { SafeAreaView } from "react-native-safe-area-context";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
-import Icon from "../../components/Icon";
+import Spira from "../../components/Spira";
 import { useLearnFlowStore } from "../../store/useLearnFlowStore";
 import { useAppTheme } from "../../theme/useAppTheme";
+import type { SpiraScene } from "../../data/spira";
 import type { AuthStackParamList } from "../../navigation/types";
 
 type Props = NativeStackScreenProps<AuthStackParamList, "Onboarding">;
 
-type Slide = {
-  icon: string;
-  color: string;
-  bg: string;
-  title: string;
-  body: string;
-};
-
-const SLIDES: Slide[] = [
+const SLIDES: { scene: SpiraScene; title: string; body: string }[] = [
   {
-    icon: "star",
-    color: "#1677FF",
-    bg: "#E6F4FF",
+    scene: "onboarding.mastery",
     title: "La règle du 10/10",
     body: "Un chapitre n’est validé que lorsqu’il est vraiment acquis. Pas de survol : on vise la maîtrise.",
   },
   {
-    icon: "layers",
-    color: "#10B981",
-    bg: "#ECFDF5",
+    scene: "onboarding.modes",
     title: "Quatre modes de révision",
     body: "Libre, Guidé, Cramming ou Blitz 60 secondes — selon le moment, jamais l’inverse.",
   },
   {
-    icon: "trophy",
-    color: "#F59E0B",
-    bg: "#FFFBEB",
+    scene: "onboarding.league",
     title: "Ligues et XP",
     body: "Gagne de l’XP, grimpe ta ligue et défie tes camarades. La motivation, sans la pression.",
   },
   {
-    icon: "book",
-    color: "#8B5CF6",
-    bg: "#F5F3FF",
+    scene: "onboarding.offline",
     title: "Même hors ligne",
     body: "Programme APC Togo, collège et lycée. Tes révisions t’attendent partout — bus, maison, école.",
   },
@@ -82,9 +67,7 @@ export default function OnboardingScreen({ navigation }: Props) {
       </View>
 
       <View style={styles.stage}>
-        <View style={[styles.iconWrap, { backgroundColor: darkMode ? colors.white : slide.bg }]}>
-          <Icon name={slide.icon} size={42} color={slide.color} />
-        </View>
+        <Spira key={slide.scene} scene={slide.scene} size={128} />
         <Text style={[styles.title, { color: colors.textDark }]}>{slide.title}</Text>
         <Text style={[styles.body, { color: colors.textSecondary }]}>{slide.body}</Text>
       </View>
@@ -114,15 +97,7 @@ const styles = StyleSheet.create({
   fill: { height: "100%", borderRadius: 99 },
   skip: { minWidth: 56, minHeight: 40, alignItems: "flex-end", justifyContent: "center" },
   skipText: { fontWeight: "800", fontSize: 13 },
-  stage: { flex: 1, alignItems: "center", justifyContent: "center", paddingHorizontal: 32, gap: 18 },
-  iconWrap: {
-    width: 96,
-    height: 96,
-    borderRadius: 32,
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 8,
-  },
+  stage: { flex: 1, alignItems: "center", justifyContent: "center", paddingHorizontal: 28, gap: 18 },
   title: { fontSize: 28, fontWeight: "800", letterSpacing: -0.6, textAlign: "center" },
   body: { fontSize: 17, lineHeight: 26, textAlign: "center", fontWeight: "500" },
   footer: { paddingHorizontal: 24, paddingBottom: 20 },

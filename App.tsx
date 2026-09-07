@@ -8,11 +8,21 @@ import { useColorScheme } from "nativewind";
 import RootNavigator from "./src/navigation/RootNavigator";
 import AnimatedSplash from "./src/components/AnimatedSplash";
 import OfflineBootstrap from "./src/providers/OfflineBootstrap";
+import { useLearnFlowStore } from "./src/store/useLearnFlowStore";
 import { useAppTheme } from "./src/theme/useAppTheme";
 
 export default function App() {
   const { darkMode, colors } = useAppTheme();
   const { setColorScheme } = useColorScheme();
+  const onboardingCompleted = useLearnFlowStore((s) => s.onboardingCompleted);
+  const persistApi = useLearnFlowStore.persist;
+  const [hydrated, setHydrated] = useState(() => {
+    try {
+      return persistApi?.hasHydrated() ?? true;
+    } catch {
+      return true;
+    }
+  });
   const [splashDone, setSplashDone] = useState(false);
 
   useEffect(() => {
@@ -20,9 +30,14 @@ export default function App() {
   }, [darkMode, setColorScheme]);
 
   useEffect(() => {
-    const t = setTimeout(() => setSplashDone(true), 2800);
-    return () => clearTimeout(t);
-  }, []);
+    if (hydrated || !persistApi?.onFinishHydration) return;
+    const unsub = persistApi.onFinishHydration(() => setHydrated(true));
+    const t = setTimeout(() => setHydrated(true), 1200);
+    return () => {
+      unsub?.();
+      clearTimeout(t);
+    };
+  }, [hydrated, persistApi]);
 
   const onSplashFinish = useCallback(() => setSplashDone(true), []);
 
@@ -32,7 +47,9 @@ export default function App() {
         <StatusBar style={darkMode ? "light" : "dark"} />
         <OfflineBootstrap>
           <RootNavigator />
-          {!splashDone ? <AnimatedSplash onFinish={onSplashFinish} /> : null}
+          {!splashDone ? (
+            <AnimatedSplash ready={hydrated} cinematic={!onboardingCompleted} onFinish={onSplashFinish} />
+          ) : null}
         </OfflineBootstrap>
       </SafeAreaProvider>
     </GestureHandlerRootView>
