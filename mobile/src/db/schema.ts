@@ -1,4 +1,4 @@
-export const SCHEMA_VERSION = 3;
+export const SCHEMA_VERSION = 4;
 
 /** Colonnes ajoutées après la 1re création — migration idempotente via PRAGMA table_info. */
 export const ADDITIVE_COLUMNS: Record<string, { name: string; ddl: string }[]> = {
@@ -23,6 +23,7 @@ export const ADDITIVE_COLUMNS: Record<string, { name: string; ddl: string }[]> =
     { name: "initials", ddl: "TEXT" },
     { name: "avatar_color", ddl: "TEXT" },
     { name: "streak", ddl: "INTEGER NOT NULL DEFAULT 0" },
+    { name: "avatar_id", ddl: "TEXT" },
   ],
 };
 
@@ -73,7 +74,8 @@ CREATE TABLE IF NOT EXISTS LeagueCache (
   is_you INTEGER NOT NULL DEFAULT 0,
   initials TEXT,
   avatar_color TEXT,
-  streak INTEGER NOT NULL DEFAULT 0
+  streak INTEGER NOT NULL DEFAULT 0,
+  avatar_id TEXT
 );
 
 CREATE TABLE IF NOT EXISTS SyncMeta (

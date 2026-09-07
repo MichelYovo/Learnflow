@@ -32,9 +32,6 @@ export default function SplashScreen({ navigation }: Props) {
         >
           <Text style={[styles.secondaryText, { color: colors.textDark }]}>J'ai déjà un compte</Text>
         </Pressable>
-        <Pressable onPress={() => navigation.navigate("Profiles")}>
-          <Text style={[styles.link, { color: colors.primary }]}>Continuer avec un profil démo</Text>
-        </Pressable>
       </View>
     </SafeAreaView>
   );

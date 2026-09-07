@@ -132,10 +132,6 @@ function LoginInner() {
         ) : null}
 
         <SocialAuth mode="login" onProvider={() => setError("Utilise Google, ou connecte-toi par email.")} />
-
-        <Link href="/profiles" className="mt-4 block text-center text-sm font-bold" style={{ color: colors.primary }}>
-          Choisir un profil local
-        </Link>
       </AuthStage>
     </Page>
   );

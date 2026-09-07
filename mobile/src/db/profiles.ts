@@ -237,14 +237,14 @@ export async function validateLocalPin(profileId: string, pin: string): Promise<
   try {
     const profile = await getProfileById(profileId);
     if (!profile) {
-      // SQLite pas encore prêt : PIN démo Kofi / Ama
-      return (profileId === "1" || profileId === "2") && pin === "1234";
+      // SQLite pas encore prêt
+      return false;
     }
     if (!isPinConfigured(profile.local_pin_code)) return true;
     return verifyPin(pin, profileId, profile.local_pin_code);
   } catch (error) {
     console.warn("[LearnFlow] validateLocalPin", error);
-    return (profileId === "1" || profileId === "2") && pin === "1234";
+    return false;
   }
 }
 

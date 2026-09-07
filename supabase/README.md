@@ -251,6 +251,19 @@ Après Google **ou** email + mot de passe, LearnFlow envoie ce code, puis ouvre 
 5. L’élève démarre en **ligue Bronze**, stats à **0**, cours de sa classe sans progression.
 6. Admin `http://localhost:3001` : l’élève et l’activité apparaissent (source « Supabase »).
 
+### Classement réel (après le SQL)
+
+Re-colle `schema.sql` si tu l’avais déjà lancé : ça ajoute la fonction `league_leaderboard_for_tier` et le temps réel sur `league_scores`.
+
+Pour recalculer les ligues à partir de l’historique XP (toutes les ligues) :
+
+```
+python supabase/scripts/update_leagues.py
+python supabase/scripts/update_leagues.py --promote
+```
+
+Il faut `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY`. Un nouvel élève sans XP est dernier. Les avatars ne sont **pas** attribués automatiquement : l’élève choisit le sien dans l’app.
+
 ---
 
 ## Si ça bloque

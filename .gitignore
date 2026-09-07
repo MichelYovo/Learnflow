@@ -17,3 +17,7 @@ dist/
 .expo/
 web-build/
 .vercel/
+
+# Python
+__pycache__/
+*.pyc

@@ -28,11 +28,10 @@ import {
   classLabel,
   isCloudProfileId,
   keepLocalTestProfiles,
-  PROFILES_DEMO,
   resolveLocalTestActiveId,
 } from "../data/mock";
 import type { LeaguePlayer } from "../data/mock";
-import { defaultAvatarId, resolveAvatarId } from "../data/avatars";
+import { resolveAvatarId } from "../data/avatars";
 import { applySelfRating } from "../engine/spacedRepetition";
 import { xpAssimilation, xpBlitz } from "../engine/xp";
 import { createId, nowIso } from "../lib/ids";
@@ -119,7 +118,7 @@ interface LearnFlowState {
   }) => void;
   hydrateFromLocal: (payload: { profiles: ProfileEleve[]; activeProfileId: string }) => void;
   setLeagueBoard: (players: LeaguePlayer[]) => void;
-  applyRemoteLeague: (studentId: string, weeklyXp: number, rank: number) => void;
+  applyRemoteLeague: (studentId: string, weeklyXp: number, rank: number, tier?: string) => void;
   addAgendaSession: (session: Omit<AgendaSession, "id">) => void;
   deleteAgendaSession: (id: string) => void;
   postponeAgendaSession: (id: string) => void;
@@ -181,10 +180,20 @@ export interface AppSettings {
 }
 
 const FALLBACK_PROFILE: ProfileEleve = {
-  ...PROFILES_DEMO[0],
+  id: "",
   compteId: LOCAL_PARENT_ID,
+  nom: "Élève",
+  firstName: "Élève",
+  classe: "3eme",
+  gradeLabel: "3ème",
+  xpTotale: 0,
+  streak: 0,
+  rang: 1,
+  lessonsDone: 0,
   badgesDebloques: [],
-  hasPin: true,
+  color: "#1677FF",
+  bg: "#E6F4FF",
+  hasPin: false,
 };
 
 const DEFAULT_SETTINGS: AppSettings = {
@@ -222,21 +231,10 @@ export const useLearnFlowStore = create<LearnFlowState>()(
       isAuthenticated: false,
       onboardingCompleted: false,
       focusPromptPending: true,
-      profiles: PROFILES_DEMO.map((p) => ({
-        ...p,
-        compteId: LOCAL_PARENT_ID,
-        badgesDebloques: ["Série 7", "Blitz King", "Lecteur Pro"],
-        hasPin: true,
-      })),
-      activeProfileId: "1",
+      profiles: [],
+      activeProfileId: "",
       leagueBoard: LEAGUE_PLAYERS,
-      ligue: {
-        nomLigue: "Or",
-        rangActuel: 3,
-        scoreHebdo: 840,
-        estGelee: false,
-        groupe: 12,
-      },
+      ligue: { ...BEGINNER_LIGUE },
       suiviParental: {
         telParent: "+22890000000",
         estSMSPassifActif: true,
@@ -273,7 +271,7 @@ export const useLearnFlowStore = create<LearnFlowState>()(
         const startFresh = opts?.fresh === true;
         const parts = user.nom.trim().split(/\s+/);
         const firstName = parts[0] || "Élève";
-        const avatarId = user.avatarId ?? existing?.avatarId ?? defaultAvatarId(user.id);
+        const avatarId = user.avatarId ?? existing?.avatarId;
         const rang = startFresh ? BEGINNER_LIGUE.rangActuel : (user.rang ?? existing?.rang ?? BEGINNER_LIGUE.rangActuel);
         const profile: ProfileEleve = {
           id: user.id,
@@ -335,7 +333,7 @@ export const useLearnFlowStore = create<LearnFlowState>()(
             lessons_done: profile.lessonsDone,
             color: profile.color ?? null,
             bg: profile.bg ?? null,
-            avatar_id: avatarId,
+            avatar_id: avatarId ?? null,
           }).catch((error) => console.warn("[LearnFlow] persist cloud profile", error));
           if (!startFresh) {
             void import("../lib/progressSync").then((m) => m.requestProgressSync());
@@ -400,11 +398,12 @@ export const useLearnFlowStore = create<LearnFlowState>()(
 
       setLeagueBoard: (players) => set({ leagueBoard: players }),
 
-      applyRemoteLeague: (studentId, weeklyXp, rank) => {
+      applyRemoteLeague: (studentId, weeklyXp, rank, tier) => {
         const { ligue, profiles, activeProfileId } = get();
         if (String(activeProfileId) !== studentId) return;
+        const nomLigue = (tier as Ligue["nomLigue"] | undefined) ?? ligue.nomLigue;
         set({
-          ligue: { ...ligue, scoreHebdo: weeklyXp, rangActuel: rank },
+          ligue: { ...ligue, scoreHebdo: weeklyXp, rangActuel: rank, nomLigue },
           profiles: profiles.map((p) => (p.id === studentId ? { ...p, rang: rank } : p)),
         });
       },
@@ -764,27 +763,19 @@ export const useLearnFlowStore = create<LearnFlowState>()(
       completeOnboarding: () => set({ onboardingCompleted: true }),
     }),
     {
-      name: "learnflow-store-v5",
+      name: "learnflow-store-v6",
       storage: createJSONStorage(() => AsyncStorage),
       merge: (persisted, current) => {
         try {
           const p = (persisted ?? {}) as Partial<LearnFlowState>;
-          const demoById = new Map(PROFILES_DEMO.map((d) => [String(d.id), d]));
           const rawProfiles = Array.isArray(p.profiles) ? p.profiles : current.profiles;
           const mapped = keepLocalTestProfiles(rawProfiles).map((pr) => {
-            const demo = demoById.get(String(pr.id));
             return {
               ...pr,
               id: String(pr.id),
               compteId: String(pr.compteId ?? "local-parent"),
-              avatarId: resolveAvatarId(pr.avatarId ?? defaultAvatarId(String(pr.id))),
-              hasPin: pr.hasPin ?? true,
-              ...(demo
-                ? {
-                    classe: demo.classe,
-                    gradeLabel: demo.gradeLabel,
-                  }
-                : {}),
+              avatarId: resolveAvatarId(pr.avatarId),
+              hasPin: pr.hasPin ?? false,
             };
           });
           const profiles = mapped.length > 0 ? mapped : current.profiles;

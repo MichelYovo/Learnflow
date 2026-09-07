@@ -4,7 +4,11 @@ import { isSupabaseConfigured, supabaseUrl } from "./supabase";
 
 export async function createServerSupabase() {
   if (!isSupabaseConfigured) return null;
-  const anon = (process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "").trim();
+  const anon = (
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
+    ""
+  ).trim();
   const cookieStore = await cookies();
   return createServerClient(supabaseUrl, anon, {
     cookies: {

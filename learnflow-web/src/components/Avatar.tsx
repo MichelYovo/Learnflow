@@ -31,9 +31,9 @@ export default function Avatar({
           boxShadow: avatarId ? "0 3px 10px rgba(15, 23, 42, 0.18)" : undefined,
         }}
       >
-        {avatarId ? (
+        {avatarId && avatarSrc(avatarId) ? (
           <Image
-            src={avatarSrc(avatarId)}
+            src={avatarSrc(avatarId)!}
             alt=""
             width={size}
             height={size}

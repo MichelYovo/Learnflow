@@ -41,8 +41,8 @@ export const AVATARS: AvatarDef[] = AVATAR_IDS.map((id) => ({
   source: AVATAR_SOURCES[id],
 }));
 
-export function resolveAvatarId(id?: string | null): string {
-  if (!id) return AVATAR_IDS[0];
+export function resolveAvatarId(id?: string | null): string | undefined {
+  if (!id) return undefined;
   if (id in AVATAR_SOURCES) return id;
   if (id in LEGACY_IDS) return LEGACY_IDS[id];
   const padded = id.replace(/^avatar-?/i, "").replace(/^a/i, "");
@@ -51,11 +51,12 @@ export function resolveAvatarId(id?: string | null): string {
     const key = `a${String(((asNum - 1) % AVATAR_IDS.length) + 1).padStart(2, "0")}`;
     if (key in AVATAR_SOURCES) return key;
   }
-  return AVATAR_IDS[0];
+  return undefined;
 }
 
-export function getAvatar(id?: string | null): AvatarDef {
+export function getAvatar(id?: string | null): AvatarDef | undefined {
   const resolved = resolveAvatarId(id);
+  if (!resolved) return undefined;
   return { id: resolved, source: AVATAR_SOURCES[resolved] };
 }
 

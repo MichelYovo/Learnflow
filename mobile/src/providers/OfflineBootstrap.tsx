@@ -2,16 +2,12 @@ import React, { useEffect } from "react";
 import { AppState } from "react-native";
 import {
   getCachedLeaderboard,
-  ensureDemoPins,
-  ensureDemoClasses,
   importEleveProfiles,
   initDatabase,
   leagueCacheToPlayer,
   loadProfiles,
   localProfileToEleve,
   pruneExtraLocalProfiles,
-  seedDemoProfilesIfEmpty,
-  updateLocalProfileAvatar,
 } from "../db";
 import { startSyncManager } from "../lib/SyncManager";
 import { fetchOwnStudentProfile, isProfileComplete } from "../lib/cloud";
@@ -23,24 +19,17 @@ import { useLearnFlowStore } from "../store/useLearnFlowStore";
 async function hydrateFromSqlite(): Promise<void> {
   const store = useLearnFlowStore.getState();
   await importEleveProfiles(store.profiles);
-  await seedDemoProfilesIfEmpty();
   await pruneExtraLocalProfiles();
-  await ensureDemoPins();
-  await ensureDemoClasses();
   const rows = await loadProfiles();
   if (rows.length === 0) return;
 
   const nextProfiles = keepLocalTestProfiles(
     rows.map((row) => {
       const prev = store.profiles.find((p) => String(p.id) === row.id);
-      const mapped = localProfileToEleve(row, {
+      return localProfileToEleve(row, {
         badgesDebloques: prev?.badgesDebloques ?? [],
-        avatarId: prev?.avatarId,
+        avatarId: prev?.avatarId ?? row.avatar_id ?? undefined,
       });
-      if (!row.avatar_id && mapped.avatarId) {
-        void updateLocalProfileAvatar(row.id, mapped.avatarId);
-      }
-      return mapped;
     })
   );
   if (nextProfiles.length === 0) return;
@@ -116,9 +105,14 @@ export default function OfflineBootstrap({ children }: { children: React.ReactNo
             return state.isAuthenticated ? String(state.activeProfileId) : null;
           },
           getLeagueTier: () => useLearnFlowStore.getState().ligue.nomLigue,
+          getSelf: () => {
+            const profile = useLearnFlowStore.getState().getActiveProfile();
+            if (!profile?.id) return null;
+            return { name: profile.nom, avatarId: profile.avatarId };
+          },
           onLeaderboard: (players) => useLearnFlowStore.getState().setLeagueBoard(players),
-          onWeeklyXp: (studentId, weeklyXp, rank) => {
-            useLearnFlowStore.getState().applyRemoteLeague(studentId, weeklyXp, rank);
+          onWeeklyXp: (studentId, weeklyXp, rank, tier) => {
+            useLearnFlowStore.getState().applyRemoteLeague(studentId, weeklyXp, rank, tier);
           },
         });
         const appSub = AppState.addEventListener("change", (next) => {

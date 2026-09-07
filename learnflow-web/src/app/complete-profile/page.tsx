@@ -84,7 +84,7 @@ export default function CompleteProfilePage() {
       xpTotale: 0,
       streak: 0,
       lessonsDone: 0,
-      rang: 30,
+      rang: 1,
     }, { fresh: true });
     void ensureBeginnerLeague(userId);
     void trackActivity("profile_complete", { classe, platform: "web" });

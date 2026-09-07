@@ -104,3 +104,55 @@ grant usage on schema public to anon, authenticated;
 grant select, insert, update on public.student_profiles to authenticated;
 grant select, insert, update on public.league_scores to authenticated;
 grant select, insert on public.activity_events to authenticated;
+
+-- Un élève = une ligne de ligue. Déduplique d’éventuels doublons puis unique.
+delete from public.league_scores a
+using public.league_scores b
+where a.student_id = b.student_id
+  and a.ctid < b.ctid;
+
+create unique index if not exists league_scores_student_id_uidx
+  on public.league_scores (student_id);
+
+-- Classement public (noms + avatars choisis, pas d’email / téléphone / progress).
+create or replace function public.league_leaderboard_for_tier(p_tier text)
+returns table (
+  id uuid,
+  student_id uuid,
+  league_tier text,
+  weekly_xp integer,
+  last_sync timestamptz,
+  display_name text,
+  avatar_id text,
+  streak integer
+)
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select
+    ls.id,
+    ls.student_id,
+    ls.league_tier,
+    ls.weekly_xp,
+    ls.last_sync,
+    coalesce(nullif(trim(sp.name), ''), 'Élève') as display_name,
+    sp.avatar_id,
+    coalesce(sp.streak, 0) as streak
+  from public.league_scores ls
+  left join public.student_profiles sp on sp.id = ls.student_id
+  where ls.league_tier = p_tier
+  order by ls.weekly_xp desc, ls.last_sync asc nulls last, ls.student_id asc;
+$$;
+
+revoke all on function public.league_leaderboard_for_tier(text) from public;
+grant execute on function public.league_leaderboard_for_tier(text) to authenticated;
+
+do $$
+begin
+  alter publication supabase_realtime add table public.league_scores;
+exception
+  when duplicate_object then null;
+  when undefined_object then null;
+end $$;

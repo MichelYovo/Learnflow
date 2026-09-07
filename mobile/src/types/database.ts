@@ -69,6 +69,7 @@ export interface LeagueCacheRow {
   initials: string | null;
   avatar_color: string | null;
   streak: number;
+  avatar_id?: string | null;
 }
 
 export type SyncMetaKey = "last_sync_at" | "last_sync_error" | "schema_version";

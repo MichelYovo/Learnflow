@@ -6,6 +6,7 @@ import { useEffect } from "react";
 import { useAppTheme } from "@/theme/useAppTheme";
 import type { IconName } from "./Icon";
 import FloatingChatbot from "./FloatingChatbot";
+import AvatarGate from "./AvatarGate";
 
 const NAV: { href: string; label: string; icon: IconName; fill: string; outline: string }[] = [
   { href: "/app", label: "Accueil", icon: "home", fill: "/icons/home-fill.png", outline: "/icons/home.png" },
@@ -138,6 +139,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       </nav>
 
       <FloatingChatbot />
+      <AvatarGate />
     </div>
   );
 }

@@ -5,6 +5,7 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { useLearnFlowStore } from "../store/useLearnFlowStore";
 import LearnFlowTabBar from "../components/TabBar";
+import AvatarGate from "../components/AvatarGate";
 import { useAppTheme } from "../theme/useAppTheme";
 import { appNavFonts } from "../theme/typography";
 import type { AuthStackParamList, MainTabParamList, RootStackParamList } from "./types";
@@ -95,7 +96,8 @@ function AuthNavigator() {
 
 function MainTabs() {
   return (
-    <Tab.Navigator
+    <>
+      <Tab.Navigator
       tabBar={(props) => <LearnFlowTabBar {...props} />}
       screenOptions={{
         headerShown: false,
@@ -114,6 +116,8 @@ function MainTabs() {
       <Tab.Screen name="Ligue" component={LigueScreen} />
       <Tab.Screen name="Profil" component={ProfilScreen} />
     </Tab.Navigator>
+    <AvatarGate />
+    </>
   );
 }
 

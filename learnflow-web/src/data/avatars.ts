@@ -15,14 +15,15 @@ const LEGACY_IDS: Record<string, string> = {
   eclaire: "a08",
 };
 
-export function avatarSrc(id?: string | null): string {
+export function avatarSrc(id?: string | null): string | undefined {
   const resolved = resolveAvatarId(id);
+  if (!resolved) return undefined;
   const n = resolved.replace(/^a/, "");
   return `/avatars/avatar-${n}.png`;
 }
 
-export function resolveAvatarId(id?: string | null): string {
-  if (!id) return AVATAR_IDS[0];
+export function resolveAvatarId(id?: string | null): string | undefined {
+  if (!id) return undefined;
   if ((AVATAR_IDS as readonly string[]).includes(id)) return id;
   if (id in LEGACY_IDS) return LEGACY_IDS[id];
   const padded = id.replace(/^avatar-?/i, "").replace(/^a/i, "");
@@ -31,7 +32,7 @@ export function resolveAvatarId(id?: string | null): string {
     const key = `a${String(((asNum - 1) % AVATAR_IDS.length) + 1).padStart(2, "0")}`;
     if ((AVATAR_IDS as readonly string[]).includes(key)) return key;
   }
-  return AVATAR_IDS[0];
+  return undefined;
 }
 
 export function defaultAvatarId(seed: string): string {

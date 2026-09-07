@@ -145,7 +145,9 @@ export default function LiguePage() {
             </p>
           ) : null}
 
-          {isCurrent && first && second && third ? (
+          {isCurrent && sorted.length > 0 ? (
+            <>
+              {first && second && third ? (
             <>
               <div className="mt-2 overflow-hidden rounded-[20px] border pt-5" style={{ background: colors.white, borderColor: colors.border }}>
                 <p className="mb-4 text-center text-[11px] font-extrabold uppercase tracking-widest" style={{ color: colors.textMuted }}>
@@ -224,11 +226,13 @@ export default function LiguePage() {
                   })}
                 </div>
               </div>
+              </>
+              ) : null}
 
               <p className="pb-2 pt-5 text-[18px] font-extrabold">Classement</p>
-              {rest.map((player) => (
+              {(first && second && third ? rest : sorted).map((player) => (
                 <div
-                  key={player.rank}
+                  key={`${player.studentId ?? player.name}-${player.rank}`}
                   className="mb-2 flex min-h-16 items-center gap-3 rounded-[20px] border px-4 py-3"
                   style={{
                     background: player.you ? (darkMode ? "#0C1A33" : "#E6F4FF") : colors.white,
@@ -277,6 +281,10 @@ export default function LiguePage() {
                 </p>
               ) : null}
             </>
+          ) : isCurrent ? (
+            <p className="mb-2 text-center text-sm font-semibold" style={{ color: colors.textMuted }}>
+              Le classement est vide pour l’instant. Dès qu’un élève se connecte, il apparaît ici — dernier tant qu’il n’a pas encore d’XP.
+            </p>
           ) : null}
         </div>
       ) : (

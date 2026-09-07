@@ -29,7 +29,7 @@ export default function Avatar({
   selected,
   animated = false,
 }: Props) {
-  const source = avatarId ? getAvatar(avatarId).source : null;
+  const source = avatarId ? getAvatar(avatarId)?.source ?? null : null;
   const r = size / 2;
   const tilt = useSharedValue(0);
 

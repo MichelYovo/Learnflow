@@ -63,7 +63,7 @@ export async function settleVerifiedUser(): Promise<
         xpTotale: 0,
         streak: 0,
         lessonsDone: 0,
-        rang: 30,
+        rang: 1,
       },
     };
   }

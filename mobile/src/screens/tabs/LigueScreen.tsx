@@ -109,12 +109,14 @@ export default function LigueScreen() {
             </Text>
           ) : null}
 
-          {isCurrent && first && second && third ? (
+          {isCurrent && sorted.length > 0 ? (
             <>
-              <LeaguePodium first={first} second={second} third={third} />
+              {first && second && third ? (
+                <LeaguePodium first={first} second={second} third={third} />
+              ) : null}
               <Text style={[styles.section, { color: colors.textDark }]}>Classement</Text>
-              {rest.map((player) => (
-                <LeagueLeaderboardRow key={player.rank} player={player} />
+              {(first && second && third ? rest : sorted).map((player) => (
+                <LeagueLeaderboardRow key={`${player.studentId ?? player.name}-${player.rank}`} player={player} />
               ))}
               <Pressable
                 accessibilityRole="button"
@@ -131,6 +133,10 @@ export default function LigueScreen() {
                 <Text style={[styles.hint, { color: colors.textMuted }]}>Ton rang est protégé pendant 7 jours (démo).</Text>
               ) : null}
             </>
+          ) : isCurrent ? (
+            <Text style={[styles.hint, { color: colors.textMuted }]}>
+              Le classement est vide pour l’instant. Dès qu’un élève se connecte, il apparaît ici — dernier tant qu’il n’a pas encore d’XP.
+            </Text>
           ) : null}
         </ScrollView>
       ) : (

@@ -10,8 +10,8 @@ export async function replaceLeagueCache(rows: LeagueCacheRow[]): Promise<void> 
           await db.runAsync(
             `INSERT INTO LeagueCache (
               id, student_id, student_name, league_tier, weekly_xp, rank,
-              last_sync, is_you, initials, avatar_color, streak
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+              last_sync, is_you, initials, avatar_color, streak, avatar_id
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             [
               row.id,
               row.student_id,
@@ -24,6 +24,7 @@ export async function replaceLeagueCache(rows: LeagueCacheRow[]): Promise<void> 
               row.initials,
               row.avatar_color,
               row.streak,
+              row.avatar_id ?? null,
             ]
           );
         }
@@ -40,7 +41,7 @@ export async function getCachedLeaderboard(tier?: string): Promise<LeagueCacheRo
       tier
         ? db.getAllAsync<LeagueCacheRow>(
             `SELECT id, student_id, student_name, league_tier, weekly_xp, rank,
-                    last_sync, is_you, initials, avatar_color, streak
+                    last_sync, is_you, initials, avatar_color, streak, avatar_id
              FROM LeagueCache
              WHERE league_tier = ?
              ORDER BY rank ASC, weekly_xp DESC`,
@@ -48,7 +49,7 @@ export async function getCachedLeaderboard(tier?: string): Promise<LeagueCacheRo
           )
         : db.getAllAsync<LeagueCacheRow>(
             `SELECT id, student_id, student_name, league_tier, weekly_xp, rank,
-                    last_sync, is_you, initials, avatar_color, streak
+                    last_sync, is_you, initials, avatar_color, streak, avatar_id
              FROM LeagueCache
              ORDER BY rank ASC, weekly_xp DESC`
           )

@@ -4,7 +4,7 @@ import type { LeaguePlayer } from "../data/mock";
 import type { LeagueCacheRow } from "../types/database";
 import type { LeagueScoreRow, StudentProfile } from "../types/supabase";
 import { supabase, isSupabaseConfigured } from "./supabase";
-import { defaultAvatarId } from "../data/avatars";
+import { fetchLeagueLeaderboard, subscribeLeagueLive } from "./leagueLive";
 import { nowIso } from "./ids";
 import {
   getProfileById,
@@ -21,8 +21,9 @@ import {
 export type SyncManagerHooks = {
   getActiveStudentId: () => string | null;
   getLeagueTier: () => string;
+  getSelf?: () => { name: string; avatarId?: string } | null;
   onLeaderboard: (players: LeaguePlayer[]) => void;
-  onWeeklyXp: (studentId: string, weeklyXp: number, rank: number) => void;
+  onWeeklyXp: (studentId: string, weeklyXp: number, rank: number, tier?: string) => void;
 };
 
 type NetworkSubscription = { remove: () => void };
@@ -31,6 +32,7 @@ const SYNC_DEBOUNCE_MS = 800;
 
 let hooks: SyncManagerHooks | null = null;
 let networkSub: NetworkSubscription | null = null;
+let liveUnsub: (() => void) | null = null;
 let syncing = false;
 let queued = false;
 let debounceTimer: ReturnType<typeof setTimeout> | null = null;
@@ -61,19 +63,6 @@ function initialsFromName(name: string): string {
     .join("")
     .slice(0, 2)
     .toUpperCase();
-}
-
-function toPlayers(rows: LeagueCacheRow[]): LeaguePlayer[] {
-  return rows.map((row) => ({
-    rank: row.rank,
-    name: row.student_name,
-    xp: row.weekly_xp,
-    streak: row.streak,
-    you: row.is_you === 1,
-    initials: row.initials ?? initialsFromName(row.student_name),
-    avatarColor: row.avatar_color ?? "#1677FF",
-    avatarId: defaultAvatarId(row.student_id),
-  }));
 }
 
 async function pushPendingXp(parentId: string, leagueTier: string): Promise<void> {
@@ -145,55 +134,34 @@ async function pushPendingXp(parentId: string, leagueTier: string): Promise<void
 }
 
 async function pullLeaderboard(activeStudentId: string | null, leagueTier: string): Promise<void> {
-  const { data: scoreRows, error } = await supabase
-    .from("league_scores")
-    .select("id, student_id, league_tier, weekly_xp, last_sync")
-    .eq("league_tier", leagueTier)
-    .order("weekly_xp", { ascending: false })
-    .limit(30);
-
-  if (error) {
-    throw new Error(error.message);
-  }
-  const scores = (scoreRows ?? []) as LeagueScoreRow[];
-  if (scores.length === 0) return;
-
-  const ids = [...new Set(scores.map((row) => row.student_id))];
-  const { data: nameRows, error: namesError } = await supabase
-    .from("student_profiles")
-    .select("id, name, total_xp")
-    .in("id", ids);
-  if (namesError) {
-    throw new Error(namesError.message);
-  }
-
-  const names = (nameRows ?? []) as Pick<StudentProfile, "id" | "name" | "total_xp">[];
-  const nameById = new Map(names.map((row) => [row.id, row]));
+  const self = hooks?.getSelf?.() ?? null;
+  const players = await fetchLeagueLeaderboard(
+    leagueTier,
+    activeStudentId,
+    self ? { name: self.name, avatarId: self.avatarId, initials: initialsFromName(self.name) } : undefined
+  );
   const lastSync = nowIso();
-  const cache: LeagueCacheRow[] = scores.map((row, index) => {
-    const profile = nameById.get(row.student_id);
-    const name = profile?.name ?? "Élève";
-    return {
-      id: row.id,
-      student_id: row.student_id,
-      student_name: name,
-      league_tier: row.league_tier,
-      weekly_xp: row.weekly_xp,
-      rank: index + 1,
-      last_sync: row.last_sync ?? lastSync,
-      is_you: activeStudentId && row.student_id === activeStudentId ? 1 : 0,
-      initials: initialsFromName(name),
-      avatar_color: null,
-      streak: 0,
-    };
-  });
+  const cache: LeagueCacheRow[] = players.map((player, index) => ({
+    id: player.studentId ?? player.name ?? `lb-${index}`,
+    student_id: player.studentId ?? (player.you && activeStudentId ? activeStudentId : `peer-${index}`),
+    student_name: player.name,
+    league_tier: leagueTier,
+    weekly_xp: player.xp,
+    rank: player.rank,
+    last_sync: lastSync,
+    is_you: player.you ? 1 : 0,
+    initials: player.initials,
+    avatar_color: player.avatarColor,
+    streak: player.streak,
+    avatar_id: player.avatarId ?? null,
+  }));
 
   await replaceLeagueCache(cache);
-  hooks?.onLeaderboard(toPlayers(cache));
+  hooks?.onLeaderboard(players);
 
-  const me = cache.find((row) => row.is_you === 1);
-  if (me) {
-    hooks?.onWeeklyXp(me.student_id, me.weekly_xp, me.rank);
+  const me = players.find((row) => row.you);
+  if (me && activeStudentId) {
+    hooks?.onWeeklyXp(activeStudentId, me.xp, me.rank, leagueTier);
   }
 }
 
@@ -213,7 +181,7 @@ async function runSync(): Promise<void> {
     const parentId = await restoreSession();
     if (!parentId) return;
 
-    const leagueTier = hooks?.getLeagueTier() ?? "Or";
+    const leagueTier = hooks?.getLeagueTier() ?? "Bronze";
     const activeStudentId = hooks?.getActiveStudentId() ?? null;
 
     const { syncProgress } = await import("./progressSync");
@@ -254,6 +222,7 @@ export function startSyncManager(nextHooks: SyncManagerHooks): () => void {
   networkSub = Network.addNetworkStateListener((state) => {
     if (isOnline(state)) scheduleSync();
   });
+  liveUnsub = subscribeLeagueLive(() => scheduleSync());
 
   scheduleSync();
 
@@ -267,6 +236,8 @@ export function stopSyncManager(): void {
   }
   networkSub?.remove();
   networkSub = null;
+  liveUnsub?.();
+  liveUnsub = null;
 }
 
 export function isSyncing(): boolean {

@@ -21,9 +21,6 @@ export default function SplashPage() {
             >
               J&apos;ai déjà un compte
             </Link>
-            <Link href="/profiles" className="block pt-1 text-center text-[13px] font-extrabold" style={{ color: colors.primary }}>
-              Continuer avec un profil démo
-            </Link>
           </div>
         }
       >

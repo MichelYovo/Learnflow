@@ -4,10 +4,28 @@ import { useEffect } from "react";
 import { isCloudProfileId } from "@/data/mock";
 import { fetchOwnStudentProfile } from "@/lib/cloud";
 import { isProfileComplete } from "@/lib/cloudTypes";
+import { fetchLeagueLeaderboard, subscribeLeagueLive } from "@/lib/leagueLive";
 import { requestProgressSync, syncProgress } from "@/lib/progressSync";
 import { getBrowserSupabase } from "@/lib/supabase";
 import { useLearnFlowStore } from "@/store/useLearnFlowStore";
 import { useHydrated } from "./useHydrated";
+
+async function refreshLeaderboard(): Promise<void> {
+  const state = useLearnFlowStore.getState();
+  if (!state.isAuthenticated || !isCloudProfileId(state.activeProfileId)) return;
+  const profile = state.getActiveProfile();
+  const players = await fetchLeagueLeaderboard(state.ligue.nomLigue, String(state.activeProfileId), {
+    name: profile.nom,
+    avatarId: profile.avatarId,
+    initials: profile.firstName?.slice(0, 2),
+  });
+  const store = useLearnFlowStore.getState();
+  store.setLeagueBoard(players);
+  const me = players.find((p) => p.you);
+  if (me) {
+    store.applyRemoteLeague(String(store.activeProfileId), me.xp, me.rank, store.ligue.nomLigue);
+  }
+}
 
 export default function CloudSyncBootstrap() {
   const ready = useHydrated();
@@ -41,19 +59,30 @@ export default function CloudSyncBootstrap() {
         });
       }
       if (!cancelled) await syncProgress();
+      if (!cancelled) await refreshLeaderboard();
     };
 
     void restore();
 
     const onVis = () => {
-      if (document.visibilityState === "visible") requestProgressSync();
+      if (document.visibilityState === "visible") {
+        requestProgressSync();
+        void refreshLeaderboard();
+      }
     };
     document.addEventListener("visibilitychange", onVis);
-    const interval = setInterval(() => requestProgressSync(), 45_000);
+    const interval = setInterval(() => {
+      requestProgressSync();
+      void refreshLeaderboard();
+    }, 20_000);
+    const stopLive = subscribeLeagueLive(() => {
+      void refreshLeaderboard();
+    });
     return () => {
       cancelled = true;
       document.removeEventListener("visibilitychange", onVis);
       clearInterval(interval);
+      stopLive();
     };
   }, [ready]);
 

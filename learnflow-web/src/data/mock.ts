@@ -62,8 +62,8 @@ export const INITIAL_INBOX: InboxNotification[] = [
   {
     id: "n-league-1",
     kind: "league",
-    title: "Ligue Or · rang #3",
-    body: "Tu es 3e du groupe 12. Continue pour viser Platine.",
+    title: "Ligue Bronze",
+    body: "Tout le monde commence ici. Ton rang se calcule dès que tu gagnes de l'XP.",
     createdAt: new Date(Date.now() - 26 * 3600_000).toISOString(),
     read: true,
   },
@@ -472,6 +472,7 @@ export type LeaguePlayer = {
   initials: string;
   avatarColor: string;
   avatarId?: string;
+  studentId?: string;
 };
 
 export type LeagueTierMeta = {
@@ -492,61 +493,29 @@ export const LEAGUE_TIERS: LeagueTierMeta[] = [
   { id: "Diamant", label: "Diamant", badgeKey: "diamond", color: "#F59E0B", accent: "#FFFBEB" },
 ];
 
-const LEAGUE_SEED: LeaguePlayer[] = [
-  { rank: 1, name: "Ama Mensah", xp: 4210, streak: 12, you: false, initials: "AM", avatarColor: "#F59E0B", avatarId: "a02" },
-  { rank: 2, name: "Kwame Asante", xp: 3940, streak: 8, you: false, initials: "KA", avatarColor: "#8B5CF6", avatarId: "a05" },
-  { rank: 3, name: "Kofi Adjei", xp: 2840, streak: 5, you: true, initials: "KO", avatarColor: "#1677FF", avatarId: "a07" },
-  { rank: 4, name: "Efua Boateng", xp: 2720, streak: 7, you: false, initials: "EB", avatarColor: "#10B981", avatarId: "a06" },
-  { rank: 5, name: "Yaw Darko", xp: 2490, streak: 3, you: false, initials: "YD", avatarColor: "#EF4444", avatarId: "a10" },
-  { rank: 6, name: "Akua Owusu", xp: 2180, streak: 6, you: false, initials: "AO", avatarColor: "#06B6D4", avatarId: "a09" },
-  { rank: 7, name: "Kojo Asante", xp: 1950, streak: 2, you: false, initials: "KJ", avatarColor: "#F97316", avatarId: "a03" },
-  { rank: 8, name: "Adwoa Mensah", xp: 1740, streak: 4, you: false, initials: "AD", avatarColor: "#EC4899", avatarId: "a01" },
-];
-
-const EXTRA_NAMES = [
-  "Nana Addo", "Abena Serwaa", "Fiifi Mensah", "Esi Lamptey", "Kweku Boateng",
-  "Afia Nyarko", "Paapa Owusu", "Maame Yaa", "Nii Armah", "Ama Serwa",
-  "Kwesi Appiah", "Aba Quartey", "Tetteh Lartey", "Akosua Frimpong", "Yaw Mensah",
-  "Adjoa Sarpong", "Kofi Boateng", "Mansa Okai", "Samuel Tetteh", "Grace Amankwah",
-  "Daniel Owusu", "Ruth Asiedu",
-];
-const EXTRA_COLORS = [
-  "#6366F1", "#14B8A6", "#F43F5E", "#0EA5E9", "#A855F7",
-  "#84CC16", "#E11D48", "#F59E0B", "#22C55E", "#3B82F6",
-];
-
-function buildLeaguePlayers(): LeaguePlayer[] {
-  const players = [...LEAGUE_SEED];
-  let xp = 1680;
-  for (let i = 0; i < EXTRA_NAMES.length && players.length < 30; i++) {
-    const name = EXTRA_NAMES[i];
-    const parts = name.split(" ");
-    const initials = `${parts[0][0]}${parts[1]?.[0] ?? ""}`.toUpperCase();
-    xp = Math.max(420, xp - (35 + (i % 5) * 12));
-    players.push({
-      rank: players.length + 1,
-      name,
-      xp,
-      streak: 1 + (i % 9),
-      you: false,
-      initials,
-      avatarColor: EXTRA_COLORS[i % EXTRA_COLORS.length],
-      avatarId: `a${String((i % 10) + 1).padStart(2, "0")}`,
-    });
-  }
-  return players;
-}
-
-/** Classement hebdo du groupe (rangs 1–30) */
-export const LEAGUE_PLAYERS: LeaguePlayer[] = buildLeaguePlayers();
+/** Classement live uniquement — plus de profils de simulation. */
+export const LEAGUE_PLAYERS: LeaguePlayer[] = [];
 
 export const BEGINNER_LIGUE = {
   nomLigue: "Bronze" as const,
-  rangActuel: 30,
+  rangActuel: 1,
   scoreHebdo: 0,
   estGelee: false,
   groupe: 1,
 };
+
+export function initialsFromName(name: string): string {
+  return (
+    name
+      .replace(/[^A-Za-zÀ-ÿ]/g, " ")
+      .trim()
+      .split(/\s+/)
+      .map((part) => part[0] ?? "")
+      .join("")
+      .slice(0, 2)
+      .toUpperCase() || "ÉL"
+  );
+}
 
 export const EMPTY_WEEK_CHART = [
   { label: "L", height: 8, color: "#BFDBFE" },
@@ -563,81 +532,58 @@ export function beginnerLeagueBoard(
   avatarId?: string,
   initials?: string
 ): LeaguePlayer[] {
-  const others = LEAGUE_PLAYERS.filter((p) => !p.you).map((p, i) => ({
-    ...p,
-    rank: i + 1,
-    you: false,
-  }));
-  const you: LeaguePlayer = {
-    rank: others.length + 1,
-    name,
-    xp: 0,
-    streak: 0,
-    you: true,
-    initials: (initials ?? (name.replace(/[^A-Za-zÀ-ÿ]/g, " ").trim().split(/\s+/).map((p) => p[0]).join("").slice(0, 2) || "ÉL")).toUpperCase(),
-    avatarColor: "#1677FF",
-    avatarId,
-  };
-  return [...others, you];
+  return [
+    {
+      rank: 1,
+      name,
+      xp: 0,
+      streak: 0,
+      you: true,
+      initials: (initials ?? initialsFromName(name)).toUpperCase(),
+      avatarColor: "#1677FF",
+      avatarId,
+    },
+  ];
 }
 
-export const PROFILES_DEMO = [
-  {
-    id: "1",
-    nom: "Kofi Adjei",
-    firstName: "Kofi",
-    lastName: "Adjei",
-    email: "kofi@learnflow.tg",
-    classe: "3eme" as const,
-    gradeLabel: "3ème",
-    xpTotale: 2840,
-    streak: 5,
-    rang: 3,
-    lessonsDone: 34,
-    color: "#1677FF",
-    bg: "#E6F4FF",
-    avatarId: "a07",
-  },
-  {
-    id: "2",
-    nom: "Ama Kofi",
-    firstName: "Ama",
-    lastName: "Kofi",
-    email: "ama@learnflow.tg",
-    classe: "Tle" as const,
-    gradeLabel: "Tle D",
-    xpTotale: 3120,
-    streak: 7,
-    rang: 5,
-    lessonsDone: 22,
-    color: "#10B981",
-    bg: "#ECFDF5",
-    avatarId: "a02",
-  },
-];
+/** Anciens comptes de test — plus utilisés. Conservé vide pour ne pas recréer Kofi / Ama. */
+export const PROFILES_DEMO: {
+  id: string;
+  nom: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  classe: "3eme" | "Tle";
+  gradeLabel: string;
+  xpTotale: number;
+  streak: number;
+  rang: number;
+  lessonsDone: number;
+  color: string;
+  bg: string;
+  avatarId?: string;
+}[] = [];
 
-/** Tests locaux : Kofi + Ama restent, les comptes Google/cloud aussi. */
-export const LOCAL_TEST_PROFILE_IDS = PROFILES_DEMO.map((p) => String(p.id));
+export const LOCAL_TEST_PROFILE_IDS: string[] = [];
 
 export function isCloudProfileId(id: string | number): boolean {
   const s = String(id);
   return s.length >= 20 || /^[0-9a-f-]{36}$/i.test(s);
 }
 
-export function keepLocalTestProfiles<T extends { id: string | number }>(profiles: T[]): T[] {
-  const allowed = new Set(LOCAL_TEST_PROFILE_IDS);
-  const demos = profiles.filter((p) => allowed.has(String(p.id)));
-  const cloud = profiles.filter((p) => !allowed.has(String(p.id)));
-  return [...demos, ...cloud];
+export function keepRealProfiles<T extends { id: string | number }>(profiles: T[]): T[] {
+  return profiles.filter((p) => isCloudProfileId(p.id));
 }
+
+export const keepLocalTestProfiles = keepRealProfiles;
 
 export function resolveLocalTestActiveId(
   profiles: { id: string | number }[],
   preferred?: string | number
 ): string {
   const id = String(preferred ?? "");
-  if (profiles.some((p) => String(p.id) === id)) return id;
-  return profiles[0] ? String(profiles[0].id) : LOCAL_TEST_PROFILE_IDS[0];
+  if (id && profiles.some((p) => String(p.id) === id)) return id;
+  return profiles[0] ? String(profiles[0].id) : "";
 }
 
 export const PARENT_NOTES: ParentNote[] = [

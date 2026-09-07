@@ -140,10 +140,6 @@ export default function LoginScreen({ navigation }: Props) {
           </Pressable>
 
           <SocialAuth mode="login" onProvider={(p) => { void goApp(p); }} />
-
-          <Pressable onPress={() => navigation.navigate("Profiles")}>
-            <Text style={styles.linkCenter}>Choisir un profil local</Text>
-          </Pressable>
         </ScrollView>
       </KeyboardAvoidingView>
       <Text style={[styles.footer, { color: colors.textSecondary }]}>
