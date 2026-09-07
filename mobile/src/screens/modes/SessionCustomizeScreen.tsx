@@ -58,6 +58,7 @@ export default function SessionCustomizeScreen({ navigation, route }: Props) {
         <Spira mood={spiraMoodForSession(mode)} size={48} message="" />
       </View>
 
+      <View style={styles.stage}>
       <View style={styles.grid}>
         {visibleTools.map((t) => {
           const on = selected.includes(t.id);
@@ -73,6 +74,7 @@ export default function SessionCustomizeScreen({ navigation, route }: Props) {
           );
         })}
       </View>
+      </View>
 
       <Pressable style={styles.primary} onPress={start}>
         <Text style={[styles.primaryText]}>Lancer</Text>
@@ -86,6 +88,7 @@ const styles = StyleSheet.create({
   header: { flexDirection: "row", alignItems: "center", gap: 12, marginBottom: 20 },
   back: { width: 40, height: 40, borderRadius: 14, backgroundColor: colors.white, alignItems: "center", justifyContent: "center" },
   title: { fontWeight: "800", fontSize: 22, color: colors.textDark },
+  stage: { flex: 1, justifyContent: "center" },
   grid: { flexDirection: "row", flexWrap: "wrap", gap: 12 },
   tool: {
     width: "48%",

@@ -102,7 +102,14 @@ export default function Spira({ mood, scene, size = 64, message, animated = true
 
 const styles = StyleSheet.create({
   wrap: { alignItems: "center", gap: 8, overflow: "visible" },
-  stage: { overflow: "visible" },
+  stage: {
+    overflow: "visible",
+    shadowColor: "#0F172A",
+    shadowOpacity: 0.2,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 10 },
+    elevation: 0,
+  },
   bubble: {
     borderRadius: 20,
     borderWidth: 1,

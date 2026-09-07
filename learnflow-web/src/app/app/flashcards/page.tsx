@@ -34,7 +34,7 @@ function FlashInner() {
 
   if (deck.length === 0) {
     return (
-      <div className="flex min-h-[70vh] flex-col items-center justify-center gap-3 px-6 text-center">
+      <div className="flex min-h-[calc(100dvh-5.5rem)] flex-col items-center justify-center gap-3 px-6 text-center lg:min-h-dvh">
         <Spira scene="flash.empty" size={80} message="" />
         <p className="text-lg font-extrabold">Aucune carte due</p>
         <button type="button" onClick={() => router.back()} className="font-extrabold" style={{ color: colors.primary }}>
@@ -64,7 +64,7 @@ function FlashInner() {
 
   if (done) {
     return (
-      <div className="flex min-h-[70vh] flex-col items-center justify-center gap-4 px-6 text-center">
+      <div className="flex min-h-[calc(100dvh-5.5rem)] flex-col items-center justify-center gap-4 px-6 text-center lg:min-h-dvh">
         <Spira scene="flash.done" size={88} />
         <p className="text-lg font-extrabold">Session flashcards terminée</p>
         <div className="w-full max-w-sm">
@@ -75,7 +75,7 @@ function FlashInner() {
   }
 
   return (
-    <div className="mx-auto max-w-xl px-4 py-4">
+    <div className="mx-auto flex min-h-[calc(100dvh-5.5rem)] max-w-xl flex-col px-4 py-4 lg:min-h-dvh">
       <div className="mb-2 flex items-center gap-3 px-2">
         <button type="button" onClick={() => router.back()} aria-label="Retour">
           <Icon name="arrow-left" size={20} color={colors.textDark} />
@@ -84,6 +84,7 @@ function FlashInner() {
           {idx + 1}/{deck.length}
         </span>
       </div>
+      <div className="flex flex-col">
       <div className="mb-1 flex justify-center">
         <Spira mood={mood} size={52} message="" />
       </div>
@@ -126,6 +127,7 @@ function FlashInner() {
           </button>
         </div>
       ) : null}
+      </div>
     </div>
   );
 }

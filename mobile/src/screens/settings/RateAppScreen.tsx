@@ -34,7 +34,7 @@ export default function RateAppScreen({ navigation }: Props) {
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: colors.surface }]}>
       <SettingsHeader title="Évaluer l'app" onBack={() => navigation.goBack()} />
-      <View style={styles.body}>
+      <View style={[styles.body, { flex: 1, justifyContent: "center" }]}>
         <Spira
           mood={spiraForRatingStars(stars)}
           size={88}

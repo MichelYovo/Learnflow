@@ -80,6 +80,7 @@ export default function FlashcardsScreen({ navigation, route }: Props) {
           {idx + 1}/{deck.length}
         </Text>
       </View>
+      <View style={styles.play}>
       <View style={styles.mascot}>
         <Spira mood={mood} size={52} />
       </View>
@@ -128,6 +129,7 @@ export default function FlashcardsScreen({ navigation, route }: Props) {
           <Text style={styles.primaryText}>{idx + 1 >= deck.length ? "Terminer" : "Carte suivante"}</Text>
         </Pressable>
       ) : null}
+      </View>
     </SafeAreaView>
   );
 }
@@ -137,6 +139,7 @@ const styles = StyleSheet.create({
   top: { flexDirection: "row", alignItems: "center", gap: 12, padding: 16 },
   meta: { fontWeight: "800", color: colors.primary, flex: 1 },
   mascot: { alignItems: "center", marginBottom: 4 },
+  play: { paddingTop: 4 },
   card: {
     marginHorizontal: 24,
     marginTop: 8,

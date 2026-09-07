@@ -8,32 +8,38 @@ import {
   leagueCacheToPlayer,
   loadProfiles,
   localProfileToEleve,
+  pruneExtraLocalProfiles,
   seedDemoProfilesIfEmpty,
   updateLocalProfileAvatar,
 } from "../db";
 import { startSyncManager } from "../lib/SyncManager";
+import { keepLocalTestProfiles } from "../data/mock";
 import { useLearnFlowStore } from "../store/useLearnFlowStore";
 
 async function hydrateFromSqlite(): Promise<void> {
   const store = useLearnFlowStore.getState();
   await importEleveProfiles(store.profiles);
   await seedDemoProfilesIfEmpty();
+  await pruneExtraLocalProfiles();
   await ensureDemoPins();
   await ensureDemoClasses();
   const rows = await loadProfiles();
   if (rows.length === 0) return;
 
-  const nextProfiles = rows.map((row) => {
-    const prev = store.profiles.find((p) => String(p.id) === row.id);
-    const mapped = localProfileToEleve(row, {
-      badgesDebloques: prev?.badgesDebloques ?? [],
-      avatarId: prev?.avatarId,
-    });
-    if (!row.avatar_id && mapped.avatarId) {
-      void updateLocalProfileAvatar(row.id, mapped.avatarId);
-    }
-    return mapped;
-  });
+  const nextProfiles = keepLocalTestProfiles(
+    rows.map((row) => {
+      const prev = store.profiles.find((p) => String(p.id) === row.id);
+      const mapped = localProfileToEleve(row, {
+        badgesDebloques: prev?.badgesDebloques ?? [],
+        avatarId: prev?.avatarId,
+      });
+      if (!row.avatar_id && mapped.avatarId) {
+        void updateLocalProfileAvatar(row.id, mapped.avatarId);
+      }
+      return mapped;
+    })
+  );
+  if (nextProfiles.length === 0) return;
 
   const activeStillThere = nextProfiles.some((p) => p.id === String(store.activeProfileId));
   store.hydrateFromLocal({

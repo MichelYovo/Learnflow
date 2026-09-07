@@ -202,32 +202,30 @@ export default function AssimilationQuizScreen({ navigation, route }: Props) {
         <View style={[styles.fill, { width: `${((current + 1) / questions.length) * 100}%` }]} />
       </View>
 
-      <View style={styles.body}>
-        <Text style={styles.q}>{q.enonceQuestion}</Text>
-        <View style={styles.options}>
-          {q.optionsProposees.map((opt, i) => {
-            const isSel = selected === i;
-            const ok = isSel && i === q.indexReponseCorrecte;
-            const ko = isSel && i !== q.indexReponseCorrecte;
-            return (
-              <Pressable
-                key={i}
-                onPress={() => pick(i)}
-                style={[
-                  styles.opt,
-                  ok && { borderColor: colors.secondary, backgroundColor: colors.svtBg, transform: [{ scale: 1.02 }] },
-                  ko && { borderColor: colors.danger, backgroundColor: colors.angBg },
-                ]}
-              >
-                <Text style={styles.optText}>{opt}</Text>
-              </Pressable>
-            );
-          })}
-        </View>
+      <Text style={styles.q}>{q.enonceQuestion}</Text>
+      <View style={[styles.options, wrong && styles.optionsWrong]}>
+        {q.optionsProposees.map((opt, i) => {
+          const isSel = selected === i;
+          const ok = isSel && i === q.indexReponseCorrecte;
+          const ko = isSel && i !== q.indexReponseCorrecte;
+          return (
+            <Pressable
+              key={i}
+              onPress={() => pick(i)}
+              style={[
+                styles.opt,
+                ok && { borderColor: colors.secondary, backgroundColor: colors.svtBg, transform: [{ scale: 1.02 }] },
+                ko && { borderColor: colors.danger, backgroundColor: colors.angBg },
+              ]}
+            >
+              <Text style={styles.optText}>{opt}</Text>
+            </Pressable>
+          );
+        })}
 
         {wrong ? (
           <View style={styles.feedback}>
-            <Spira scene="quiz.wrong" size={64} />
+            <Spira scene="quiz.wrong" size={52} />
             <Text style={styles.feedbackTitle}>Pas tout à fait</Text>
             <Text style={styles.muted}>{q.explicationPedagogique}</Text>
             <Pressable
@@ -253,18 +251,48 @@ const styles = StyleSheet.create({
   progress: { fontWeight: "800", color: colors.primary },
   track: { height: 4, backgroundColor: colors.border, marginHorizontal: 16 },
   fill: { height: 4, backgroundColor: colors.primary },
-  body: { flex: 1, padding: 20, gap: 16 },
-  q: { fontSize: 18, fontWeight: "800", color: colors.textDark, lineHeight: 26 },
-  options: { gap: 10 },
+  q: {
+    fontSize: 17,
+    fontWeight: "800",
+    color: colors.textDark,
+    lineHeight: 24,
+    paddingHorizontal: 20,
+    paddingTop: 8,
+    paddingBottom: 0,
+  },
+  options: {
+    flex: 1,
+    justifyContent: "center",
+    paddingHorizontal: 20,
+    paddingTop: 36,
+    paddingBottom: 16,
+    gap: 16,
+  },
+  optionsWrong: {
+    justifyContent: "flex-start",
+    paddingTop: 16,
+    paddingBottom: 16,
+  },
   opt: {
     backgroundColor: colors.white,
     borderWidth: 2,
     borderColor: colors.border,
     borderRadius: 16,
-    padding: 16,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
   },
   optText: { fontWeight: "700", color: colors.textDark },
-  feedback: { gap: 8, backgroundColor: colors.white, borderRadius: 16, padding: 14, borderWidth: 2, borderColor: colors.angBorder },
+  feedback: {
+    gap: 8,
+    backgroundColor: colors.white,
+    borderRadius: 16,
+    padding: 14,
+    borderWidth: 2,
+    borderColor: colors.angBorder,
+    marginTop: 0,
+    flex: 1,
+    justifyContent: "space-between",
+  },
   feedbackTitle: { fontWeight: "800", color: colors.danger },
   muted: { color: colors.textSecondary, fontSize: 13, lineHeight: 18 },
   linkBtn: { paddingVertical: 4 },

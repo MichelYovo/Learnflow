@@ -263,7 +263,7 @@ export default function BlitzScreen({ navigation, route }: Props) {
           </Pressable>
         </View>
         {drawer}
-        <ScrollView contentContainerStyle={styles.readyScroll} showsVerticalScrollIndicator={false}>
+        <ScrollView style={{ flex: 1 }} contentContainerStyle={styles.readyScroll} showsVerticalScrollIndicator={false}>
           <Spira scene="mode.blitz.ready" size={88} message="" />
 
           <Animated.View style={pulseStyle}>
@@ -437,7 +437,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  readyScroll: { alignItems: "center", paddingHorizontal: 24, paddingTop: 12, paddingBottom: 36, gap: 12 },
+  readyScroll: { flexGrow: 1, justifyContent: "center", alignItems: "center", paddingHorizontal: 20, paddingTop: 8, paddingBottom: 28, gap: 12 },
   center: { flex: 1, alignItems: "center", justifyContent: "center", padding: 24, gap: 12 },
   dangerBadge: {
     flexDirection: "row",

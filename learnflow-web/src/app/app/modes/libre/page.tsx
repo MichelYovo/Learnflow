@@ -4,7 +4,7 @@ import { Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Icon from "@/components/Icon";
 import Spira from "@/components/Spira";
-import { ScreenHeader, CardButton } from "@/components/ui";
+import { AppMain, ScreenHeader, CardButton } from "@/components/ui";
 import { chapterHas3dImage } from "@/data/schemas3d";
 import { useLearnFlowStore } from "@/store/useLearnFlowStore";
 import { useAppTheme } from "@/theme/useAppTheme";
@@ -23,7 +23,7 @@ function LibreInner() {
   const showSchema = (show2d || show3d) && (open || tools.includes("schema"));
 
   return (
-    <div>
+    <div className="flex min-h-[calc(100dvh-5.5rem)] flex-col lg:min-h-dvh">
       <ScreenHeader
         title="Mode Libre"
         backHref="/app"
@@ -38,7 +38,7 @@ function LibreInner() {
           </button>
         }
       />
-      <div className="mx-auto max-w-xl space-y-4 px-6 py-6">
+      <AppMain narrow fill className="space-y-4 py-6">
         <div className="flex justify-center py-3">
           <Spira scene="mode.libre" size={96} message="" />
         </div>
@@ -60,7 +60,7 @@ function LibreInner() {
         {tools.includes("trous") ? (
           <CardButton href={`/app/trous/${chapterId}`} icon="pen" iconBg={colors.frBg} iconColor={colors.violet} title="Textes à trous" />
         ) : null}
-      </div>
+      </AppMain>
     </div>
   );
 }

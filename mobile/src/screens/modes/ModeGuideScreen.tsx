@@ -130,6 +130,7 @@ export default function ModeGuideScreen({ navigation }: Props) {
         </View>
       </View>
 
+      <View style={styles.play}>
       <View style={styles.spiraRow}>
         <Spira mood={mood} size={56} message={speech} />
       </View>
@@ -163,6 +164,7 @@ export default function ModeGuideScreen({ navigation }: Props) {
           ))}
         </View>
       ) : null}
+      </View>
     </SafeAreaView>
   );
 }
@@ -186,6 +188,7 @@ const styles = StyleSheet.create({
   ghost: { paddingVertical: 10 },
   ghostText: { color: colors.primary, fontWeight: "800", fontSize: 16 },
   spiraRow: { alignItems: "center", paddingHorizontal: 16, marginBottom: 8 },
+  play: { paddingTop: 4 },
   card: {
     marginHorizontal: 24,
     minHeight: 240,

@@ -40,18 +40,18 @@ export default function MesMatieres({
           <Icon name="chevron-right" size={12} color={colors.primary} />
         </button>
       </div>
-      <div className="flex gap-4 overflow-x-auto pb-1">
+      <div className="grid grid-cols-5 gap-1 sm:gap-2">
         {preview.map((s) => {
           const scheme = resolveSubjectScheme(s.colorScheme);
           return (
-            <button key={s.id} type="button" onClick={() => onSelect(s)} className="flex w-[76px] shrink-0 flex-col items-center gap-2">
+            <button key={s.id} type="button" onClick={() => onSelect(s)} className="flex min-w-0 flex-col items-center gap-1.5 sm:gap-2">
               <span
-                className="flex h-16 w-16 items-center justify-center rounded-[20px] border"
+                className="flex h-12 w-12 items-center justify-center rounded-[18px] border sm:h-16 sm:w-16 sm:rounded-[20px]"
                 style={{ background: scheme.bg, borderColor: scheme.border }}
               >
-                <Icon name={ICON_MAP[s.icon] ?? "book"} size={22} color={scheme.color} />
+                <Icon name={ICON_MAP[s.icon] ?? "book"} size={20} color={scheme.color} />
               </span>
-              <span className="w-full text-center text-[13px] font-bold" style={{ color: colors.textDark }}>
+              <span className="w-full truncate text-center text-[11px] font-bold leading-tight sm:text-[13px]" style={{ color: colors.textDark }}>
                 {s.name}
               </span>
             </button>

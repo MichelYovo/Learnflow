@@ -3,7 +3,7 @@
 import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Spira from "@/components/Spira";
-import { ScreenHeader, PrimaryButton } from "@/components/ui";
+import { AppMain, ScreenHeader, PrimaryButton } from "@/components/ui";
 import { chapterHasSchema } from "@/data/programme";
 import { spiraMoodForSession } from "@/data/spira";
 import { MODE_DEFAULT_TOOLS } from "@/types/modes";
@@ -44,9 +44,9 @@ function CustomizeInner() {
   };
 
   return (
-    <div>
+    <div className="flex min-h-[calc(100dvh-5.5rem)] flex-col lg:min-h-dvh">
       <ScreenHeader title="Personnaliser la séance" backHref="/app" />
-      <div className="mx-auto max-w-xl space-y-3 px-4 py-6 md:px-8">
+      <AppMain narrow fill className="space-y-3 py-6">
         <div className="flex justify-center">
           <Spira mood={spiraMoodForSession(mode)} size={80} message="" />
         </div>
@@ -69,7 +69,7 @@ function CustomizeInner() {
         <div className="pt-4">
           <PrimaryButton onClick={start}>Lancer</PrimaryButton>
         </div>
-      </div>
+      </AppMain>
     </div>
   );
 }

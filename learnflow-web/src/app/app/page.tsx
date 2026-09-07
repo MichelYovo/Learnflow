@@ -15,6 +15,7 @@ import { useLearnFlowStore } from "@/store/useLearnFlowStore";
 import { useAppTheme } from "@/theme/useAppTheme";
 import { MODE_DEFAULT_TOOLS, appModeToSessionMode, type AppMode } from "@/types/modes";
 import { AGENDA_MODE_CONFIG } from "@/data/mock";
+import { AppBar, AppMain } from "@/components/ui";
 
 const WEEK_CHART = [
   { label: "L", height: 34, color: "#BFDBFE" },
@@ -71,48 +72,50 @@ export default function AccueilPage() {
 
   return (
     <div>
-      <header className="sticky top-0 z-20 flex items-center justify-between gap-3 px-5 py-3.5 md:px-8" style={{ background: colors.white }}>
-        <Link href="/app/profil" className="flex min-w-0 items-center gap-3">
-          <Avatar avatarId={profile.avatarId} size={48} initials={profile.firstName} fallbackColor={profile.color} />
+      <AppBar bordered={false} innerClassName="justify-between gap-2 py-3.5 sm:gap-3">
+        <Link href="/app/profil" className="flex min-w-0 items-center gap-2 sm:gap-3">
+          <Avatar avatarId={profile.avatarId} size={40} initials={profile.firstName} fallbackColor={profile.color} />
           <span className="min-w-0">
-            <span className="block text-[13px] font-semibold" style={{ color: colors.textSecondary }}>
+            <span className="block text-[12px] font-semibold sm:text-[13px]" style={{ color: colors.textSecondary }}>
               Salut
             </span>
-            <span className="block truncate text-[20px] font-extrabold leading-none" style={{ color: colors.textDark }}>
+            <span className="block truncate text-[18px] font-extrabold leading-none sm:text-[20px]" style={{ color: colors.textDark }}>
               {greetingName}
             </span>
           </span>
         </Link>
-        <div className="flex shrink-0 items-center gap-2">
-          <span className="flex items-center gap-1 rounded-[14px] bg-[#FEF3C7] px-2.5 py-2 text-[14px] font-extrabold text-[#D97706]">
+        <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
+          <span className="flex items-center gap-1 rounded-[14px] bg-[#FEF3C7] px-2 py-1.5 text-[13px] font-extrabold text-[#D97706] sm:px-2.5 sm:py-2 sm:text-[14px]">
             <Icon name="flame" size={16} color="#D97706" />
             {profile.streak}
           </span>
-          <span className="flex items-center gap-1 rounded-[14px] bg-[#FEF3C7] px-2.5 py-2 text-[14px] font-extrabold text-[#D97706]">
+          <span className="hidden items-center gap-1 rounded-[14px] bg-[#FEF3C7] px-2.5 py-2 text-[14px] font-extrabold text-[#D97706] min-[420px]:flex">
             <Icon name="zap" size={16} color="#D97706" />
             {profile.xpTotale.toLocaleString("fr-FR")}
           </span>
-          <Link href="/app/inbox" className="relative flex h-10 w-10 items-center justify-center rounded-full" style={{ background: colors.surfaceAlt }}>
+          <Link href="/app/inbox" className="relative flex h-9 w-9 items-center justify-center rounded-full sm:h-10 sm:w-10" style={{ background: colors.surfaceAlt }}>
             <Icon name="bell" size={18} color={colors.textDark} />
             {unread > 0 ? <span className="absolute right-1 top-1 h-2.5 w-2.5 rounded-full bg-red-500" /> : null}
           </Link>
         </div>
-      </header>
+      </AppBar>
 
-      <div className="mx-auto max-w-3xl space-y-5 px-5 py-5 pb-8 md:px-8">
+      <AppMain className="space-y-5 py-5 pb-8">
         <Link
           href={`/app/cours/${continueLesson.chapterId}`}
-          className="flex items-center rounded-3xl px-[22px] py-[22px] text-white"
+          className="flex flex-col gap-3 rounded-3xl px-4 py-4 text-white min-[380px]:px-5 min-[380px]:py-5 sm:flex-row sm:items-center sm:px-[22px] sm:py-[22px]"
           style={{ background: "linear-gradient(135deg, #1677FF 0%, #00B8F4 100%)" }}
         >
-          <div className="min-w-0 flex-1 pr-3">
-            <p className="text-[20px] font-extrabold">{continueLesson.title}</p>
-            <p className="mt-1.5 text-[15px] font-semibold text-white/90">{continueLesson.lessonLabel}</p>
+          <div className="min-w-0 flex-1 sm:pr-3">
+            <p className="text-[17px] font-extrabold leading-snug sm:text-[20px]">{continueLesson.title}</p>
+            <p className="mt-1.5 text-[13px] font-semibold text-white/90 sm:text-[15px]">{continueLesson.lessonLabel}</p>
             <div className="mt-3.5 h-2 overflow-hidden rounded-full bg-white/30">
               <div className="h-full rounded-full bg-white" style={{ width: `${continueLesson.progress}%` }} />
             </div>
           </div>
-          <span className="rounded-2xl bg-white px-4 py-3.5 text-[16px] font-extrabold text-[#1677FF]">Continuer</span>
+          <span className="w-full rounded-2xl bg-white px-4 py-3 text-center text-[15px] font-extrabold text-[#1677FF] sm:w-auto sm:py-3.5 sm:text-[16px]">
+            Continuer
+          </span>
         </Link>
 
         <ModeWorkSelector selectedMode={selectedMode} guideInactive={dueCount === 0} onSelectMode={openMode} />
@@ -133,7 +136,7 @@ export default function AccueilPage() {
             </div>
             {todaySessions.map((s) => (
               <div key={s.id} className="flex items-center gap-3.5 py-1.5">
-                <span className="w-[52px] text-[15px] font-bold">
+                <span className="w-11 shrink-0 text-[13px] font-bold sm:w-[52px] sm:text-[15px]">
                   {String(s.hour).padStart(2, "0")}:{String(s.minute).padStart(2, "0")}
                 </span>
                 <span className="flex-1 text-[16px] font-bold">{s.subject}</span>
@@ -164,7 +167,7 @@ export default function AccueilPage() {
           <div className="mt-5 flex h-[88px] items-end">
             {WEEK_CHART.map((b, i) => (
               <div key={`${b.label}-${i}`} className="flex flex-1 flex-col items-center justify-end">
-                <div className="w-[22px] rounded-t-[11px]" style={{ height: b.height, background: b.color }} />
+                <div className="w-[35%] max-w-[22px] rounded-t-[11px]" style={{ height: b.height, background: b.color }} />
               </div>
             ))}
           </div>
@@ -199,7 +202,7 @@ export default function AccueilPage() {
           </div>
           <Icon name="chevron-right" size={20} color="#D97706" />
         </Link>
-      </div>
+      </AppMain>
     </div>
   );
 }

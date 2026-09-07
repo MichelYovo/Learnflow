@@ -1,6 +1,6 @@
 "use client";
 
-import { CardButton, ScreenHeader } from "@/components/ui";
+import { AppMain, CardButton, ScreenHeader } from "@/components/ui";
 import { continueLessonForClass } from "@/data/programme";
 import { useLearnFlowStore } from "@/store/useLearnFlowStore";
 import { useAppTheme } from "@/theme/useAppTheme";
@@ -15,9 +15,9 @@ export default function QuizHubPage() {
   const lockedUntil = chapterProgress[chapterId]?.grandQuizzLockedUntil;
 
   return (
-    <div>
+    <div className="flex min-h-[calc(100dvh-5.5rem)] flex-col lg:min-h-dvh">
       <ScreenHeader title="Quiz" backHref="/app" />
-      <div className="mx-auto max-w-xl space-y-3 px-4 py-6 md:px-8">
+      <AppMain narrow fill className="space-y-3 py-6">
         <CardButton
           href={`/app/quiz/assimilation/${chapterId}`}
           icon="target"
@@ -38,7 +38,7 @@ export default function QuizHubPage() {
         />
         <CardButton href="/app/flashcards" icon="layers" iconBg={colors.hgBg} iconColor={colors.accent} title="Flashcards" border={colors.hgBorder} />
         <CardButton href="/app/blitz" icon="timer" iconBg={colors.angBg} iconColor={colors.danger} title="Blitz 60s" border={colors.angBorder} />
-      </div>
+      </AppMain>
     </div>
   );
 }

@@ -248,6 +248,18 @@ export async function validateLocalPin(profileId: string, pin: string): Promise<
   }
 }
 
+export async function deleteProfilesNotIn(ids: string[]): Promise<void> {
+  if (ids.length === 0) return;
+  try {
+    const placeholders = ids.map(() => "?").join(", ");
+    await withDatabase((db) =>
+      db.runAsync(`DELETE FROM LocalProfiles WHERE id NOT IN (${placeholders})`, ids)
+    );
+  } catch (error) {
+    console.warn("[LearnFlow] deleteProfilesNotIn", error);
+  }
+}
+
 export async function updateLocalPin(profileId: string, pin: string): Promise<void> {
   if (!isValidPinFormat(pin)) {
     throw new Error("Le code PIN doit contenir exactement 4 chiffres.");

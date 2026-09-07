@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ScreenHeader, SettingsToggleRow } from "@/components/ui";
+import { AppMain, ScreenHeader, SettingsToggleRow } from "@/components/ui";
 import { useLearnFlowStore } from "@/store/useLearnFlowStore";
 import { useAppTheme } from "@/theme/useAppTheme";
 
@@ -16,7 +16,7 @@ export default function PrivacyPage() {
   return (
     <div>
       <ScreenHeader title="Confidentialité" backHref="/app/profil" />
-      <div className="mx-auto max-w-xl space-y-3 px-5 py-5">
+      <AppMain narrow className="space-y-3 py-5">
         <p className="text-[13px] font-medium leading-[18px]" style={{ color: colors.textSecondary }}>
           Tes données élève restent offline-first sur cet appareil. Tu contrôles ce qui peut être partagé.
         </p>
@@ -68,7 +68,7 @@ export default function PrivacyPage() {
           LearnFlow Togo · Les profils multi-élèves sont stockés localement. Aucun mot de passe n&apos;est envoyé hors
           appareil en mode démo.
         </p>
-      </div>
+      </AppMain>
 
       {confirm ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 p-6">

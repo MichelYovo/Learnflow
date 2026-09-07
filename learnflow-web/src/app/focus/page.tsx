@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import Icon, { type IconName } from "@/components/Icon";
 import Spira from "@/components/Spira";
-import { Page, PrimaryButton } from "@/components/ui";
+import { AuthStage, Page, PrimaryButton } from "@/components/ui";
 import { useLearnFlowStore } from "@/store/useLearnFlowStore";
 import { useAppTheme } from "@/theme/useAppTheme";
 
@@ -24,16 +24,27 @@ export default function FocusPage() {
   };
 
   return (
-    <Page className="flex flex-col">
-      <div className="mx-auto flex w-full max-w-lg flex-1 flex-col px-6 py-10">
-        <Spira scene="auth.focus" size={108} />
-        <p className="mt-4 text-xs font-extrabold uppercase tracking-widest" style={{ color: colors.primary }}>
-          Avant de réviser
-        </p>
-        <h1 className="mt-2 text-3xl font-black">Mode concentration</h1>
-        <p className="mt-3 text-sm font-semibold leading-relaxed" style={{ color: colors.textSecondary }}>
-          Sur le web, coupe les notifications de l&apos;onglet et range le téléphone. Les réseaux peuvent attendre.
-        </p>
+    <Page>
+      <AuthStage
+        footer={
+          <div className="space-y-3">
+            <PrimaryButton onClick={enter}>C&apos;est bon, je révise</PrimaryButton>
+            <button type="button" onClick={enter} className="w-full py-2 text-sm font-extrabold" style={{ color: colors.textMuted }}>
+              Plus tard
+            </button>
+          </div>
+        }
+      >
+        <div className="flex flex-col items-center text-center">
+          <Spira scene="auth.focus" size={108} />
+          <p className="mt-4 text-xs font-extrabold uppercase tracking-widest" style={{ color: colors.primary }}>
+            Avant de réviser
+          </p>
+          <h1 className="mt-2 text-3xl font-black">Mode concentration</h1>
+          <p className="mt-3 max-w-md text-sm font-semibold leading-relaxed" style={{ color: colors.textSecondary }}>
+            Sur le web, coupe les notifications de l&apos;onglet et range le téléphone. Les réseaux peuvent attendre.
+          </p>
+        </div>
         <div className="mt-6 space-y-3">
           {BENEFITS.map((item) => (
             <div
@@ -53,13 +64,7 @@ export default function FocusPage() {
             </div>
           ))}
         </div>
-        <div className="mt-auto space-y-3 pt-8">
-          <PrimaryButton onClick={enter}>C&apos;est bon, je révise</PrimaryButton>
-          <button type="button" onClick={enter} className="w-full py-2 text-sm font-extrabold" style={{ color: colors.textMuted }}>
-            Plus tard
-          </button>
-        </div>
-      </div>
+      </AuthStage>
     </Page>
   );
 }

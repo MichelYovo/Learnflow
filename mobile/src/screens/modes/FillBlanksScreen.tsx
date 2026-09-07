@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import CorrectBurst from "../../components/CorrectBurst";
@@ -119,41 +119,38 @@ export default function FillBlanksScreen({ navigation, route }: Props) {
         <Spira mood={locked ? (ok ? "joyeux" : "triste") : "determine"} size={44} />
       </View>
 
-      <ScrollView contentContainerStyle={styles.body}>
-        <Text style={styles.badge}>Sans limite de temps · analyse tes erreurs</Text>
-        <View style={styles.card}>
-          <Text style={styles.sentence}>
-            {item.before}
-            <Text style={styles.blank}>{picked ?? "______"}</Text>
-            {item.after}
-          </Text>
-        </View>
+      <Text style={styles.badge}>Sans limite de temps · analyse tes erreurs</Text>
+      <View style={styles.card}>
+        <Text style={styles.sentence}>
+          {item.before}
+          <Text style={styles.blank}>{picked ?? "______"}</Text>
+          {item.after}
+        </Text>
+      </View>
 
-        <View style={styles.options}>
-          {item.blank.options.map((opt) => {
-            const sel = picked === opt;
-            return (
-              <Pressable
-                key={opt}
-                onPress={() => choose(opt)}
-                style={[
-                  styles.opt,
-                  sel && ok && { borderColor: colors.secondary, backgroundColor: colors.svtBg, transform: [{ scale: 1.02 }] },
-                  sel && !ok && { borderColor: colors.danger, backgroundColor: colors.angBg },
-                ]}
-              >
-                <Text style={styles.optText}>{opt}</Text>
-              </Pressable>
-            );
-          })}
-        </View>
-
+      <View style={[styles.options, locked && styles.optionsLocked]}>
+        {item.blank.options.map((opt) => {
+          const sel = picked === opt;
+          return (
+            <Pressable
+              key={opt}
+              onPress={() => choose(opt)}
+              style={[
+                styles.opt,
+                sel && ok && { borderColor: colors.secondary, backgroundColor: colors.svtBg, transform: [{ scale: 1.02 }] },
+                sel && !ok && { borderColor: colors.danger, backgroundColor: colors.angBg },
+              ]}
+            >
+              <Text style={styles.optText}>{opt}</Text>
+            </Pressable>
+          );
+        })}
         {locked ? (
           <Pressable style={styles.primary} onPress={next}>
             <Text style={styles.primaryText}>{ok ? "Continuer" : `C'était « ${item.blank.answer} »`}</Text>
           </Pressable>
         ) : null}
-      </ScrollView>
+      </View>
       <CorrectBurst trigger={burstKey} />
     </SafeAreaView>
   );
@@ -172,7 +169,6 @@ const styles = StyleSheet.create({
   },
   title: { fontWeight: "800", fontSize: 18, color: colors.textDark },
   sub: { fontSize: 12, color: colors.textMuted, fontWeight: "600" },
-  body: { padding: 20, gap: 14, paddingBottom: 40 },
   badge: {
     alignSelf: "flex-start",
     backgroundColor: colors.hgBg,
@@ -183,26 +179,50 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     borderRadius: 999,
     overflow: "hidden",
+    marginHorizontal: 20,
+    marginTop: 8,
   },
   card: {
     backgroundColor: colors.white,
     borderRadius: 20,
     borderWidth: 2,
     borderColor: colors.border,
-    padding: 18,
+    padding: 16,
+    marginHorizontal: 20,
+    marginTop: 10,
   },
-  sentence: { fontSize: 18, lineHeight: 28, fontWeight: "700", color: colors.textDark },
+  sentence: { fontSize: 17, lineHeight: 26, fontWeight: "700", color: colors.textDark },
   blank: { color: colors.primary, fontWeight: "800" },
-  options: { gap: 10 },
+  options: {
+    flex: 1,
+    justifyContent: "center",
+    paddingHorizontal: 20,
+    paddingTop: 36,
+    paddingBottom: 16,
+    gap: 16,
+  },
+  optionsLocked: {
+    justifyContent: "flex-start",
+    paddingTop: 16,
+    paddingBottom: 16,
+  },
   opt: {
     backgroundColor: colors.white,
     borderWidth: 2,
     borderColor: colors.border,
     borderRadius: 16,
-    padding: 16,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
   },
   optText: { fontWeight: "700", color: colors.textDark },
-  primary: { backgroundColor: colors.accent, borderRadius: 16, paddingVertical: 16, alignItems: "center" },
+  primary: {
+    backgroundColor: colors.accent,
+    borderRadius: 16,
+    paddingVertical: 16,
+    alignItems: "center",
+    marginTop: "auto",
+    marginBottom: 0,
+  },
   primaryText: { color: colors.white, fontWeight: "800" },
   center: { flex: 1, alignItems: "center", justifyContent: "center", padding: 24, gap: 12 },
 });

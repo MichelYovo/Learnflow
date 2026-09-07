@@ -19,14 +19,14 @@ import type {
   SuiviParental,
 } from "@/types/learnflow";
 import {
-  classLabel,
   FLASHCARDS,
   INITIAL_AGENDA,
   INITIAL_INBOX,
   INITIAL_TIMETABLE,
   LEAGUE_PLAYERS,
-  PROFILE_COLORS,
+  keepLocalTestProfiles,
   PROFILES_DEMO,
+  resolveLocalTestActiveId,
 } from "@/data/mock";
 import type { LeaguePlayer } from "@/data/mock";
 import { defaultAvatarId, resolveAvatarId } from "@/data/avatars";
@@ -156,7 +156,7 @@ const DEFAULT_SETTINGS: AppSettings = {
   appRating: null,
   darkMode: false,
   blitzDifficulte: "Moyen",
-  multiProfileEnabled: false,
+  multiProfileEnabled: true,
 };
 
 const defaultChapter = (id: string): ChapterProgress => ({
@@ -213,36 +213,16 @@ export const useLearnFlowStore = create<LearnFlowState>()(
 
       login: () => set({ isAuthenticated: true, focusPromptPending: true }),
       logout: () => set({ isAuthenticated: false, focusPromptPending: true }),
-      selectProfile: (id) => set({ activeProfileId: id, isAuthenticated: true, focusPromptPending: true }),
+      selectProfile: (id) =>
+        set({
+          activeProfileId: resolveLocalTestActiveId(get().profiles, id),
+          isAuthenticated: true,
+          focusPromptPending: true,
+        }),
       dismissFocusPrompt: () => set({ focusPromptPending: false }),
 
       signUp: (data) => {
-        const id = createId();
-        const palette = PROFILE_COLORS[get().profiles.length % PROFILE_COLORS.length];
-        const avatarId = data.avatarId ?? defaultAvatarId(id);
-        const hasPin = Boolean(data.pin && /^\d{4}$/.test(data.pin));
-        const profile: ProfileEleve = {
-          id,
-          compteId: LOCAL_PARENT_ID,
-          nom: `${data.firstName} ${data.lastName}`.trim(),
-          firstName: data.firstName,
-          lastName: data.lastName,
-          email: data.email,
-          classe: data.classe,
-          gradeLabel: classLabel(data.classe),
-          xpTotale: 0,
-          streak: 0,
-          rang: 12,
-          lessonsDone: 0,
-          badgesDebloques: [],
-          color: palette.color,
-          bg: palette.bg,
-          avatarId,
-          hasPin,
-        };
         set({
-          profiles: [...get().profiles, profile],
-          activeProfileId: id,
           settings: data.multiProfile
             ? { ...get().settings, multiProfileEnabled: true }
             : get().settings,
@@ -571,7 +551,7 @@ export const useLearnFlowStore = create<LearnFlowState>()(
           const p = (persisted ?? {}) as Partial<LearnFlowState>;
           const demoById = new Map(PROFILES_DEMO.map((d) => [String(d.id), d]));
           const rawProfiles = Array.isArray(p.profiles) ? p.profiles : current.profiles;
-          const profiles = rawProfiles.map((pr) => {
+          const mapped = keepLocalTestProfiles(rawProfiles).map((pr) => {
             const demo = demoById.get(String(pr.id));
             return {
               ...pr,
@@ -587,6 +567,7 @@ export const useLearnFlowStore = create<LearnFlowState>()(
                 : {}),
             };
           });
+          const profiles = mapped.length > 0 ? mapped : current.profiles;
           const persistedCards = Array.isArray(p.flashcards) ? p.flashcards : current.flashcards;
           const anyDue = persistedCards.some(
             (c) => c.due || new Date(c.prochaineRevision).getTime() <= Date.now()
@@ -601,7 +582,7 @@ export const useLearnFlowStore = create<LearnFlowState>()(
             isAuthenticated: Boolean(p.isAuthenticated ?? current.isAuthenticated),
             onboardingCompleted: Boolean(p.onboardingCompleted ?? current.onboardingCompleted),
             profiles,
-            activeProfileId: String(p.activeProfileId ?? current.activeProfileId),
+            activeProfileId: resolveLocalTestActiveId(profiles, p.activeProfileId ?? current.activeProfileId),
             ligue: p.ligue ?? current.ligue,
             suiviParental: p.suiviParental ?? current.suiviParental,
             flashcards: extraCards.length ? [...baseCards, ...extraCards] : baseCards,

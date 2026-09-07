@@ -27,6 +27,7 @@ export {
   leagueCacheToPlayer,
   seedDemoProfilesIfEmpty,
   importEleveProfiles,
+  pruneExtraLocalProfiles,
   ensureDemoPins,
   ensureDemoClasses,
   DEMO_PIN,

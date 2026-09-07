@@ -58,6 +58,7 @@ type IconName =
   | "sparkles"
   | "alert"
   | "award"
+  | "crown"
   | "people"
   | "play-circle"
   | "lightbulb"
@@ -123,6 +124,7 @@ const PATHS: Record<IconName, string> = {
   sparkles: "M12 3l1.5 5.5L19 10l-5.5 1.5L12 17l-1.5-5.5L5 10l5.5-1.5L12 3zM18 15l.7 2.3L21 18l-2.3.7L18 21l-.7-2.3L15 18l2.3-.7L18 15z",
   alert: "M12 9v4M12 17h.01M10.3 4.7L2.8 18a2 2 0 001.7 3h15a2 2 0 001.7-3L13.7 4.7a2 2 0 00-3.4 0z",
   award: "M8 14l-2 7 6-3 6 3-2-7M12 15a6 6 0 100-12 6 6 0 000 12z",
+  crown: "M3 17h18M5 17L4 8l5 4 3-7 3 7 5-4-1 9H5z",
   people: "M9 11a3 3 0 100-6 3 3 0 000 6zM16 12a3 3 0 100-6M4 19c.8-3 2.8-5 5-5s4.2 2 5 5M15 14c2 0 3.6 1.4 4.3 4",
   "play-circle": "M12 21a9 9 0 100-18 9 9 0 000 18zM10 8l6 4-6 4V8z",
   lightbulb: "M9 18h6M10 21h4M12 3a6 6 0 00-3 11c.4.5.8 1.2 1 2h4c.2-.8.6-1.5 1-2A6 6 0 0012 3z",

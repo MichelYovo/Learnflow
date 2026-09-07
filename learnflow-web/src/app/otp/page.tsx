@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Logo from "@/components/Logo";
-import { Page, PrimaryButton } from "@/components/ui";
+import { AuthStage, Page, PrimaryButton } from "@/components/ui";
 import { DEMO_OTP } from "@/lib/pin";
 import { useAppTheme } from "@/theme/useAppTheme";
 
@@ -29,10 +29,11 @@ export default function OTPPage() {
   }, [code]);
 
   return (
-    <Page className="flex flex-col items-center justify-center px-6">
-      <div className="w-full max-w-md">
+    <Page>
+      <AuthStage>
+        <div className="w-full">
         <div className="mb-4 flex justify-center">
-          <Logo height={76} />
+          <Logo height="auth" />
         </div>
         <h1 className="text-center text-2xl font-extrabold">Vérification</h1>
         <p className="mt-2 mb-6 text-center text-sm font-semibold" style={{ color: colors.textMuted }}>
@@ -48,13 +49,14 @@ export default function OTPPage() {
           inputMode="numeric"
           autoFocus
           maxLength={6}
-          className="mb-4 w-full rounded-2xl border-2 px-4 py-[18px] text-center text-[28px] font-extrabold tracking-[0.4em] outline-none"
+          className="mb-4 w-full rounded-2xl border-2 px-3 py-4 text-center text-[22px] font-extrabold tracking-[0.18em] outline-none sm:px-4 sm:py-[18px] sm:text-[28px] sm:tracking-[0.4em]"
           style={{ borderColor: colors.mathsBorder, background: colors.white, color: colors.textDark }}
           placeholder="123456"
         />
         {error ? <p className="mb-3 text-center text-sm font-bold text-red-500">{error}</p> : null}
         <PrimaryButton onClick={() => submit(code)}>Valider</PrimaryButton>
-      </div>
+        </div>
+      </AuthStage>
     </Page>
   );
 }

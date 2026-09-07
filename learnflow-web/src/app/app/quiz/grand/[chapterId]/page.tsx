@@ -28,7 +28,7 @@ export default function GrandQuizzPage() {
 
   if (!canAccess) {
     return (
-      <div className="flex min-h-[70vh] flex-col items-center justify-center px-6 text-center">
+      <div className="flex min-h-[calc(100dvh-5.5rem)] flex-col items-center justify-center px-6 text-center lg:min-h-dvh">
         <Spira scene="quiz.locked" size={96} />
         <h1 className="mt-3 text-xl font-black">Grand Quizz verrouillé</h1>
         <p className="mt-2 text-sm font-semibold" style={{ color: colors.textMuted }}>
@@ -67,7 +67,7 @@ export default function GrandQuizzPage() {
 
   if (done) {
     return (
-      <div className="flex min-h-[70vh] flex-col items-center justify-center px-6 text-center">
+      <div className="flex min-h-[calc(100dvh-5.5rem)] flex-col items-center justify-center px-6 text-center lg:min-h-dvh">
         <Spira
           mood={spiraForScore(score, questions.length)}
           size={96}
@@ -87,7 +87,7 @@ export default function GrandQuizzPage() {
   }
 
   return (
-    <div className="mx-auto max-w-2xl">
+    <div className="mx-auto flex min-h-[calc(100dvh-5.5rem)] max-w-2xl flex-col lg:min-h-dvh">
       <div className="flex items-center justify-between px-4 py-4">
         <button type="button" onClick={() => router.back()} aria-label="Retour">
           <Icon name="arrow-left" size={20} color={colors.textDark} />
@@ -97,9 +97,11 @@ export default function GrandQuizzPage() {
         </span>
         <Spira scene="quiz.play" size={36} message="" />
       </div>
-      <div className="space-y-4 px-5 py-5">
-        <h1 className="text-[18px] font-extrabold leading-[26px]">{q.enonceQuestion}</h1>
-        <div className="space-y-2.5">
+      <h1 className="shrink-0 px-5 pt-2 text-[17px] font-extrabold leading-6 sm:text-[18px] sm:leading-7">
+        {q.enonceQuestion}
+      </h1>
+      <div className="flex min-h-0 flex-1 flex-col justify-center overflow-y-auto px-5 py-6">
+        <div className="mt-5 flex shrink-0 flex-col gap-4 sm:gap-5">
           {q.optionsProposees.map((opt, i) => {
             const on = selected === i;
             const ok = on && i === q.indexReponseCorrecte;
@@ -109,7 +111,7 @@ export default function GrandQuizzPage() {
                 key={opt}
                 type="button"
                 onClick={() => pick(i)}
-                className="w-full rounded-2xl border-2 px-4 py-4 text-left font-bold"
+                className="w-full shrink-0 rounded-2xl border-2 px-3 py-2 text-left font-bold"
                 style={{
                   background: ok ? colors.svtBg : ko ? colors.angBg : colors.white,
                   borderColor: ok ? colors.secondary : ko ? colors.danger : colors.border,

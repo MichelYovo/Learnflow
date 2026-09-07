@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Spira from "@/components/Spira";
-import { ScreenHeader, PrimaryButton } from "@/components/ui";
+import { AppMain, ScreenHeader, PrimaryButton } from "@/components/ui";
 import { spiraForRatingStars } from "@/data/spira";
 import { useLearnFlowStore } from "@/store/useLearnFlowStore";
 import { useAppTheme } from "@/theme/useAppTheme";
@@ -16,9 +16,9 @@ export default function RatePage() {
   const [saved, setSaved] = useState(false);
 
   return (
-    <div>
+    <div className="flex min-h-[calc(100dvh-5.5rem)] flex-col lg:min-h-dvh">
       <ScreenHeader title="Évaluer l'app" backHref="/app/profil" />
-      <div className="mx-auto max-w-xl space-y-4 px-4 py-6 text-center md:px-8">
+      <AppMain narrow fill className="space-y-4 py-6 text-center">
         <Spira mood={spiraForRatingStars(stars)} size={96} scene="settings.rate" message="" />
         <div className="flex justify-center gap-2">
           {[1, 2, 3, 4, 5].map((n) => (
@@ -45,7 +45,7 @@ export default function RatePage() {
         >
           Envoyer
         </PrimaryButton>
-      </div>
+      </AppMain>
     </div>
   );
 }

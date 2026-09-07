@@ -5,7 +5,15 @@ import type { LocalProfile } from "../types/database";
 import type { ProfileEleve } from "../types/learnflow";
 import type { LeaguePlayer } from "../data/mock";
 import type { LeagueCacheRow } from "../types/database";
-import { upsertProfile, loadProfiles, getProfileById, updateLocalPin, updateProfileClass, LOCAL_PARENT_ID } from "./profiles";
+import {
+  upsertProfile,
+  loadProfiles,
+  getProfileById,
+  updateLocalPin,
+  updateProfileClass,
+  deleteProfilesNotIn,
+  LOCAL_PARENT_ID,
+} from "./profiles";
 
 export function localProfileToEleve(
   row: LocalProfile,
@@ -86,6 +94,11 @@ export async function seedDemoProfilesIfEmpty(): Promise<LocalProfile[]> {
   return loadProfiles();
 }
 
+/** Retire les profils locaux hors Kofi / Ama (phase de test). */
+export async function pruneExtraLocalProfiles(): Promise<void> {
+  await deleteProfilesNotIn(PROFILES_DEMO.map((d) => String(d.id)));
+}
+
 /** Aligne les PIN des comptes démo déjà présents (ex. Ama encore en 5678). */
 export async function ensureDemoPins(pin = DEMO_PIN): Promise<void> {
   for (const demo of PROFILES_DEMO) {
@@ -116,6 +129,7 @@ export async function importEleveProfiles(
   if (existing.length > 0) return;
 
   for (const profile of profiles) {
+    if (!PROFILES_DEMO.some((d) => String(d.id) === String(profile.id))) continue;
     await upsertProfile({
       id: String(profile.id),
       parent_id: String(profile.compteId || LOCAL_PARENT_ID),

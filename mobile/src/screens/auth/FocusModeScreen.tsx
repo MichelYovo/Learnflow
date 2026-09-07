@@ -108,7 +108,7 @@ export default function FocusModeScreen() {
 
 const styles = StyleSheet.create({
   safe: { flex: 1 },
-  body: { paddingHorizontal: 24, paddingTop: 8, paddingBottom: 12, alignItems: "center" },
+  body: { flexGrow: 1, justifyContent: "center", paddingHorizontal: 24, paddingTop: 8, paddingBottom: 12, alignItems: "center" },
   kicker: { marginTop: 8, fontSize: 12, fontWeight: "800", letterSpacing: 0.6, textTransform: "uppercase" },
   title: { marginTop: 6, fontSize: 28, fontWeight: "800", letterSpacing: -0.5, textAlign: "center" },
   lead: { marginTop: 10, fontSize: 16, lineHeight: 24, fontWeight: "500", textAlign: "center" },

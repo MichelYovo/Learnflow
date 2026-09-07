@@ -3,7 +3,8 @@
 import { useMemo, useState } from "react";
 import Avatar from "@/components/Avatar";
 import Icon from "@/components/Icon";
-import LeagueBadge, { badgeSrc } from "@/components/LeagueBadge";
+import { LeagueBadgeCircle } from "@/components/LeagueBadge";
+import { AppBar } from "@/components/ui";
 import { LEAGUE_TIERS } from "@/data/mock";
 import { useLearnFlowStore } from "@/store/useLearnFlowStore";
 import { useAppTheme } from "@/theme/useAppTheme";
@@ -11,9 +12,33 @@ import type { LigueNom } from "@/types/learnflow";
 
 const TIER_ORDER: LigueNom[] = ["Bronze", "Argent", "Or", "Platine", "Diamant"];
 const PLACE = {
-  1: { height: 132, gradient: "linear-gradient(#FDE68A,#F59E0B)", size: 64 },
-  2: { height: 96, gradient: "linear-gradient(#E2E8F0,#94A3B8)", size: 52 },
-  3: { height: 80, gradient: "linear-gradient(#FED7AA,#F97316)", size: 52 },
+  1: {
+    height: 108,
+    size: 64,
+    ring: "#F59E0B",
+    glow: "rgba(245,158,11,0.38)",
+    bar: "linear-gradient(180deg,#FDE68A 0%,#F59E0B 52%,#D97706 100%)",
+    lip: "#FEF3C7",
+    ink: "#78350F",
+  },
+  2: {
+    height: 78,
+    size: 52,
+    ring: "#94A3B8",
+    glow: "rgba(148,163,184,0.32)",
+    bar: "linear-gradient(180deg,#F8FAFC 0%,#CBD5E1 48%,#94A3B8 100%)",
+    lip: "#FFFFFF",
+    ink: "#334155",
+  },
+  3: {
+    height: 62,
+    size: 52,
+    ring: "#F97316",
+    glow: "rgba(249,115,22,0.32)",
+    bar: "linear-gradient(180deg,#FED7AA 0%,#FB923C 50%,#EA580C 100%)",
+    lip: "#FFEDD5",
+    ink: "#9A3412",
+  },
 } as const;
 
 const ACHIEVEMENTS = [
@@ -50,11 +75,13 @@ export default function LiguePage() {
   const tierMeta = LEAGUE_TIERS.find((t) => t.id === selectedTier) ?? LEAGUE_TIERS[2];
   const isCurrent = selectedTier === ligue.nomLigue;
   const currentIndex = TIER_ORDER.indexOf(ligue.nomLigue);
+  const selectedIndex = TIER_ORDER.indexOf(selectedTier);
+  const isUnlocked = selectedIndex <= currentIndex;
 
   return (
     <div>
-      <header className="sticky top-0 z-20 border-b px-5 pb-3.5 pt-3 md:px-8" style={{ background: colors.white, borderColor: colors.border }}>
-        <h1 className="text-[28px] font-extrabold tracking-tight">Ligues</h1>
+      <AppBar stack innerClassName="pb-3.5 pt-3">
+        <h1 className="text-[22px] font-extrabold tracking-tight sm:text-[28px]">Ligues</h1>
         <div className="mt-3 flex gap-2">
           {(["classement", "badges"] as const).map((t) => {
             const active = tab === t;
@@ -76,54 +103,121 @@ export default function LiguePage() {
             );
           })}
         </div>
-      </header>
+      </AppBar>
 
       {tab === "classement" ? (
-        <div className="mx-auto max-w-3xl pb-8">
-          <div className="flex items-center justify-center gap-2 overflow-x-auto px-4 py-3">
-            {TIER_ORDER.map((id) => {
-              const meta = LEAGUE_TIERS.find((t) => t.id === id)!;
+        <div className="mx-auto w-full max-w-3xl px-4 pb-8 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-center gap-2 overflow-x-auto py-3 sm:gap-3">
+            {TIER_ORDER.map((id, index) => {
               const on = selectedTier === id;
+              const locked = index > currentIndex;
               return (
                 <button key={id} type="button" onClick={() => setSelectedTier(id)} className="shrink-0">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={badgeSrc(meta.badgeKey)} alt={meta.label} className={`object-contain ${on ? "h-12 w-12" : "h-8 w-8 opacity-50"}`} />
+                  <LeagueBadgeCircle nom={id} size={on ? 40 : 28} selected={on} dimmed={locked && !on} />
                 </button>
               );
             })}
           </div>
 
-          <div className="relative mx-4 mb-3 overflow-hidden rounded-[20px] p-5 text-center" style={{ background: colors.white }}>
-            <div className="pointer-events-none absolute left-1/2 top-2 h-[180px] w-[180px] -translate-x-1/2 rounded-full" style={{ background: tierMeta.color, opacity: darkMode ? 0.18 : 0.12 }} />
-            <LeagueBadge nom={tierMeta.id} size={132} />
-            <p className="mt-2 text-[20px] font-extrabold">Ligue {tierMeta.label}</p>
-            <p className="mt-1 text-[13px]" style={{ color: colors.textMuted }}>
-              {isCurrent ? `Rang #${ligue.rangActuel}` : "Palier à débloquer"}
+          <div className="relative mb-3 overflow-hidden rounded-[20px] px-5 pb-5 pt-6 text-center" style={{ background: colors.white }}>
+            <div className="relative mx-auto inline-flex pb-3">
+              <LeagueBadgeCircle nom={tierMeta.id} size={108} selected dimmed={!isUnlocked} />
+              {isCurrent ? (
+                <span
+                  className="absolute bottom-1 left-1/2 z-[2] -translate-x-1/2 rounded-full px-2.5 py-0.5 text-[12px] font-black text-white"
+                  style={{ background: tierMeta.color, boxShadow: `0 0 0 3px ${colors.white}` }}
+                >
+                  #{ligue.rangActuel}
+                </span>
+              ) : null}
+            </div>
+            <p className="text-[18px] font-extrabold sm:text-[20px]">Ligue {tierMeta.label}</p>
+            <p className="mt-1 text-[13px] font-semibold" style={{ color: isCurrent ? tierMeta.color : colors.textMuted }}>
+              {isCurrent ? `Rang #${ligue.rangActuel} · cette semaine` : isUnlocked ? "Palier débloqué" : "Palier à débloquer"}
             </p>
           </div>
 
+          {!isCurrent ? (
+            <p className="mb-2 text-center text-sm font-semibold" style={{ color: colors.textMuted }}>
+              {isUnlocked
+                ? "Tu as déjà dépassé ce palier. Le classement s’affiche pour ta ligue actuelle."
+                : "Gagne de l’XP cette semaine pour viser ce palier."}
+            </p>
+          ) : null}
+
           {isCurrent && first && second && third ? (
             <>
-              <div className="mx-4 mt-2 rounded-[20px] border p-5" style={{ background: colors.white, borderColor: colors.border }}>
+              <div className="mt-2 overflow-hidden rounded-[20px] border pt-5" style={{ background: colors.white, borderColor: colors.border }}>
                 <p className="mb-4 text-center text-[11px] font-extrabold uppercase tracking-widest" style={{ color: colors.textMuted }}>
                   Podium de la semaine
                 </p>
-                <div className="flex items-end justify-center gap-2">
+                <div className="flex items-end justify-center gap-1 px-2 sm:gap-2 sm:px-4">
                   {[{ player: second, place: 2 as const }, { player: first, place: 1 as const }, { player: third, place: 3 as const }].map(({ player, place }) => {
                     const meta = PLACE[place];
                     return (
-                      <div key={place} className="flex flex-1 flex-col items-center gap-2">
-                        {place === 1 ? <Icon name="award" size={22} color="#F59E0B" /> : <span className="h-[22px]" />}
-                        <div className="rounded-full" style={{ border: place === 1 ? "3px solid #FBBF24" : `2px solid ${darkMode ? colors.border : "#fff"}` }}>
-                          <Avatar avatarId={player.avatarId} size={meta.size} initials={player.initials} fallbackColor={player.avatarColor} />
+                      <div
+                        key={place}
+                        className={`flex min-w-0 flex-col items-center pt-4 ${place === 1 ? "z-[1] flex-[1.2]" : "flex-1"}`}
+                      >
+                        <div className="relative z-[1] mb-2.5 flex flex-col items-center">
+                          {place === 1 ? (
+                            <span
+                              className="absolute -top-3 left-1/2 z-[2] flex h-7 w-7 -translate-x-1/2 items-center justify-center rounded-full"
+                              style={{ background: "#FEF3C7", boxShadow: "0 2px 8px rgba(245,158,11,0.45)" }}
+                            >
+                              <Icon name="crown" size={16} color="#D97706" />
+                            </span>
+                          ) : null}
+                          <div
+                            className="rounded-full"
+                            style={{
+                              padding: place === 1 ? 3 : 2,
+                              background: meta.ring,
+                              boxShadow: `0 10px 22px ${meta.glow}`,
+                            }}
+                          >
+                            <Avatar
+                              avatarId={player.avatarId}
+                              size={meta.size}
+                              initials={player.initials}
+                              fallbackColor={player.avatarColor}
+                            />
+                          </div>
+                          <span
+                            className="absolute -bottom-1 left-1/2 z-[2] flex h-6 min-w-6 -translate-x-1/2 items-center justify-center rounded-full px-1.5 text-[11px] font-black text-white"
+                            style={{ background: meta.ring, boxShadow: `0 0 0 2px ${colors.white}` }}
+                          >
+                            {place}
+                          </span>
                         </div>
-                        <p className="max-w-full truncate text-[13px] font-extrabold">{player.you ? "Toi" : player.name.split(" ")[0]}</p>
-                        <p className="flex items-center gap-0.5 text-[12px] font-extrabold" style={{ color: colors.primary }}>
-                          <Icon name="zap" size={12} color={colors.primary} />
+                        <p
+                          className="max-w-full truncate px-1 text-[13px] font-extrabold"
+                          style={{ color: player.you ? colors.primary : colors.textDark }}
+                        >
+                          {player.you ? "Toi" : player.name.split(" ")[0]}
+                        </p>
+                        <p className="mb-2 flex items-center gap-0.5 text-[11px] font-extrabold" style={{ color: meta.ink }}>
+                          <Icon name="zap" size={11} color={meta.ring} />
                           {player.xp.toLocaleString("fr-FR")}
                         </p>
-                        <div className="flex w-full items-end justify-center rounded-t-2xl pb-3 text-[18px] font-black text-slate-900" style={{ height: meta.height, background: meta.gradient }}>
-                          #{place}
+                        <div
+                          className="relative w-full rounded-t-[18px]"
+                          style={{
+                            height: meta.height,
+                            background: meta.bar,
+                            boxShadow: "inset 0 2px 0 rgba(255,255,255,0.5)",
+                          }}
+                        >
+                          <span
+                            className="absolute left-1/2 top-1.5 h-1.5 w-[42%] -translate-x-1/2 rounded-full"
+                            style={{ background: meta.lip, opacity: 0.85 }}
+                          />
+                          <span
+                            className="absolute inset-x-0 bottom-3 text-center text-[22px] font-black tracking-tight"
+                            style={{ color: meta.ink }}
+                          >
+                            #{place}
+                          </span>
                         </div>
                       </div>
                     );
@@ -131,18 +225,24 @@ export default function LiguePage() {
                 </div>
               </div>
 
-              <p className="px-5 pb-2 pt-5 text-[18px] font-extrabold">Classement</p>
+              <p className="pb-2 pt-5 text-[18px] font-extrabold">Classement</p>
               {rest.map((player) => (
                 <div
                   key={player.rank}
-                  className="mx-4 mb-2 flex min-h-16 items-center gap-3 rounded-[20px] border px-4 py-3"
+                  className="mb-2 flex min-h-16 items-center gap-3 rounded-[20px] border px-4 py-3"
                   style={{
                     background: player.you ? (darkMode ? "#0C1A33" : "#E6F4FF") : colors.white,
                     borderColor: player.you ? colors.primary : colors.border,
                     borderWidth: player.you ? 1.5 : 1,
                   }}
                 >
-                  <span className="w-7 text-center text-[15px] font-extrabold" style={{ color: player.you ? colors.primary : colors.textMuted }}>
+                  <span
+                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[13px] font-extrabold"
+                    style={{
+                      background: player.you ? colors.primary : colors.surfaceAlt,
+                      color: player.you ? "#fff" : colors.textMuted,
+                    }}
+                  >
                     {player.rank}
                   </span>
                   <Avatar avatarId={player.avatarId} size={44} initials={player.initials} fallbackColor={player.avatarColor} />
@@ -165,14 +265,14 @@ export default function LiguePage() {
                   gelerLigue(7);
                   setGelMsg(true);
                 }}
-                className="mx-4 mt-3 mb-2 flex min-h-[52px] w-[calc(100%-2rem)] items-center justify-center gap-2.5 rounded-[18px] border-[1.5px] py-3.5 text-[15px] font-extrabold"
+                className="mt-3 mb-2 flex min-h-[52px] w-full items-center justify-center gap-2.5 rounded-[18px] border-[1.5px] py-3.5 text-[15px] font-extrabold"
                 style={{ background: colors.white, borderColor: colors.border, color: colors.primary }}
               >
                 <Icon name="shield" size={20} color={colors.primary} />
                 Geler ma ligue (7j)
               </button>
               {gelMsg || ligue.estGelee ? (
-                <p className="px-5 text-center text-sm font-semibold" style={{ color: colors.textMuted }}>
+                <p className="text-center text-sm font-semibold" style={{ color: colors.textMuted }}>
                   Ton rang est protégé pendant 7 jours (démo).
                 </p>
               ) : null}
@@ -180,7 +280,7 @@ export default function LiguePage() {
           ) : null}
         </div>
       ) : (
-        <div className="mx-auto max-w-3xl space-y-3 px-4 py-4 pb-8">
+        <div className="mx-auto w-full max-w-3xl space-y-3 px-4 py-4 pb-8 sm:px-6 lg:px-8">
           <p className="text-[18px] font-extrabold">Paliers</p>
           <div className="grid grid-cols-2 gap-3">
             {LEAGUE_TIERS.map((tier, index) => {
@@ -191,8 +291,7 @@ export default function LiguePage() {
                   className="flex min-h-[140px] flex-col items-center gap-2 rounded-[20px] border p-4"
                   style={{ background: colors.white, borderColor: unlocked ? tier.color : colors.border, opacity: unlocked ? 1 : 0.4 }}
                 >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={badgeSrc(tier.badgeKey)} alt="" width={72} height={72} className="object-contain" />
+                  <LeagueBadgeCircle nom={tier.id} size={72} selected={tier.id === ligue.nomLigue} />
                   <p className="text-sm font-extrabold">{tier.label}</p>
                   <p className="text-xs" style={{ color: colors.textMuted }}>
                     {unlocked ? (tier.id === ligue.nomLigue ? "Palier actuel" : "Débloqué") : "Verrouillé"}

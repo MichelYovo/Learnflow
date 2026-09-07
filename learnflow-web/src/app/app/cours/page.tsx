@@ -4,6 +4,7 @@ import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Icon, { type IconName } from "@/components/Icon";
 import Spira from "@/components/Spira";
+import { AppBar, AppMain } from "@/components/ui";
 import { programmeForClass } from "@/data/programme";
 import { useLearnFlowStore } from "@/store/useLearnFlowStore";
 import { useAppTheme } from "@/theme/useAppTheme";
@@ -56,17 +57,17 @@ function CoursInner() {
 
   return (
     <div>
-      <header className="sticky top-0 z-20 flex items-center gap-2.5 border-b px-4 py-3 md:px-8" style={{ background: colors.white, borderColor: colors.border }}>
+      <AppBar innerClassName="gap-2.5">
         {level > 0 ? (
-          <button type="button" onClick={goBack} className="flex h-10 w-10 items-center justify-center rounded-[14px]" style={{ background: colors.surfaceAlt }}>
+          <button type="button" onClick={goBack} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[14px]" style={{ background: colors.surfaceAlt }}>
             <Icon name="arrow-left" size={18} color={colors.textDark} />
           </button>
         ) : (
           <Spira scene="tab.cours" size={56} message="" />
         )}
         <div className="min-w-0 flex-1">
-          {level === 0 ? <h1 className="text-[22px] font-extrabold">Mes cours</h1> : null}
-          {level === 1 && subject ? <h1 className="truncate text-[22px] font-extrabold">{subject.name}</h1> : null}
+          {level === 0 ? <h1 className="text-xl font-extrabold sm:text-[22px]">Mes cours</h1> : null}
+          {level === 1 && subject ? <h1 className="truncate text-xl font-extrabold sm:text-[22px]">{subject.name}</h1> : null}
           {level === 2 && theme ? (
             <>
               <p className="truncate text-sm font-semibold" style={{ color: colors.textMuted }}>
@@ -85,13 +86,13 @@ function CoursInner() {
           ) : null}
         </div>
         {level > 0 && subject ? (
-          <span className="flex h-9 w-9 items-center justify-center rounded-xl" style={{ background: subject.bg }}>
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl" style={{ background: subject.bg }}>
             <Icon name={SUBJECT_ICON[subject.icon] ?? "book"} size={15} color={subject.color} />
           </span>
         ) : null}
-      </header>
+      </AppBar>
 
-      <div className="mx-auto max-w-3xl space-y-3 px-5 py-5 pb-8">
+      <AppMain className="space-y-3 py-5 pb-8">
         {level === 0
           ? programme.map((s) => {
               const done = s.themes.reduce((a, t) => a + t.lessonsDone, 0);
@@ -260,7 +261,7 @@ function CoursInner() {
             Quizz 10/10
           </button>
         ) : null}
-      </div>
+      </AppMain>
     </div>
   );
 }

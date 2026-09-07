@@ -38,7 +38,7 @@ export default function ModeLibreScreen({ navigation, route }: Props) {
         </Pressable>
       </View>
 
-      <ScrollView contentContainerStyle={styles.body}>
+      <ScrollView style={{ flex: 1 }} contentContainerStyle={styles.body}>
         <View style={styles.mascot}>
           <Spira scene="mode.libre" size={96} message="" />
         </View>
@@ -151,7 +151,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   title: { fontWeight: "800", fontSize: 22, color: colors.textDark },
-  body: { padding: 24, gap: 16, paddingBottom: 40 },
+  body: { flexGrow: 1, justifyContent: "center", padding: 20, gap: 14, paddingBottom: 32 },
   mascot: { alignItems: "center", paddingVertical: 12 },
   card: {
     flexDirection: "row",

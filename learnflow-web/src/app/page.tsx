@@ -25,7 +25,7 @@ export default function HomeGate() {
 
   return (
     <div className="flex min-h-full flex-col items-center justify-center gap-6" style={{ background: colors.surface }}>
-      <Logo height={48} />
+      <Logo height="hero" float />
     </div>
   );
 }

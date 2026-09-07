@@ -25,7 +25,7 @@ export default function QuizTabScreen() {
         </Pressable>
         <Text style={styles.title}>Quiz</Text>
       </View>
-      <ScrollView contentContainerStyle={styles.scroll}>
+      <ScrollView style={{ flex: 1 }} contentContainerStyle={styles.scroll}>
         <Pressable style={[styles.card, { borderColor: colors.mathsBorder }]} onPress={() => nav.navigate("AssimilationQuiz", { chapterId: "eq2" })}>
           <View style={[styles.icon, { backgroundColor: colors.mathsBg }]}>
             <Icon name="target" size={22} color={colors.primary} />
@@ -83,7 +83,7 @@ const styles = StyleSheet.create({
   header: { flexDirection: "row", alignItems: "center", gap: 12, paddingHorizontal: 20, paddingTop: 8, paddingBottom: 12 },
   back: { width: 40, height: 40, borderRadius: 14, backgroundColor: colors.white, alignItems: "center", justifyContent: "center" },
   title: { fontSize: 22, fontWeight: "800", color: colors.textDark },
-  scroll: { padding: 24, gap: 14 },
+  scroll: { flexGrow: 1, justifyContent: "center", padding: 20, gap: 12 },
   card: {
     flexDirection: "row",
     alignItems: "center",

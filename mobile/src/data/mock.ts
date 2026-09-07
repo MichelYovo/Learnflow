@@ -575,6 +575,23 @@ export const PROFILES_DEMO = [
   },
 ];
 
+/** Tests locaux : uniquement les deux profils de départ (Kofi + Ama). */
+export const LOCAL_TEST_PROFILE_IDS = PROFILES_DEMO.map((p) => String(p.id));
+
+export function keepLocalTestProfiles<T extends { id: string | number }>(profiles: T[]): T[] {
+  const allowed = new Set(LOCAL_TEST_PROFILE_IDS);
+  return profiles.filter((p) => allowed.has(String(p.id)));
+}
+
+export function resolveLocalTestActiveId(
+  profiles: { id: string | number }[],
+  preferred?: string | number
+): string {
+  const id = String(preferred ?? "");
+  if (profiles.some((p) => String(p.id) === id)) return id;
+  return profiles[0] ? String(profiles[0].id) : LOCAL_TEST_PROFILE_IDS[0];
+}
+
 export const PARENT_NOTES: ParentNote[] = [
   { matiere: "Mathématiques", score: 14 },
   { matiere: "SVT", score: 16 },

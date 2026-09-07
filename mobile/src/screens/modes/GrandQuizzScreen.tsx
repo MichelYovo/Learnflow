@@ -106,8 +106,8 @@ export default function GrandQuizzScreen({ navigation, route }: Props) {
         </Text>
         <Spira scene="quiz.play" size={36} />
       </View>
-      <View style={styles.body}>
-        <Text style={styles.q}>{q.enonceQuestion}</Text>
+      <Text style={styles.q}>{q.enonceQuestion}</Text>
+      <View style={styles.options}>
         {q.optionsProposees.map((opt, i) => (
           <Pressable
             key={i}
@@ -134,9 +134,31 @@ const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.surface },
   top: { flexDirection: "row", alignItems: "center", gap: 12, padding: 16 },
   progress: { fontWeight: "800", color: colors.primary },
-  body: { padding: 20, gap: 10 },
-  q: { fontSize: 18, fontWeight: "800", color: colors.textDark, marginBottom: 8 },
-  opt: { backgroundColor: colors.white, borderWidth: 2, borderColor: colors.border, borderRadius: 16, padding: 16 },
+  q: {
+    fontSize: 17,
+    fontWeight: "800",
+    color: colors.textDark,
+    lineHeight: 24,
+    paddingHorizontal: 20,
+    paddingTop: 8,
+    paddingBottom: 0,
+  },
+  options: {
+    flex: 1,
+    justifyContent: "center",
+    paddingHorizontal: 20,
+    paddingTop: 36,
+    paddingBottom: 16,
+    gap: 16,
+  },
+  opt: {
+    backgroundColor: colors.white,
+    borderWidth: 2,
+    borderColor: colors.border,
+    borderRadius: 16,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+  },
   optText: { fontWeight: "700", color: colors.textDark },
   locked: { flex: 1, alignItems: "center", justifyContent: "center", padding: 24, gap: 12 },
   lockedTitle: { fontSize: 22, fontWeight: "800", color: colors.textDark },

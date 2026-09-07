@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Spira from "@/components/Spira";
-import { PrimaryButton, Page } from "@/components/ui";
+import { AuthStage, PrimaryButton, Page } from "@/components/ui";
 import { useLearnFlowStore } from "@/store/useLearnFlowStore";
 import { useAppTheme } from "@/theme/useAppTheme";
 import type { SpiraScene } from "@/data/spira";
@@ -45,30 +45,35 @@ export default function OnboardingPage() {
   };
 
   return (
-    <Page className="flex flex-col">
-      <div className="mx-auto flex w-full max-w-lg flex-1 flex-col px-6 py-8">
-        <div className="flex min-h-12 items-center gap-3">
-          <div className="h-2.5 flex-1 overflow-hidden rounded-full" style={{ background: darkMode ? "#334155" : "#E2E8F0" }}>
-            <div
-              className="h-full rounded-full transition-all"
-              style={{ width: `${((step + 1) / SLIDES.length) * 100}%`, background: colors.primary }}
-            />
+    <Page>
+      <AuthStage
+        top={
+          <div className="flex min-h-12 items-center gap-3">
+            <div className="h-2.5 flex-1 overflow-hidden rounded-full" style={{ background: darkMode ? "#334155" : "#E2E8F0" }}>
+              <div
+                className="h-full rounded-full transition-all"
+                style={{ width: `${((step + 1) / SLIDES.length) * 100}%`, background: colors.primary }}
+              />
+            </div>
+            <button type="button" onClick={goAuth} className="min-w-14 text-right text-[13px] font-extrabold" style={{ color: colors.textMuted }}>
+              Passer
+            </button>
           </div>
-          <button type="button" onClick={goAuth} className="min-w-14 text-right text-[13px] font-extrabold" style={{ color: colors.textMuted }}>
-            Passer
-          </button>
-        </div>
-        <div className="flex flex-1 flex-col items-center justify-center gap-[18px] px-2 text-center">
-          <Spira scene={slide.scene} size={120} message="" />
-          <h1 className="text-[28px] font-extrabold tracking-tight">{slide.title}</h1>
-          <p className="max-w-md text-[17px] font-medium leading-[26px]" style={{ color: colors.textSecondary }}>
+        }
+        footer={
+          <PrimaryButton onClick={() => (last ? goAuth() : setStep((s) => s + 1))}>
+            {last ? "Commencer" : "Continuer"}
+          </PrimaryButton>
+        }
+      >
+        <div key={step} className="lf-slide-in flex flex-col items-center gap-[18px] px-2 text-center">
+          <Spira scene={slide.scene} size={108} message="" />
+          <h1 className="text-[22px] font-extrabold tracking-tight sm:text-[28px]">{slide.title}</h1>
+          <p className="max-w-md text-[15px] font-medium leading-6 sm:text-[17px] sm:leading-[26px]" style={{ color: colors.textSecondary }}>
             {slide.body}
           </p>
         </div>
-        <PrimaryButton onClick={() => (last ? goAuth() : setStep((s) => s + 1))}>
-          {last ? "Commencer" : "Continuer"}
-        </PrimaryButton>
-      </div>
+      </AuthStage>
     </Page>
   );
 }

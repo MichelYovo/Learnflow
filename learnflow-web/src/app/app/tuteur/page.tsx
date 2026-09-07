@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ScreenHeader } from "@/components/ui";
+import { AppMain, ScreenHeader } from "@/components/ui";
 import Spira from "@/components/Spira";
 import { AI_FAQ } from "@/data/mock";
 import { askTutor, AI_DAILY_QUOTA } from "@/data/tutor";
@@ -27,7 +27,7 @@ export default function TutorPage() {
   return (
     <div>
       <ScreenHeader title="Tuteur IA" backHref="/app" />
-      <div className="mx-auto flex max-w-2xl flex-col gap-4 px-4 py-6 md:px-8">
+      <AppMain className="flex flex-col gap-4 py-6">
         <div className="flex items-center gap-3">
           <Spira scene={restant > 0 ? "tutor.ready" : "tutor.exhausted"} size={64} message="" />
           <p className="text-sm font-semibold" style={{ color: colors.textSecondary }}>
@@ -85,7 +85,7 @@ export default function TutorPage() {
             Envoyer
           </button>
         </form>
-      </div>
+      </AppMain>
     </div>
   );
 }
