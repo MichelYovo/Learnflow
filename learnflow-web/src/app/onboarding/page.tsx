@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import AnimatedSplash from "@/components/AnimatedSplash";
 import Spira from "@/components/Spira";
 import { AuthStage, PrimaryButton, Page } from "@/components/ui";
 import { useLearnFlowStore } from "@/store/useLearnFlowStore";
@@ -36,6 +37,7 @@ export default function OnboardingPage() {
   const completeOnboarding = useLearnFlowStore((s) => s.completeOnboarding);
   const router = useRouter();
   const [step, setStep] = useState(0);
+  const [bootDone, setBootDone] = useState(false);
   const slide = SLIDES[step];
   const last = step === SLIDES.length - 1;
 
@@ -46,6 +48,7 @@ export default function OnboardingPage() {
 
   return (
     <Page>
+      {!bootDone ? <AnimatedSplash cinematic onFinish={() => setBootDone(true)} /> : null}
       <AuthStage
         top={
           <div className="flex min-h-12 items-center gap-3">
@@ -67,7 +70,7 @@ export default function OnboardingPage() {
         }
       >
         <div key={step} className="lf-slide-in flex flex-col items-center gap-[18px] px-2 text-center">
-          <Spira scene={slide.scene} size={108} message="" />
+          <Spira scene={slide.scene} size={128} />
           <h1 className="text-[22px] font-extrabold tracking-tight sm:text-[28px]">{slide.title}</h1>
           <p className="max-w-md text-[15px] font-medium leading-6 sm:text-[17px] sm:leading-[26px]" style={{ color: colors.textSecondary }}>
             {slide.body}

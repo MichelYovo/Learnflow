@@ -22,7 +22,7 @@ export default function LoginPage() {
     <Page>
       <AuthStage
         top={
-          <Link href="/profiles" className="flex h-10 w-10 items-center justify-center rounded-2xl" style={{ background: colors.surfaceAlt }}>
+          <Link href="/splash" className="flex h-10 w-10 items-center justify-center rounded-2xl" style={{ background: colors.surfaceAlt }}>
             <Icon name="arrow-left" size={18} color={colors.textDark} />
           </Link>
         }

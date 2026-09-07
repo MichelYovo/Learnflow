@@ -242,6 +242,67 @@ select {
   transform: rotateY(180deg);
 }
 
+.lf-boot {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  pointer-events: auto;
+}
+
+.lf-boot-out {
+  animation: lf-boot-veil-out 0.28s ease-in 0.14s forwards;
+}
+
+.lf-boot-flash {
+  position: fixed;
+  inset: 0;
+  z-index: 1001;
+  background: #fff;
+  pointer-events: none;
+  animation: lf-boot-flash 0.42s ease-out forwards;
+}
+
+@keyframes lf-boot-flash {
+  0% {
+    opacity: 0;
+    background: #fff;
+  }
+  10% {
+    opacity: 0.85;
+    background: #9ec5ff;
+  }
+  20% {
+    opacity: 0.05;
+    background: #fff;
+  }
+  36% {
+    opacity: 1;
+    background: #fff;
+  }
+  58% {
+    opacity: 1;
+    background: #fff;
+  }
+  100% {
+    opacity: 0;
+    background: #fff;
+  }
+}
+
+@keyframes lf-boot-veil-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   * {
     animation-duration: 0.01ms !important;

@@ -2,9 +2,9 @@
 
 import { useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
+import AnimatedSplash from "./AnimatedSplash";
 import { useLearnFlowStore } from "@/store/useLearnFlowStore";
 import { useHydrated } from "./useHydrated";
-import { useAppTheme } from "@/theme/useAppTheme";
 
 const AUTH_PATHS = ["/onboarding", "/splash", "/profiles", "/login", "/signup", "/otp", "/success"];
 
@@ -12,7 +12,6 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
   const ready = useHydrated();
   const router = useRouter();
   const pathname = usePathname();
-  const { colors } = useAppTheme();
   const onboardingCompleted = useLearnFlowStore((s) => s.onboardingCompleted);
   const isAuthenticated = useLearnFlowStore((s) => s.isAuthenticated);
   const focusPromptPending = useLearnFlowStore((s) => s.focusPromptPending);
@@ -28,7 +27,7 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
       return;
     }
     if (onboardingCompleted && !isAuthenticated && isApp) {
-      router.replace("/profiles");
+      router.replace("/splash");
       return;
     }
     if (isAuthenticated && focusPromptPending && isApp) {
@@ -41,7 +40,7 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
   }, [ready, pathname, onboardingCompleted, isAuthenticated, focusPromptPending, router]);
 
   if (!ready) {
-    return <div className="min-h-full" style={{ background: colors.surface }} />;
+    return <AnimatedSplash />;
   }
 
   return <>{children}</>;
