@@ -6,7 +6,7 @@ import Logo from "./Logo";
 const STORAGE_KEY = "lf-intro-flash";
 
 type Props = {
-  /** Hold blanc ≥ 50 s + flash (premier lancement). Sinon logo stagnant, pour le chargement. */
+  /** Hold blanc 2 min 50 + flash (premier lancement). Sinon logo stagnant, pour le chargement. */
   cinematic?: boolean;
   onFinish?: () => void;
 };
@@ -40,7 +40,7 @@ export default function AnimatedSplash({ cinematic = false, onFinish }: Props) {
     }
 
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const holdMs = reduced ? 80 : 50_000;
+    const holdMs = reduced ? 80 : 170_000;
     const flashMs = reduced ? 40 : 420;
 
     const tFlash = window.setTimeout(() => setPhase("flash"), holdMs);
