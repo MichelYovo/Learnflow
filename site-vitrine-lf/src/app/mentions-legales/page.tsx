@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Footer from "../../components/site/Footer";
 import Header from "../../components/site/Header";
+import SupportButton from "../../components/site/SupportButton";
 
 export const metadata: Metadata = {
   title: "Mentions légales",
@@ -22,9 +23,7 @@ export default function LegalPage() {
           </p>
           <p>
             Éditeur du site vitrine : LearnFlow Togo. Contact :{" "}
-            <a className="font-extrabold text-[#1677FF]" href="mailto:support@learnflow.tg">
-              support@learnflow.tg
-            </a>
+            <SupportButton className="font-extrabold text-[#1677FF]">formulaire de support</SupportButton>
             .
           </p>
           <p>

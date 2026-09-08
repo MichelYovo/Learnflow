@@ -271,3 +271,42 @@ alter table public.login_notices enable row level security;
 
 revoke all on public.email_challenges from anon, authenticated, public;
 revoke all on public.login_notices from anon, authenticated, public;
+
+-- ─────────────────────────────────────────────────────────────
+-- Messages du site vitrine (formulaire Support / liste d’attente)
+-- Insertion publique (anon). Lecture / MAJ : service_role seulement.
+-- ─────────────────────────────────────────────────────────────
+
+create table if not exists public.support_messages (
+  id uuid primary key default gen_random_uuid(),
+  name text not null,
+  email text not null,
+  message text not null,
+  topic text not null default 'support',
+  status text not null default 'new',
+  created_at timestamptz not null default now(),
+  constraint support_messages_topic_check check (topic in ('support', 'waitlist')),
+  constraint support_messages_status_check check (status in ('new', 'read'))
+);
+
+create index if not exists support_messages_created_at_idx
+  on public.support_messages (created_at desc);
+
+create index if not exists support_messages_status_idx
+  on public.support_messages (status);
+
+alter table public.support_messages enable row level security;
+
+drop policy if exists support_messages_insert_public on public.support_messages;
+create policy support_messages_insert_public
+  on public.support_messages for insert
+  to anon, authenticated
+  with check (
+    char_length(trim(name)) between 2 and 80
+    and char_length(trim(email)) between 5 and 120
+    and char_length(trim(message)) between 8 and 2000
+    and topic in ('support', 'waitlist')
+  );
+
+grant insert on public.support_messages to anon, authenticated;
+revoke select, update, delete on public.support_messages from anon, authenticated, public;

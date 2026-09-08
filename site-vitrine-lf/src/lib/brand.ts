@@ -1,17 +1,15 @@
 export const PLAY_URL = process.env.NEXT_PUBLIC_PLAY_URL ?? "";
 export const APP_STORE_URL = process.env.NEXT_PUBLIC_APP_STORE_URL ?? "";
-export const SUPPORT_EMAIL = "support@learnflow.tg";
-export const SUPPORT_MAILTO = `mailto:${SUPPORT_EMAIL}`;
-export const WAITLIST_MAILTO = `mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent("LearnFlow — liste d'attente")}&body=${encodeURIComponent("Bonjour,%0A%0AJe veux être prévenu(e) quand LearnFlow est sur les stores.%0A%0AClasse :%0AAndroid / iPhone :%0A")}`;
 
 export const SUBJECTS = [
   { id: "maths", label: "Maths", color: "#1677FF", bg: "#E6F4FF" },
   { id: "svt", label: "SVT", color: "#10B981", bg: "#ECFDF5" },
-  { id: "pc", label: "PC", color: "#06B6D4", bg: "#ECFEFF" },
+  { id: "pc", label: "PCT / PC", color: "#06B6D4", bg: "#ECFEFF" },
   { id: "hg", label: "HG", color: "#F59E0B", bg: "#FFFBEB" },
   { id: "fr", label: "Français", color: "#8B5CF6", bg: "#F5F3FF" },
   { id: "ang", label: "Anglais", color: "#EF4444", bg: "#FEF2F2" },
-  { id: "edhc", label: "EDHC", color: "#F97316", bg: "#FFF7ED" },
+  { id: "edhc", label: "ECM", color: "#F97316", bg: "#FFF7ED" },
+  { id: "philo", label: "Philo", color: "#6366F1", bg: "#EEF2FF" },
 ] as const;
 
 export const MODES = [

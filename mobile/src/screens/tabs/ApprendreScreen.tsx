@@ -28,6 +28,7 @@ export default function ApprendreScreen() {
   const { colors } = useAppTheme();
   const profile = useLearnFlowStore((s) => s.getActiveProfile());
   const chapterProgress = useLearnFlowStore((s) => s.chapterProgress);
+  const markChapterRead = useLearnFlowStore((s) => s.markChapterRead);
   const catalogEpoch = usePublishedCatalog();
   const programme = useMemo(
     () => programmeForLearner(profile?.classe, profile?.id, chapterProgress),
@@ -50,6 +51,26 @@ export default function ApprendreScreen() {
     setTheme(null);
     setChapter(null);
   }, [profile?.classe]);
+
+  useEffect(() => {
+    if (!subject) return;
+    const next = programme.find((s) => s.id === subject.id);
+    if (next && next.progress !== subject.progress) setSubject(next);
+  }, [programme, subject]);
+
+  useEffect(() => {
+    if (!subject || !theme) return;
+    const next = subject.themes.find((t) => t.id === theme.id);
+    if (next && next.lessonsDone !== theme.lessonsDone) setTheme(next);
+  }, [subject, theme]);
+
+  useEffect(() => {
+    if (!theme || !chapter) return;
+    const next = theme.chapters.find((c) => c.id === chapter.id);
+    const nextDone = next?.lessons.filter((l) => l.status === "done").length ?? 0;
+    const curDone = chapter.lessons.filter((l) => l.status === "done").length;
+    if (next && nextDone !== curDone) setChapter(next);
+  }, [theme, chapter]);
 
   useEffect(() => {
     const subjectId = route.params?.subjectId;
@@ -317,7 +338,10 @@ export default function ApprendreScreen() {
         {level === 3 && chapter ? (
           <Pressable
             style={[styles.quizBtn, { backgroundColor: colors.mathsBg, borderColor: colors.mathsBorder }]}
-            onPress={() => nav.navigate("AssimilationQuiz", { chapterId: chapter.id })}
+            onPress={() => {
+              markChapterRead(chapter.id);
+              nav.navigate("AssimilationQuiz", { chapterId: chapter.id });
+            }}
           >
             <Text style={styles.quizBtnText}>Quizz 10/10</Text>
           </Pressable>

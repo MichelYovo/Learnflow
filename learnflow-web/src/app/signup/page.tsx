@@ -7,8 +7,8 @@ import Icon from "@/components/Icon";
 import Logo from "@/components/Logo";
 import ParentPhoneField from "@/components/ParentPhoneField";
 import SocialAuth from "@/components/SocialAuth";
+import ClassPicker from "@/components/ClassPicker";
 import { AuthStage, Page, PrimaryButton } from "@/components/ui";
-import { CLASSES } from "@/data/mock";
 import { isValidTogoLocal, toTogoE164 } from "@/lib/phoneTogo";
 import { savePendingAuth } from "@/lib/pendingAuth";
 import { getBrowserSupabase } from "@/lib/supabase";
@@ -188,25 +188,8 @@ export default function SignUpPage() {
           <span className="text-xs font-bold" style={{ color: colors.textDark }}>
             Ma classe
           </span>
-          <div className="mt-1.5 flex flex-wrap gap-2">
-            {CLASSES.map((c) => {
-              const on = classe === c.id;
-              return (
-                <button
-                  key={c.id}
-                  type="button"
-                  onClick={() => setClasse(c.id)}
-                  className="rounded-[14px] border-2 px-3.5 py-2.5 text-[13px] font-extrabold"
-                  style={{
-                    borderColor: on ? colors.primary : colors.border,
-                    background: on ? colors.mathsBg : colors.white,
-                    color: on ? colors.primary : colors.textMuted,
-                  }}
-                >
-                  {c.label}
-                </button>
-              );
-            })}
+          <div className="mt-1.5">
+            <ClassPicker value={classe} onChange={setClasse} />
           </div>
         </label>
 

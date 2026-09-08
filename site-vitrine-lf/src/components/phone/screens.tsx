@@ -25,8 +25,9 @@ export function HomeMock() {
             <span className="flex items-center gap-1 rounded-[14px] bg-[#FEF3C7] px-2.5 py-2 text-[14px] font-extrabold text-[#D97706]">
               🔥 7
             </span>
-            <span className="flex items-center gap-1 rounded-[14px] bg-[#FEF3C7] px-2.5 py-2 text-[14px] font-extrabold text-[#D97706]">
-              ⚡ 2 480
+            <span className="relative flex h-10 w-10 items-center justify-center rounded-full bg-[#F8FAFC]">
+              <span className="text-[16px]">🔔</span>
+              <span className="absolute right-1 top-1 h-2.5 w-2.5 rounded-full bg-red-500" />
             </span>
           </div>
         </div>
@@ -62,16 +63,48 @@ export function HomeMock() {
           ))}
         </div>
 
-        <div className="flex gap-2 overflow-hidden">
-          {SUBJECTS.slice(0, 5).map((s) => (
-            <span
-              key={s.id}
-              className="shrink-0 rounded-full px-3 py-1.5 text-[12px] font-extrabold"
-              style={{ color: s.color, background: s.bg }}
-            >
-              {s.label}
-            </span>
-          ))}
+        <div>
+          <div className="mb-3 flex items-center justify-between">
+            <p className="text-[18px] font-extrabold text-[#1C1917]">Mes matières</p>
+            <span className="text-[13px] font-bold text-[#1677FF]">Voir tout</span>
+          </div>
+          <div className="grid grid-cols-5 gap-1">
+            {SUBJECTS.slice(0, 5).map((s) => (
+              <div key={s.id} className="flex flex-col items-center gap-1.5">
+                <span
+                  className="flex h-12 w-12 items-center justify-center rounded-[18px] text-[11px] font-black"
+                  style={{ color: s.color, background: s.bg }}
+                >
+                  {s.label.slice(0, 2)}
+                </span>
+                <span className="w-full truncate text-center text-[10px] font-bold text-[#64748B]">{s.label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="rounded-3xl border border-[#F1F5F9] bg-white p-4">
+          <p className="text-[16px] font-extrabold text-[#1C1917]">Ma progression</p>
+          <div className="mt-3 flex">
+            {[
+              ["12", "leçons"],
+              ["4h", "d'étude"],
+              ["+240", "XP"],
+            ].map(([v, l], i) => (
+              <div key={l} className={`flex flex-1 flex-col items-center ${i < 2 ? "border-r border-[#E5E7EB]" : ""}`}>
+                <p className="text-[18px] font-extrabold text-[#1C1917]">{v}</p>
+                <p className="text-[11px] font-semibold text-[#9CA3AF]">{l}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3 rounded-3xl border border-[#FDE68A] bg-[#FFFBEB] p-3.5">
+          <img src="/badges/gold.png" alt="" className="h-12 w-12 object-contain" />
+          <div className="min-w-0 flex-1">
+            <p className="text-[15px] font-extrabold text-[#1C1917]">Ligue Or</p>
+            <p className="text-[13px] font-semibold text-[#D97706]">#4</p>
+          </div>
         </div>
       </div>
       <TabBar active="Accueil" />

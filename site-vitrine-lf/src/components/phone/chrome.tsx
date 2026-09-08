@@ -44,8 +44,8 @@ export function TabBar({ active }: { active: Tab }) {
           <TabItem key={tab.name} tab={tab} focused={active === tab.name} />
         ))}
       </div>
-      <div className="pointer-events-none absolute left-1/2 top-0 z-10 flex h-20 w-20 -translate-x-1/2 -translate-y-8 items-center justify-center rounded-full border-2 border-[#E2E8F0] bg-white shadow-[0_8px_20px_rgba(22,119,255,0.28)]">
-        <img src="/brand/logo-mark.png" alt="" width={56} height={56} className="h-14 w-14 object-contain" />
+      <div className="lf-phone-mark pointer-events-none absolute left-1/2 top-0 z-10 flex h-20 w-20 -translate-x-1/2 -translate-y-8 items-center justify-center overflow-hidden rounded-full border-[3px] border-white bg-white shadow-[0_8px_24px_rgba(15,23,42,0.14)]">
+        <img src="/brand/logo-mark.png" alt="" width={44} height={44} className="h-11 w-11 object-contain" />
       </div>
     </div>
   );

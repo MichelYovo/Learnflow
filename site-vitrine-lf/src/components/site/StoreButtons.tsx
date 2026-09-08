@@ -1,4 +1,7 @@
-import { APP_STORE_URL, PLAY_URL, WAITLIST_MAILTO } from "../../lib/brand";
+"use client";
+
+import { APP_STORE_URL, PLAY_URL } from "../../lib/brand";
+import SupportButton from "./SupportButton";
 
 type Props = { compact?: boolean; align?: "start" | "center" };
 
@@ -34,12 +37,12 @@ export default function StoreButtons({ compact = false, align = "start" }: Props
         </span>
       )}
       {bothMissing && !compact ? (
-        <a
-          href={WAITLIST_MAILTO}
+        <SupportButton
+          topic="waitlist"
           className="inline-flex items-center justify-center rounded-2xl px-4 py-3 text-sm font-bold text-[#64748B] underline-offset-4 hover:text-[#1677FF] hover:underline"
         >
           Préviens-moi
-        </a>
+        </SupportButton>
       ) : null}
     </div>
   );

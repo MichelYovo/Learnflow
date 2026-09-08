@@ -18,7 +18,7 @@ export default function ProgrammeBrowser() {
             onClick={() => setTrack("college")}
             className={`rounded-xl px-4 py-2 text-sm font-extrabold ${track === "college" ? "bg-[#1677FF] text-white" : "text-[#64748B]"}`}
           >
-            Collège (3ème)
+            Collège (6e–3e)
           </button>
           <button
             type="button"
@@ -30,6 +30,7 @@ export default function ProgrammeBrowser() {
         </div>
         <p className="text-sm font-semibold text-[#64748B]">
           {programme.length} matières · {chapters} chapitres · {lessons} leçons
+          {track === "college" ? " · PCT" : " · Tle D uniquement · PC"}
         </p>
       </div>
       <div className="grid gap-4 lg:grid-cols-2">

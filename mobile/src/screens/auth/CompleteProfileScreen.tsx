@@ -4,8 +4,9 @@ import { LinearGradient } from "expo-linear-gradient";
 import { SafeAreaView } from "react-native-safe-area-context";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import Logo from "../../components/Logo";
+import ClassPicker from "../../components/ClassPicker";
 import ParentPhoneField from "../../components/ParentPhoneField";
-import { CLASSES, classLabel } from "../../data/mock";
+import { classLabel } from "../../data/mock";
 import { ensureBeginnerLeague, fetchOwnStudentProfile, isProfileComplete, trackActivity, upsertStudentProfile } from "../../lib/cloud";
 import { isValidTogoLocal, toTogoE164 } from "../../lib/phoneTogo";
 import { notifySecureLogin } from "../../lib/secureAuth";
@@ -123,20 +124,7 @@ export default function CompleteProfileScreen({ navigation }: Props) {
           Compte Google : {email || displayName}. Choisis ta classe pour continuer.
         </Text>
         <Text style={[styles.label, { color: colors.textDark }]}>Ma classe</Text>
-        <View style={styles.classGrid}>
-          {CLASSES.map((c) => {
-            const on = classe === c.id;
-            return (
-              <Pressable
-                key={c.id}
-                onPress={() => setClasse(c.id)}
-                style={[styles.classChip, { backgroundColor: colors.white, borderColor: colors.border }, on && { borderColor: colors.primary, backgroundColor: colors.mathsBg }]}
-              >
-                <Text style={[styles.classText, { color: colors.textMuted }, on && styles.classTextOn]}>{c.label}</Text>
-              </Pressable>
-            );
-          })}
-        </View>
+        <ClassPicker value={classe} onChange={setClasse} />
         <ParentPhoneField value={parentLocal} onChange={setParentLocal} />
         <Text style={[styles.optional, { color: colors.textMuted }]}>
           Numéro parent facultatif. S’il est renseigné, un WhatsApp LearnFlow part aux parents à chaque connexion.

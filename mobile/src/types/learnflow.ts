@@ -3,9 +3,14 @@ export type ClasseAPC =
   | "5eme"
   | "4eme"
   | "3eme"
-  | "2nde"
-  | "1ere"
-  | "Tle";
+  | "2nde-A"
+  | "2nde-S"
+  | "1ere-A"
+  | "1ere-C"
+  | "1ere-D"
+  | "Tle-A"
+  | "Tle-C"
+  | "Tle-D";
 
 export type ModeApprentissage = "Libre" | "Guide" | "Cramming" | "Blitz";
 export type LigueNom = "Bronze" | "Argent" | "Or" | "Platine" | "Diamant";
@@ -168,22 +173,39 @@ export interface SectionCoursAPC {
 /** Schémas interactifs — réservés à la SVT. */
 export type SchemaCoursKind = "2d" | "3d" | "both";
 
+/**
+ * Deux corps de leçon sémantiquement distincts.
+ * L'Essentiel n'est jamais une troncature d'En Détails.
+ */
+export interface LessonContent {
+  id: string;
+  title: string;
+  /** Synthèse < 300 mots, puces, [mots] à masquer pour le rappel actif. */
+  essentialText: string;
+  /** Cours APC complet, lecture continue, sans masquage. */
+  detailedText: string;
+}
+
 export interface FicheCoursData {
   chapitreId: string;
   titre: string;
   matiereId: string;
-  /** Niveau « L'Essentiel » : puces, < 300 mots. */
+  /** Synthèse manuelle — jamais un extrait d'En Détails. */
+  essentialText?: string;
+  /** Cours APC développé, lecture continue. */
+  detailedText?: string;
+  /** Compat catalogue / tutor / Prof — dérivé de essentialText si absent. */
   pucesEssentiel: string[];
-  /** Niveau « En Détails » : sections APC dépliables. */
+  /** Compat Prof / overlay — dérivé de detailedText si absent. */
   sectionsDetaillees: SectionCoursAPC[];
   motsClesMasques: string[];
   analogie?: AnalogieSpiraData;
   schema?: SchemaCoursKind;
   estBioniqueActive?: boolean;
   ancreId?: string;
-  /** @deprecated préfère pucesEssentiel */
+  /** @deprecated préfère essentialText */
   contenuEssentiel?: string;
-  /** @deprecated préfère sectionsDetaillees */
+  /** @deprecated préfère detailedText */
   contenuDetaille?: string;
 }
 
@@ -263,6 +285,8 @@ export interface ChapterProgress {
   grandQuizzUnlocked: boolean;
   grandQuizzLockedUntil: string | null;
   firstTryPerfect: boolean;
+  /** Cours lu (L'Essentiel / En Détails) — fait avancer les barres sans 10/10. */
+  read?: boolean;
 }
 
 export interface ParentNote {

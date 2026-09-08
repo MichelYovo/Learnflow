@@ -101,6 +101,16 @@ export type CloudEvent = {
   created_at: string;
 };
 
+export type SupportMessage = {
+  id: string;
+  name: string;
+  email: string;
+  message: string;
+  topic: "support" | "waitlist" | string;
+  status: "new" | "read" | string;
+  created_at: string;
+};
+
 export async function fetchCloudStudents() {
   return restGet<CloudStudent>("student_profiles?select=*&order=name.asc");
 }
@@ -117,6 +127,14 @@ export async function fetchCloudLeagues() {
 export async function fetchCloudEvents(studentId?: string) {
   const filter = studentId ? `&student_id=eq.${encodeURIComponent(studentId)}` : "";
   return restGet<CloudEvent>(`activity_events?select=*&order=created_at.desc&limit=500${filter}`);
+}
+
+export async function fetchSupportMessages() {
+  return restGet<SupportMessage>("support_messages?select=*&order=created_at.desc&limit=200");
+}
+
+export async function markSupportMessageRead(id: string) {
+  return restSend("PATCH", `support_messages?id=eq.${encodeURIComponent(id)}`, { status: "read" });
 }
 
 export async function updateCloudStudent(id: string, patch: Record<string, unknown>) {

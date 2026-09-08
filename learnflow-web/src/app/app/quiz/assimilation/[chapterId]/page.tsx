@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, Suspense } from "react";
+import { useEffect, useMemo, useRef, useState, Suspense } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import Icon from "@/components/Icon";
 import QuizPlay from "@/components/quiz/QuizPlay";
@@ -17,8 +17,9 @@ function QuizInner() {
   const loopErrors = search.get("loop") === "1";
   const router = useRouter();
   const { colors } = useAppTheme();
-  usePublishedCatalog();
-  const bank = questionsForChapter(chapterId);
+  const catalogEpoch = usePublishedCatalog();
+  const classe = useLearnFlowStore((s) => s.getActiveProfile()?.classe);
+  const bank = useMemo(() => questionsForChapter(chapterId, classe), [chapterId, classe, catalogEpoch]);
   const [queue, setQueue] = useState(bank);
   const recordAssimilation = useLearnFlowStore((s) => s.recordAssimilation);
   const lockGrandQuizzOneHour = useLearnFlowStore((s) => s.lockGrandQuizzOneHour);

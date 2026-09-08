@@ -6,9 +6,25 @@ const FACTEUR_CLASSE: Record<string, number> = {
   "4eme": 1.2,
   "3eme": 1.3,
   "2nde": 1.35,
+  "2nde-A": 1.35,
+  "2nde-S": 1.35,
   "1ere": 1.4,
+  "1ere-A": 1.4,
+  "1ere-C": 1.4,
+  "1ere-D": 1.4,
   Tle: 1.5,
+  "Tle-A": 1.5,
+  "Tle-C": 1.5,
+  "Tle-D": 1.5,
 };
+
+function facteurClasse(classe: string) {
+  if (FACTEUR_CLASSE[classe] != null) return FACTEUR_CLASSE[classe];
+  if (/^Tle/i.test(classe)) return 1.5;
+  if (/^1ere/i.test(classe)) return 1.4;
+  if (/^2nde/i.test(classe)) return 1.35;
+  return 1.2;
+}
 
 /** XP = BaseXP * FacteurClasse * DensiteChapitre * MultiplicateurPrecision */
 export function calculerXP(params: {
@@ -17,7 +33,7 @@ export function calculerXP(params: {
   densiteChapitre?: number;
   multiplicateurPrecision?: number;
 }): number {
-  const facteur = FACTEUR_CLASSE[params.classe] ?? 1.2;
+  const facteur = facteurClasse(params.classe);
   const densite = params.densiteChapitre ?? 1;
   const precision = params.multiplicateurPrecision ?? 1;
   return Math.round(params.baseXP * facteur * densite * precision);

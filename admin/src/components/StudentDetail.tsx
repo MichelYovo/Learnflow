@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { CLASSES, classLabel, initialsFromName } from "@/lib/brand";
+import { CLASS_GROUPS, classLabel, initialsFromName, normalizeClassId } from "@/lib/brand";
 import { maskTogoPhone } from "@/lib/phoneTogo";
 import type { AdminActivityEvent, AdminLeagueRow } from "@/lib/catalog";
 import type { AdminStudent } from "@/data/seed";
@@ -18,7 +18,7 @@ export default function StudentDetail({
   league: AdminLeagueRow | null;
 }) {
   const router = useRouter();
-  const [classe, setClasse] = useState(student.classe);
+  const [classe, setClasse] = useState(normalizeClassId(student.classe) || student.classe);
   const [status, setStatus] = useState(student.status === "suspendu" ? "suspendu" : "actif");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -115,10 +115,14 @@ export default function StudentDetail({
               onChange={(e) => setClasse(e.target.value)}
               className="mt-1 h-11 w-full rounded-2xl border-2 border-[#F0EFEE] px-3 text-sm font-bold outline-none focus:border-[#1677FF]"
             >
-              {CLASSES.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.label}
-                </option>
+              {CLASS_GROUPS.map((g) => (
+                <optgroup key={g.id} label={g.label}>
+                  {g.classes.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.label}
+                    </option>
+                  ))}
+                </optgroup>
               ))}
             </select>
           </label>

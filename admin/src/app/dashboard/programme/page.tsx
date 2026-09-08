@@ -10,8 +10,7 @@ export default async function ProgrammePage() {
       <TopBar title="Programme APC" email={session?.email ?? ""} />
       <main className="flex-1 p-6">
         <p className="mb-5 max-w-2xl text-sm font-medium leading-relaxed text-[#64748B]">
-          Catalogue pédagogique aligné sur l’app mobile : collège (maquette 3ème) et lycée (Tle D). Les 7 matières
-          suivent le programme APC Togo.
+          Catalogue : collège (6e–3e, PCT). Lycée : les cours de Données_LF sont chargés pour la Tle D seulement. Les autres classes lycée n’ont pas encore de cours.
         </p>
         <ProgrammeBrowser />
       </main>

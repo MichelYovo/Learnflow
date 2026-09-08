@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Footer from "../../components/site/Footer";
 import Header from "../../components/site/Header";
+import SupportButton from "../../components/site/SupportButton";
 
 export const metadata: Metadata = {
   title: "Confidentialité",
@@ -41,9 +42,7 @@ export default function PrivacyPage() {
           <h2 className="text-xl font-extrabold text-[#1C1917]">Contact</h2>
           <p>
             Questions :{" "}
-            <a className="font-extrabold text-[#1677FF]" href="mailto:support@learnflow.tg">
-              support@learnflow.tg
-            </a>
+            <SupportButton className="font-extrabold text-[#1677FF]">écrire au support</SupportButton>
           </p>
         </div>
         <Link href="/" className="mt-10 inline-block font-extrabold text-[#1677FF]">

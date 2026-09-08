@@ -44,6 +44,9 @@ export const colors = {
   edhc: "#F97316",
   edhcBg: "#FFF7ED",
   edhcBorder: "#FED7AA",
+  philo: "#6366F1",
+  philoBg: "#EEF2FF",
+  philoBorder: "#C7D2FE",
 } as const;
 
 export type ColorKey = keyof typeof colors;
@@ -70,6 +73,9 @@ type SubjectPalette = {
   edhc: string;
   edhcBg: string;
   edhcBorder: string;
+  philo: string;
+  philoBg: string;
+  philoBorder: string;
 };
 
 /** Palettes pastel par matière — alignées maquette Figma */
@@ -81,6 +87,7 @@ export const SUBJECT_COLOR_SCHEMES: Record<string, { color: string; bg: string; 
   fr: { color: colors.fr, bg: colors.frBg, border: colors.frBorder },
   ang: { color: colors.ang, bg: colors.angBg, border: colors.angBorder },
   edhc: { color: colors.edhc, bg: colors.edhcBg, border: colors.edhcBorder },
+  philo: { color: colors.philo, bg: colors.philoBg, border: colors.philoBorder },
 };
 
 export function resolveSubjectScheme(colorScheme: string, palette: SubjectPalette = colors) {
@@ -92,6 +99,7 @@ export function resolveSubjectScheme(colorScheme: string, palette: SubjectPalett
     fr: { color: palette.fr, bg: palette.frBg, border: palette.frBorder },
     ang: { color: palette.ang, bg: palette.angBg, border: palette.angBorder },
     edhc: { color: palette.edhc, bg: palette.edhcBg, border: palette.edhcBorder },
+    philo: { color: palette.philo, bg: palette.philoBg, border: palette.philoBorder },
   };
   return schemes[colorScheme] ?? schemes.maths;
 }

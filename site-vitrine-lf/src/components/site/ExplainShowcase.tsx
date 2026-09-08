@@ -90,7 +90,7 @@ export default function ExplainShowcase({ items, columns = 1 }: Props) {
             </Phone>
           </div>
         </button>
-        <p className="mt-4 text-center text-xs font-semibold text-[#A8A29E]">Clique une case — le téléphone s’anime (avec le son).</p>
+        <p className="mt-4 text-center text-xs font-semibold text-[#A8A29E]">Clique une case — le téléphone s’anime.</p>
       </div>
     </div>
   );

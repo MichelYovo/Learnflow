@@ -28,7 +28,7 @@ NEXT_PUBLIC_PLAY_URL=https://play.google.com/store/apps/details?id=tg.learnflow.
 NEXT_PUBLIC_APP_STORE_URL=https://apps.apple.com/app/idXXXXXXXX
 ```
 
-Liste d’attente : `support@learnflow.tg`.
+Contact : bouton **Support** (formulaire) — les messages arrivent dans l’admin, page Messages.
 
 ## Stack
 

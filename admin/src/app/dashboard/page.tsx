@@ -7,10 +7,13 @@ import TopBar from "@/components/TopBar";
 import { getAdminSession } from "@/lib/auth";
 import { classLabel, initialsFromName, LEAGUE_TIERS } from "@/lib/brand";
 import { loadDashboardData } from "@/lib/catalog";
+import { listSupportMessages } from "@/lib/supportInbox";
 
 export default async function DashboardPage() {
   const session = await getAdminSession();
   const data = await loadDashboardData();
+  const inbox = await listSupportMessages();
+  const newMessages = inbox.data.filter((m) => m.status === "new").length;
   const top = data.students.slice().sort((a, b) => b.xpTotale - a.xpTotale).slice(0, 6);
 
   return (
@@ -26,13 +29,37 @@ export default async function DashboardPage() {
         <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <StatCard label="Élèves" value={String(data.stats.students)} hint="Profils suivis" tone="blue" />
           <StatCard label="Actifs 24 h" value={String(data.stats.active24h)} hint="Mouvements récents" tone="green" />
-          <StatCard label="Sessions" value={String(data.stats.sessions)} hint="Login, quiz, blitz, modes" tone="violet" />
+          <StatCard label="Messages" value={String(newMessages)} hint="Non lus · site vitrine" tone="violet" />
           <StatCard label="XP total" value={data.stats.xpTotal.toLocaleString("fr-FR")} hint="Cumul des comptes" tone="amber" />
         </section>
 
         <ActivityCharts stats={data.stats} />
 
         <ActivityFeed events={data.events.slice(0, 8)} />
+
+        <article className="rounded-[22px] border-2 border-[#F0EFEE] bg-white p-5">
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="text-base font-black text-[#1C1917]">Messages du site vitrine</h2>
+            <Link href="/dashboard/messages" className="text-sm font-extrabold text-[#1677FF]">
+              Tout voir
+            </Link>
+          </div>
+          {inbox.data.length === 0 ? (
+            <p className="text-sm font-medium text-[#64748B]">Aucun message pour l’instant.</p>
+          ) : (
+            <ul className="space-y-3">
+              {inbox.data.slice(0, 4).map((m) => (
+                <li key={m.id} className="rounded-2xl border border-[#F0EFEE] px-4 py-3">
+                  <p className="font-extrabold text-[#1C1917]">
+                    {m.name}{" "}
+                    <span className="text-xs font-semibold text-[#64748B]">{m.email}</span>
+                  </p>
+                  <p className="mt-1 truncate text-sm font-medium text-[#64748B]">{m.message}</p>
+                </li>
+              ))}
+            </ul>
+          )}
+        </article>
 
         <section className="grid gap-4 lg:grid-cols-[1.2fr_.8fr]">
           <article className="rounded-[22px] border-2 border-[#F0EFEE] bg-white p-5">

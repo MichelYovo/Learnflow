@@ -55,6 +55,7 @@ Pour vérifier : menu **Table Editor** → tu dois voir au moins :
 - `activity_events`
 - `email_challenges` (codes 2FA hashés)
 - `login_notices` (alertes email / WhatsApp)
+- `support_messages` (formulaire Support du site vitrine)
 
 ---
 

@@ -1,4 +1,5 @@
 import type { ChapterProgress, ProgrammeChapter, ProgrammeSubject, ProgrammeTheme, SubjectShortcut } from "../types/learnflow";
+import { isLyceeClass, isTleDClass } from "./classes";
 import { PROGRAMME_3EME } from "./programme3eme";
 import { PROGRAMME_TLE } from "./programmeTle";
 import { packSubject, packTheme, SUBJECT_STYLE, type SubjectId } from "./programmeBuild";
@@ -13,34 +14,33 @@ const SHORTCUT_ICONS: Record<string, string> = {
   fr: "quill",
   ang: "chatbubble",
   edhc: "heart",
+  philo: "brain",
 };
 
 export function isTleClass(classe?: string): boolean {
-  return classe === "Tle" || classe === "1ere" || classe === "2nde";
+  return isTleDClass(classe);
 }
 
 export function programmeForClass(classe?: string): ProgrammeSubject[] {
-  return isTleClass(classe) ? PROGRAMME_TLE : PROGRAMME_3EME;
+  if (isTleDClass(classe)) return PROGRAMME_TLE;
+  if (isLyceeClass(classe)) return [];
+  return PROGRAMME_3EME;
 }
 
-/** Tous les cours à 0 %, première leçon ouverte. */
+/** Première leçon de chaque chapitre ouverte. Le 10/10 débloque le Grand Quizz, pas l'accès au cours. */
 export function programmeStartingFresh(subjects: ProgrammeSubject[]): ProgrammeSubject[] {
-  let opened = false;
   return subjects.map((subject) => {
     const themes = subject.themes.map((theme) => {
       const chapters = theme.chapters.map((chapter) => ({
         ...chapter,
-        lessons: chapter.lessons.map((lesson) => {
-          if (!opened) {
-            opened = true;
-            return { ...lesson, status: "current" as const };
-          }
-          return { ...lesson, status: "locked" as const };
-        }),
+        lessons: chapter.lessons.map((lesson, i) => ({
+          ...lesson,
+          status: i === 0 ? ("current" as const) : ("locked" as const),
+        })),
       }));
       return packTheme(theme.id, theme.title, chapters);
     });
-    return packSubject(subject.id as SubjectId, themes);
+    return packSubject(subject.id as SubjectId, themes, subject.name);
   });
 }
 
@@ -52,20 +52,16 @@ export function applyChapterProgress(
     const themes = subject.themes.map((theme) => {
       const chapters = theme.chapters.map((chapter) => {
         const p = chapterProgress[chapter.id];
-        if (!p || p.assimilationScore == null) return chapter;
-        const done = p.assimilationPerfect || p.assimilationScore >= 50;
-        if (!done) return chapter;
+        const completed = Boolean(p?.read) || p?.assimilationScore != null;
+        if (!completed) return chapter;
         return {
           ...chapter,
-          lessons: chapter.lessons.map((lesson, i, arr) => ({
-            ...lesson,
-            status: i < arr.length - 1 ? ("done" as const) : ("current" as const),
-          })),
+          lessons: chapter.lessons.map((lesson) => ({ ...lesson, status: "done" as const })),
         };
       });
       return packTheme(theme.id, theme.title, chapters);
     });
-    return packSubject(subject.id as SubjectId, themes);
+    return packSubject(subject.id as SubjectId, themes, subject.name);
   });
 }
 
@@ -118,11 +114,19 @@ export type ContinueLesson = {
 };
 
 export function continueLessonForClass(classe?: string): ContinueLesson {
-  if (isTleClass(classe)) {
+  if (isTleDClass(classe)) {
     return {
-      chapterId: "neurones",
-      title: "Fonctionnement des neurones",
+      chapterId: "tle-d-adn",
+      title: "Le matériel génétique et la transmission",
       lessonLabel: "SVT · Tle D · À commencer",
+      progress: 0,
+    };
+  }
+  if (isLyceeClass(classe)) {
+    return {
+      chapterId: "",
+      title: "Pas de cours pour l’instant",
+      lessonLabel: "Lycée",
       progress: 0,
     };
   }
@@ -185,8 +189,8 @@ export function subjectShortcutsForLearner(
 ): SubjectShortcut[] {
   return programmeForLearner(classe, profileId, chapterProgress).map((s) => ({
     id: s.id,
-    name: s.id === "maths" ? "Maths" : s.id === "hg" ? "H-G" : s.name,
-    fullName: s.name,
+    name: s.id === "maths" ? "Maths" : s.id === "hg" ? "H-G" : s.id === "philo" ? "Philo" : s.name,
+    fullName: s.id === "pc" && s.name === "PC" ? "Physique-Chimie" : s.name,
     progress: s.progress,
     icon: SHORTCUT_ICONS[s.id] ?? s.icon,
     colorScheme: s.id,
@@ -201,13 +205,14 @@ export function crammingChaptersForClass(classe?: string): {
   color: string;
   bg: string;
 }[] {
-  if (isTleClass(classe)) {
+  if (isTleDClass(classe)) {
     return [
-      { id: "neurones", subject: "SVT", title: "Les neurones", color: "#10B981", bg: "#ECFDF5" },
-      { id: "brassage", subject: "SVT", title: "ADN et brassage", color: "#10B981", bg: "#ECFDF5" },
-      { id: "complexes", subject: "Maths", title: "Nombres complexes", color: "#1677FF", bg: "#E6F4FF" },
+      { id: "tle-d-adn", subject: "SVT", title: "Matériel génétique", color: "#10B981", bg: "#ECFDF5" },
+      { id: "tle-d-nerf", subject: "SVT", title: "Tissu nerveux", color: "#10B981", bg: "#ECFDF5" },
+      { id: "tle-d-complexes", subject: "Maths", title: "Nombres complexes", color: "#1677FF", bg: "#E6F4FF" },
     ];
   }
+  if (isLyceeClass(classe)) return [];
   return [
     { id: "circulation", subject: "SVT", title: "Circulation sanguine", color: "#10B981", bg: "#ECFDF5" },
     { id: "digest", subject: "SVT", title: "La digestion", color: "#10B981", bg: "#ECFDF5" },

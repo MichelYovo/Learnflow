@@ -4,95 +4,86 @@ import { useParams, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import AnalogieSpira from "@/components/AnalogieSpira";
 import Icon from "@/components/Icon";
+import InteractiveLessonText from "@/components/InteractiveLessonText";
 import { AppMain, ScreenHeader } from "@/components/ui";
-import { countWords, ficheForChapter } from "@/data/fiches";
+import { ficheForChapter } from "@/data/fiches";
+import { countWords, isDetailHeading, normalizeKeyword, toLessonContent } from "@/data/lessonContent";
 import { usePublishedCatalog } from "@/data/publishedCache";
 import { chapterHas3dImage } from "@/data/schemas3d";
+import { useLearnFlowStore } from "@/store/useLearnFlowStore";
 import { useAppTheme } from "@/theme/useAppTheme";
 
-function normalize(s: string) {
-  return s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
-}
-
-function apcKind(titre: string): string | null {
-  const t = titre.toLowerCase();
-  if (t.includes("compétence")) return "Compétence";
-  if (t.includes("savoir-faire")) return "Savoir-faire";
-  if (t.includes("savoir")) return "Savoirs";
-  if (t.includes("exemple")) return "Exemple";
-  return null;
-}
+type ActiveTab = "essentiel" | "details";
 
 export default function CoursePage() {
   const { chapterId } = useParams<{ chapterId: string }>();
   const router = useRouter();
   const catalogEpoch = usePublishedCatalog();
   const fiche = useMemo(() => ficheForChapter(chapterId), [chapterId, catalogEpoch]);
+  const lesson = useMemo(() => toLessonContent(fiche), [fiche]);
   const { colors } = useAppTheme();
+  const markChapterRead = useLearnFlowStore((s) => s.markChapterRead);
 
   useEffect(() => {
     if (!chapterId) return;
     void import("@/lib/cloud").then((m) => m.trackActivity("chapter_open", { chapterId }));
-  }, [chapterId]);
-  const [speed, setSpeed] = useState<"essentiel" | "details">("essentiel");
+    markChapterRead(chapterId);
+  }, [chapterId, markChapterRead]);
+
+  const [activeTab, setActiveTab] = useState<ActiveTab>("essentiel");
   const [masked, setMasked] = useState(false);
   const [revealed, setRevealed] = useState<Set<string>>(new Set());
-  const [open, setOpen] = useState<Record<string, boolean>>({
-    [fiche.sectionsDetaillees[0]?.id ?? ""]: true,
-  });
-  const words = countWords(fiche.pucesEssentiel);
+  const words = countWords(lesson.essentialText);
   const show2d = fiche.schema === "2d" || fiche.schema === "both";
   const show3d = fiche.schema === "3d" || fiche.schema === "both" || chapterHas3dImage(chapterId);
-  const analogieAfter = Math.min(1, Math.max(0, fiche.sectionsDetaillees.length - 1));
+  const detailParas = useMemo(
+    () => lesson.detailedText.split(/\n\n+/).map((p) => p.trim()).filter(Boolean),
+    [lesson.detailedText],
+  );
 
   const analogieBox = fiche.analogie ? <AnalogieSpira analogie={fiche.analogie} /> : null;
 
+  const selectTab = (next: ActiveTab) => {
+    setActiveTab(next);
+    if (next === "details") {
+      setMasked(false);
+      setRevealed(new Set());
+    }
+  };
+
+  const tabStyle = (tab: ActiveTab) => {
+    const on = activeTab === tab;
+    return {
+      background: on ? colors.mathsBg : colors.surfaceAlt,
+      borderColor: on ? colors.primary : colors.border,
+      color: on ? colors.primary : colors.textMuted,
+    };
+  };
+
   return (
     <div>
-      <ScreenHeader title={fiche.titre} backHref="/app/cours" />
+      <ScreenHeader title={lesson.title} backHref="/app/cours" />
       <AppMain className="space-y-4 py-5 pb-10">
         <div className="flex gap-2.5">
-          <button
-            type="button"
-            onClick={() => {
-              setSpeed("essentiel");
-            }}
-            className="flex-1 rounded-[18px] border px-3 py-3"
-            style={{
-              background: speed === "essentiel" ? colors.mathsBg : colors.white,
-              borderColor: speed === "essentiel" ? colors.primary : colors.border,
-            }}
-          >
-            <p className="text-center text-[16px] font-extrabold" style={{ color: speed === "essentiel" ? colors.primary : colors.textMuted }}>
+          <button type="button" onClick={() => selectTab("essentiel")} className="flex-1 rounded-[18px] border px-3 py-3" style={tabStyle("essentiel")}>
+            <p className="text-center text-[16px] font-extrabold" style={{ color: tabStyle("essentiel").color }}>
               L&apos;Essentiel
             </p>
-            <p className="text-center text-[11px] font-semibold" style={{ color: speed === "essentiel" ? colors.primary : "#94A3B8" }}>
+            <p className="text-center text-[11px] font-semibold" style={{ color: tabStyle("essentiel").color }}>
               Synthèse · {words} mots
             </p>
           </button>
-          <button
-            type="button"
-            onClick={() => {
-              setSpeed("details");
-              setMasked(false);
-              setRevealed(new Set());
-            }}
-            className="flex-1 rounded-[18px] border px-3 py-3"
-            style={{
-              background: speed === "details" ? colors.mathsBg : colors.white,
-              borderColor: speed === "details" ? colors.primary : colors.border,
-            }}
-          >
-            <p className="text-center text-[16px] font-extrabold" style={{ color: speed === "details" ? colors.primary : colors.textMuted }}>
+          <button type="button" onClick={() => selectTab("details")} className="flex-1 rounded-[18px] border px-3 py-3" style={tabStyle("details")}>
+            <p className="text-center text-[16px] font-extrabold" style={{ color: tabStyle("details").color }}>
               En Détails
             </p>
-            <p className="text-center text-[11px] font-semibold" style={{ color: speed === "details" ? colors.primary : "#94A3B8" }}>
+            <p className="text-center text-[11px] font-semibold" style={{ color: tabStyle("details").color }}>
               Cours APC complet
             </p>
           </button>
         </div>
 
-        {speed === "essentiel" ? (
+        {activeTab === "essentiel" ? (
           <>
             <button
               type="button"
@@ -117,68 +108,30 @@ export default function CoursePage() {
                 {masked ? "ON" : "OFF"}
               </span>
             </button>
-            <div className="space-y-[18px] rounded-3xl px-5 py-[22px]" style={{ background: colors.white }}>
-              {fiche.pucesEssentiel.map((line, i) => (
-                <div key={i} className="flex gap-3">
-                  <span className="mt-2.5 h-1.5 w-1.5 shrink-0 rounded-full" style={{ background: colors.primary }} />
-                  <p className="text-[16px] font-medium leading-6">
-                    <RichLine text={line} keywords={fiche.motsClesMasques} masked={masked} revealed={revealed} onReveal={(w) => setRevealed(new Set(revealed).add(normalize(w)))} />
-                  </p>
-                </div>
-              ))}
+            <div className="rounded-3xl px-5 py-[22px]" style={{ background: colors.white }}>
+              <InteractiveLessonText
+                text={lesson.essentialText}
+                masked={masked}
+                revealed={revealed}
+                onReveal={(w) => setRevealed(new Set(revealed).add(normalizeKeyword(w)))}
+              />
             </div>
             {analogieBox}
           </>
         ) : (
-          <div className="space-y-3">
-            <div className="flex items-start justify-between gap-3">
-              <p className="flex-1 text-[13px] font-semibold leading-[18px]" style={{ color: colors.textSecondary }}>
-                Vue dépliable — cours développé, conforme aux exigences APC.
-              </p>
-              <button
-                type="button"
-                onClick={() => {
-                  const shown = fiche.sectionsDetaillees.every((s) => open[s.id]);
-                  const next: Record<string, boolean> = {};
-                  for (const s of fiche.sectionsDetaillees) next[s.id] = !shown;
-                  setOpen(next);
-                }}
-                className="text-[13px] font-extrabold"
-                style={{ color: colors.primary }}
-              >
-                {fiche.sectionsDetaillees.every((s) => open[s.id]) ? "Replier tout" : "Déplier tout"}
-              </button>
-            </div>
-            {fiche.sectionsDetaillees.map((section, idx) => {
-              const shown = open[section.id] ?? false;
-              const kind = apcKind(section.titre);
-              return (
-                <div key={section.id}>
-                  {idx === analogieAfter ? analogieBox : null}
-                  <div className="mt-3 overflow-hidden rounded-[20px]" style={{ background: colors.white }}>
-                    <button type="button" onClick={() => setOpen((p) => ({ ...p, [section.id]: !shown }))} className="flex w-full items-center gap-2.5 px-[18px] py-4 text-left">
-                      <span className="flex-1">
-                        {kind ? (
-                          <span className="block text-[11px] font-extrabold uppercase tracking-wide" style={{ color: colors.primary }}>
-                            {kind}
-                          </span>
-                        ) : null}
-                        <span className="block text-[16px] font-extrabold">{section.titre}</span>
-                      </span>
-                      <Icon name={shown ? "chevron-up" : "chevron-down"} size={18} color={colors.primary} />
-                    </button>
-                    {shown
-                      ? section.paragraphes.map((p, pi) => (
-                          <p key={pi} className="px-[18px] pb-4 text-[16px] font-medium leading-6">
-                            <RichLine text={p} keywords={fiche.motsClesMasques} masked={false} revealed={revealed} onReveal={() => undefined} />
-                          </p>
-                        ))
-                      : null}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+          <article className="space-y-4 rounded-3xl px-5 py-[22px]" style={{ background: colors.white }}>
+            {detailParas.map((para, i) =>
+              isDetailHeading(para) ? (
+                <h2 key={i} className="text-base font-extrabold leading-relaxed" style={{ color: colors.primary }}>
+                  {para}
+                </h2>
+              ) : (
+                <p key={i} className="whitespace-pre-wrap text-base font-medium leading-relaxed sm:text-lg" style={{ color: colors.textDark }}>
+                  {para}
+                </p>
+              ),
+            )}
+          </article>
         )}
 
         {show2d || show3d ? (
@@ -200,7 +153,10 @@ export default function CoursePage() {
 
         <button
           type="button"
-          onClick={() => router.push(`/app/quiz/assimilation/${chapterId}`)}
+          onClick={() => {
+            markChapterRead(chapterId);
+            router.push(`/app/quiz/assimilation/${chapterId}`);
+          }}
           className="w-full rounded-[18px] py-[18px] text-[17px] font-extrabold text-white"
           style={{ background: colors.primary }}
         >
@@ -208,53 +164,5 @@ export default function CoursePage() {
         </button>
       </AppMain>
     </div>
-  );
-}
-
-function RichLine({
-  text,
-  keywords,
-  masked,
-  revealed,
-  onReveal,
-}: {
-  text: string;
-  keywords: string[];
-  masked: boolean;
-  revealed: Set<string>;
-  onReveal: (w: string) => void;
-}) {
-  const parts = useMemo(() => {
-    const out: { text: string; bold?: boolean }[] = [];
-    const re = /\*\*([^*]+)\*\*/g;
-    let last = 0;
-    let m: RegExpExecArray | null;
-    while ((m = re.exec(text))) {
-      if (m.index > last) out.push({ text: text.slice(last, m.index) });
-      out.push({ text: m[1], bold: true });
-      last = m.index + m[0].length;
-    }
-    if (last < text.length) out.push({ text: text.slice(last) });
-    return out;
-  }, [text]);
-
-  return (
-    <>
-      {parts.map((p, i) => {
-        const hide = Boolean(masked && p.bold && keywords.some((k) => normalize(k) === normalize(p.text)) && !revealed.has(normalize(p.text)));
-        if (hide) {
-          return (
-            <button key={i} type="button" onClick={() => onReveal(p.text)} className="mx-0.5 rounded bg-[#E7E5E4] px-1 font-bold tracking-widest text-[#78716C]">
-              ••••
-            </button>
-          );
-        }
-        return (
-          <span key={i} className={p.bold ? "font-bold text-[#1677FF]" : undefined}>
-            {p.text}
-          </span>
-        );
-      })}
-    </>
   );
 }

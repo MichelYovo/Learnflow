@@ -38,7 +38,9 @@ export async function POST(request: Request) {
   const buf = Buffer.from(await file.arrayBuffer());
   const mime = file.type || "image/jpeg";
   const dataUrl = `data:${mime};base64,${buf.toString("base64")}`;
-  const ai = await chatJson(SYSTEM, `Classe ${classLevel}, chapitre ${chapterId}. Propose les pastilles du schéma.`, dataUrl);
+  const ai = await chatJson(SYSTEM, `Classe ${classLevel}, chapitre ${chapterId}. Propose les pastilles du schéma.`, dataUrl, {
+    imageDirect: true,
+  });
   const parsed = (ai.json ?? {}) as {
     title?: string;
     subtitle?: string;

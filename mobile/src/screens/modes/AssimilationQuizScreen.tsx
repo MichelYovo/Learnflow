@@ -20,7 +20,8 @@ export default function AssimilationQuizScreen({ navigation, route }: Props) {
   const chapterId = route.params.chapterId;
   const loopErrors = route.params?.loopErrors === true;
   usePublishedCatalog();
-  const bank = questionsForChapter(chapterId);
+  const classe = useLearnFlowStore((s) => s.getActiveProfile()?.classe);
+  const bank = questionsForChapter(chapterId, classe);
   const [queue, setQueue] = useState(bank);
   const questions = queue;
   const recordAssimilation = useLearnFlowStore((s) => s.recordAssimilation);

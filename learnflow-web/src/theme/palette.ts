@@ -45,6 +45,9 @@ export const darkColors: AppPalette = {
   edhc: "#FB923C",
   edhcBg: "#7C2D12",
   edhcBorder: "#9A3412",
+  philo: "#A5B4FC",
+  philoBg: "#312E81",
+  philoBorder: "#4338CA",
 };
 
 export const palettes = { light: lightColors as AppPalette, dark: darkColors };

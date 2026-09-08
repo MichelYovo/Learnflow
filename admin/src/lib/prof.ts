@@ -38,22 +38,34 @@ export function normalizePayload(raw: unknown): CoursePayload {
       })
     : [];
   const analogie = ficheIn.analogie && typeof ficheIn.analogie === "object" ? (ficheIn.analogie as Record<string, string>) : undefined;
+  const pucesEssentiel = Array.isArray(ficheIn.pucesEssentiel)
+    ? ficheIn.pucesEssentiel.map(String)
+    : base.fiche.pucesEssentiel;
+  const sectionsDetaillees = Array.isArray(ficheIn.sectionsDetaillees)
+    ? ficheIn.sectionsDetaillees.map((s, i) => {
+        const row = (s ?? {}) as Record<string, unknown>;
+        return {
+          id: String(row.id || `s${i + 1}`),
+          titre: String(row.titre || "Section"),
+          paragraphes: Array.isArray(row.paragraphes) ? row.paragraphes.map(String) : [""],
+        };
+      })
+    : base.fiche.sectionsDetaillees;
+  const essentialText =
+    typeof ficheIn.essentialText === "string" && ficheIn.essentialText.trim()
+      ? ficheIn.essentialText
+      : pucesEssentiel.join("\n\n");
+  const detailedText =
+    typeof ficheIn.detailedText === "string" && ficheIn.detailedText.trim()
+      ? ficheIn.detailedText
+      : sectionsDetaillees.map((s) => `${s.titre}\n\n${s.paragraphes.join("\n\n")}`).join("\n\n");
   return {
     lessons: lessons.length ? lessons : base.lessons,
     fiche: {
-      pucesEssentiel: Array.isArray(ficheIn.pucesEssentiel)
-        ? ficheIn.pucesEssentiel.map(String)
-        : base.fiche.pucesEssentiel,
-      sectionsDetaillees: Array.isArray(ficheIn.sectionsDetaillees)
-        ? ficheIn.sectionsDetaillees.map((s, i) => {
-            const row = (s ?? {}) as Record<string, unknown>;
-            return {
-              id: String(row.id || `s${i + 1}`),
-              titre: String(row.titre || "Section"),
-              paragraphes: Array.isArray(row.paragraphes) ? row.paragraphes.map(String) : [""],
-            };
-          })
-        : base.fiche.sectionsDetaillees,
+      essentialText,
+      detailedText,
+      pucesEssentiel,
+      sectionsDetaillees,
       motsClesMasques: Array.isArray(ficheIn.motsClesMasques) ? ficheIn.motsClesMasques.map(String) : [],
       analogie: analogie
         ? {
@@ -69,12 +81,15 @@ export function normalizePayload(raw: unknown): CoursePayload {
 }
 
 export const PROF_SYSTEM = `Tu es Prof, pédagogue APC Togo pour LearnFlow (collège/lycée).
+Collège (6e–3e) : PCT = Physique-Chimie-Technologie. Lycée (2nde–Tle) : PC = Physique-Chimie, plus Philosophie. Pas de technologie au lycée.
 Réponds UNIQUEMENT en JSON valide, clés :
 {
   "chapter_title": string,
   "lessons": [{"id":"l1","title":string,"duration":"12 min","xp":50}],
   "fiche": {
-    "pucesEssentiel": string[] (6 à 10 puces, mots clés en **gras**),
+    "essentialText": string (synthèse < 300 mots, autonome, puces, [mots] à masquer — JAMAIS une troncature de detailedText),
+    "detailedText": string (cours APC complet, lecture continue, sans crochets de masquage),
+    "pucesEssentiel": string[] (compat, 6 à 10 puces),
     "sectionsDetaillees": [{"id":"s1","titre":string,"paragraphes":string[]}],
     "motsClesMasques": string[],
     "analogie": {"parole":string,"concept":string,"exemple":string}

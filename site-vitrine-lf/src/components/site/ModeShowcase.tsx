@@ -79,7 +79,7 @@ export default function ModeShowcase() {
             </Phone>
           </div>
         </button>
-        <p className="mt-4 text-center text-xs font-semibold text-[#A8A29E]">Clique un mode — le téléphone s’anime (avec le son).</p>
+        <p className="mt-4 text-center text-xs font-semibold text-[#A8A29E]">Clique un mode — le téléphone s’anime.</p>
       </div>
     </div>
   );

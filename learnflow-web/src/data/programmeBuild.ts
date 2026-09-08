@@ -16,6 +16,7 @@ export const SUBJECT_STYLE = {
   fr: { name: "Français", icon: "book", color: "#8B5CF6", bg: "#F5F3FF", border: "#DDD6FE" },
   ang: { name: "Anglais", icon: "chatbubble", color: "#EF4444", bg: "#FEF2F2", border: "#FECACA" },
   edhc: { name: "ECM", icon: "heart", color: "#F97316", bg: "#FFF7ED", border: "#FED7AA" },
+  philo: { name: "Philosophie", icon: "brain", color: "#6366F1", bg: "#EEF2FF", border: "#C7D2FE" },
 } as const;
 
 export type SubjectId = keyof typeof SUBJECT_STYLE;
@@ -31,13 +32,14 @@ export function packTheme(id: string, title: string, chapters: ProgrammeChapter[
   };
 }
 
-export function packSubject(id: SubjectId, themes: ProgrammeTheme[]): ProgrammeSubject {
+export function packSubject(id: SubjectId, themes: ProgrammeTheme[], name?: string): ProgrammeSubject {
   const style = SUBJECT_STYLE[id];
   const done = themes.reduce((a, t) => a + t.lessonsDone, 0);
   const total = themes.reduce((a, t) => a + t.lessonsTotal, 0);
   return {
     id,
     ...style,
+    name: name ?? style.name,
     progress: total ? Math.round((done / total) * 100) : 0,
     themes,
   };

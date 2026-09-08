@@ -13,6 +13,7 @@ const ICON_MAP: Record<string, IconName> = {
   globe: "globe",
   quill: "quill",
   chatbubble: "chatbubble",
+  brain: "brain",
   heart: "heart",
 };
 

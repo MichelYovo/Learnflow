@@ -1,3 +1,7 @@
+"use client";
+
+import SupportButton from "./SupportButton";
+
 const ITEMS = [
   {
     q: "C’est quoi LearnFlow ?",
@@ -5,7 +9,7 @@ const ITEMS = [
   },
   {
     q: "C’est pour quelle classe ?",
-    a: "De la 6e jusqu’à la Terminale. Les cours suivent le programme officiel du Togo. Tu as Maths, SVT, Physique-Chimie, Histoire-Géo, Français, Anglais et EDHC — selon ta classe.",
+    a: "De la 6e jusqu’à la Terminale (2nde A/S, 1ère A/C/D, Tle A/C/D). Au collège : Maths, SVT, PCT, Histoire-Géo, Français, Anglais, ECM. Au lycée : les mêmes, avec PC (Physique-Chimie) à la place de PCT, plus la Philosophie.",
   },
   {
     q: "Comment je commence ?",
@@ -43,11 +47,7 @@ const ITEMS = [
     q: "Je suis obligé de faire les ligues ?",
     a: "Non. Les ligues, c’est pour s’amuser : tu gagnes des points, tu montes de palier (Bronze, Argent, Or…), tu vois tes camarades. Si tu n’aimes pas le classement, tu n’es pas obligé d’y aller, et tu peux cacher ton prénom.",
   },
-  {
-    q: "Comment je télécharge l’app ?",
-    a: "Bientôt sur Android et iPhone. En attendant, clique sur « Préviens-moi » en haut de la page, ou écris à support@learnflow.tg — on te dira dès que c’est en ligne.",
-  },
-];
+] as const;
 
 export default function Faq() {
   return (
@@ -66,6 +66,19 @@ export default function Faq() {
           <p className="mt-3 text-sm font-medium leading-relaxed text-[#64748B]">{item.a}</p>
         </details>
       ))}
+      <details className="group rounded-[20px] border-2 border-[#F0EFEE] bg-white px-5 py-4 open:border-[#BAE0FF]">
+        <summary className="cursor-pointer list-none text-base font-extrabold text-[#1C1917] marker:content-none">
+          <span className="flex items-center justify-between gap-4">
+            Comment je télécharge l’app ?
+            <span className="text-[#1677FF] transition group-open:rotate-45">+</span>
+          </span>
+        </summary>
+        <p className="mt-3 text-sm font-medium leading-relaxed text-[#64748B]">
+          Bientôt sur Android et iPhone. En attendant, clique sur « Préviens-moi » en haut de la page, ou{" "}
+          <SupportButton className="font-extrabold text-[#1677FF] hover:underline">écris au support</SupportButton>{" "}
+          — on te dira dès que c’est en ligne.
+        </p>
+      </details>
     </div>
   );
 }

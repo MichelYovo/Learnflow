@@ -3,7 +3,7 @@ import { CLASSES } from "@/lib/brand";
 import { requireAdmin } from "@/lib/requireAdmin";
 import { deleteAuthUser, deleteRow, updateCloudStudent } from "@/lib/supabase";
 
-const CLASS_IDS = new Set<string>(CLASSES.map((c) => c.id));
+const CLASS_IDS = new Set<string>([...CLASSES.map((c) => c.id), "2nde", "1ere", "Tle"]);
 
 export async function PATCH(request: Request, ctx: { params: Promise<{ id: string }> }) {
   const gate = await requireAdmin();

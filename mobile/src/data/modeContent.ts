@@ -2,6 +2,7 @@ import type { QCMData } from "../types/learnflow";
 import { ASSIMILATION_QCM } from "./mock";
 import { findChapterMeta } from "./programme";
 import { overlayQuiz } from "./publishedCache";
+import { clozeFromLesson, isDeltaQuiz, quizFromLesson, shuffleClozeItems, shuffleQuizOptions, shuffleQuizOrder, VECTEURS_QCM } from "./quizFromLesson";
 
 export type ClozeBlank = {
   id: string;
@@ -364,15 +365,38 @@ export const COMPLEXES_QCM: QCMData[] = [
 ];
 
 export function questionsForChapter(chapterId: string, classe?: string): QCMData[] {
-  let bank = ASSIMILATION_QCM;
-  if (chapterId === "digest") bank = DIGESTION_QCM;
-  else if (chapterId === "cell") bank = CELL_QCM;
-  else if (chapterId === "circulation") bank = CIRCULATION_QCM;
-  else if (chapterId === "nerveux" || chapterId === "neurones") bank = NERVEUX_QCM;
-  else if (chapterId === "excretion" || chapterId === "glycemie") bank = EXCRETION_QCM;
-  else if (chapterId === "adn" || chapterId === "brassage" || chapterId === "gene") bank = ADN_QCM;
-  else if (chapterId === "complexes") bank = COMPLEXES_QCM;
-  return overlayQuiz(chapterId, bank, classe);
+  const dedicated: Record<string, QCMData[]> = {
+    digest: DIGESTION_QCM,
+    eq2: ASSIMILATION_QCM,
+    cell: CELL_QCM,
+    circulation: CIRCULATION_QCM,
+    nerveux: NERVEUX_QCM,
+    neurones: NERVEUX_QCM,
+    excretion: EXCRETION_QCM,
+    glycemie: EXCRETION_QCM,
+    adn: ADN_QCM,
+    brassage: ADN_QCM,
+    gene: ADN_QCM,
+    complexes: COMPLEXES_QCM,
+    "tle-d-complexes": COMPLEXES_QCM,
+    "tle-d-vecteurs": VECTEURS_QCM,
+  };
+  const local = dedicated[chapterId] ?? quizFromLesson(chapterId, classe);
+  const bank = overlayQuiz(chapterId, local, classe);
+  let out: QCMData[];
+  if (chapterId !== "eq2" && isDeltaQuiz(bank)) {
+    out = (dedicated[chapterId] ?? quizFromLesson(chapterId, classe)).slice(0, 10);
+  } else if (bank.length >= 10) {
+    out = bank.slice(0, 10);
+  } else {
+    const extra = quizFromLesson(chapterId, classe).filter((q) => !bank.some((b) => b.enonceQuestion === q.enonceQuestion));
+    out = [...bank, ...extra].slice(0, 10);
+  }
+  return shuffleQuizOptions(shuffleQuizOrder(out));
+}
+
+export function questionsForGrandQuiz(chapterId: string, classe?: string): QCMData[] {
+  return questionsForChapter(chapterId, classe);
 }
 
 export const CLOZE_BY_CHAPTER: Record<string, ClozeItem[]> = {
@@ -578,10 +602,14 @@ export const CLOZE_BY_CHAPTER: Record<string, ClozeItem[]> = {
   ],
 };
 
-export function clozeForChapter(chapterId: string): ClozeItem[] {
-  if (chapterId === "glycemie") return CLOZE_BY_CHAPTER.excretion;
-  if (chapterId === "gene") return CLOZE_BY_CHAPTER.adn;
-  return CLOZE_BY_CHAPTER[chapterId] ?? CLOZE_BY_CHAPTER.digest;
+export function clozeForChapter(chapterId: string, classe?: string): ClozeItem[] {
+  let items: ClozeItem[];
+  if (chapterId === "glycemie") items = CLOZE_BY_CHAPTER.excretion;
+  else if (chapterId === "gene") items = CLOZE_BY_CHAPTER.adn;
+  else if (chapterId === "tle-d-complexes") items = CLOZE_BY_CHAPTER.complexes;
+  else if (CLOZE_BY_CHAPTER[chapterId]) items = CLOZE_BY_CHAPTER[chapterId];
+  else items = clozeFromLesson(chapterId, classe);
+  return shuffleClozeItems(items);
 }
 
 export const DIGEST_HOTSPOTS: SchemaHotspot[] = [

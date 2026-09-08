@@ -1,4 +1,5 @@
 import type { AnalogieSpiraData, FicheCoursData, SchemaCoursKind } from "../types/learnflow";
+import { countWords as countWordsInText, hydrateFiche } from "./lessonContent";
 import { findChapterMeta } from "./programme";
 import { overlayFiche } from "./publishedCache";
 import { chapterHas3dImage } from "./schemas3d";
@@ -173,13 +174,17 @@ export const FICHES: Record<string, FicheCoursData> = {
     titre: "La digestion",
     matiereId: "svt",
     schema: "2d",
-    motsClesMasques: ["enzymes", "villosités", "absorption"],
+    motsClesMasques: ["nutriments", "bouche", "estomac", "enzymes", "intestin grêle", "gros intestin", "énergie"],
+    essentialText:
+      "La digestion est le processus par lequel le corps transforme les aliments en [nutriments] assimilables.\n\n• Les aliments passent par la [bouche], l'œsophage, puis l'[estomac].\n• Les sucs gastriques décomposent les aliments grâce aux [enzymes].\n• L'absorption des nutriments se fait principalement dans l'[intestin grêle].\n• Les déchets sont évacués par le [gros intestin].\n\nCe processus fournit l'[énergie] nécessaire au fonctionnement de nos cellules.",
+    detailedText:
+      "La digestion humaine est un processus biologique complexe et vital qui se déroule dans l'appareil digestif. Elle débute dans la cavité buccale où la mastication (action mécanique) et la salive (action chimique via l'amylase) commencent à décomposer les aliments. Le bol alimentaire descend ensuite via l'œsophage jusqu'à l'estomac. L'estomac, grâce à son acidité extrême et à la pepsine, va réduire ces éléments en une bouillie appelée chyme. Le processus se poursuit dans l'intestin grêle, véritable centre d'absorption, où les nutriments traversent la paroi intestinale pour rejoindre la circulation sanguine. Enfin, le gros intestin absorbe l'eau restante et forme les matières fécales qui seront expulsées.\n\nCompétence visée (APC)\n\nExpliquer le trajet des aliments, distinguer digestion mécanique et chimique, et localiser l'absorption des nutriments.\n\nSavoirs — le trajet\n\nBouche : mastication et amylase salivaire (amidon). Œsophage : péristaltisme jusqu'à l'estomac. Estomac : brassage, pepsine et acide chlorhydrique (protéines). Intestin grêle : sucs pancréatiques, bile et absorption au niveau des villosités. Gros intestin : réabsorption d'eau et formation des selles.\n\nSavoir-faire\n\nLégender un schéma de l'appareil digestif (organe ↔ rôle). Relier une enzyme à son substrat : amylase / amidon, pepsine / protéines, lipase / lipides.",
     pucesEssentiel: [
-      "La **digestion** transforme les aliments en **nutriments** assimilables.",
-      "Voie : bouche → œsophage → estomac → **intestin grêle** → gros intestin.",
-      "Digestion **mécanique** (broyage) + **chimique** (**enzymes**).",
-      "L'**absorption** se fait surtout dans l'intestin grêle (**villosités**).",
-      "Le **foie** produit la bile (lipides) ; le **pancréas** déverse ses sucs dans le duodénum.",
+      "La digestion transforme les aliments en nutriments assimilables.",
+      "Voie : bouche → œsophage → estomac → intestin grêle → gros intestin.",
+      "Digestion mécanique (broyage) + chimique (enzymes).",
+      "L'absorption se fait surtout dans l'intestin grêle (villosités).",
+      "Le foie produit la bile (lipides) ; le pancréas déverse ses sucs dans le duodénum.",
     ],
     analogie: analogie(
       "Ton tube digestif, c'est une usine en chaîne. La bouche broie, l'estomac mélange et attaque les protéines, l'intestin grêle récupère les pièces utiles, le gros intestin jette le reste. Les enzymes, ce sont les ouvriers spécialisés.",
@@ -602,6 +607,37 @@ export const FICHES: Record<string, FicheCoursData> = {
       },
     ],
   },
+
+  "tle-d-vecteurs": {
+    chapitreId: "tle-d-vecteurs",
+    titre: "Vecteurs de l'espace et repérage",
+    matiereId: "maths",
+    motsClesMasques: ["colinéaires", "base", "coordonnées", "repère"],
+    essentialText:
+      "Dans l'espace, un vecteur est défini par une [direction], un [sens] et une [norme].\n\n• Deux vecteurs non nuls sont [colinéaires] s'il existe k réel tel que u = k v.\n• Une [base] de l'espace est un triplet de vecteurs non coplanaires (i, j, k).\n• Dans un [repère] (O ; i, j, k), un point M a des [coordonnées] (x ; y ; z).\n• Vectoriellement : OM = x i + y j + z k.\n\nRetiens le lien : colinéarité ↔ alignement ; base ↔ tout vecteur s'écrit de façon unique.",
+    detailedText:
+      "Les vecteurs de l'espace prolongent la géométrie du plan : on travaille dans un espace affine de dimension 3. Un vecteur u est caractérisé par sa direction, son sens et sa norme. Deux vecteurs non nuls u et v sont colinéaires lorsqu'il existe un réel k tel que u = k v ; géométriquement, ils portent des droites parallèles. Trois vecteurs sont coplanaires s'ils appartiennent à un même plan vectoriel ; sinon, ils forment une base de l'espace.\n\nCompétence visée (APC)\n\nRepérer un point et décomposer un vecteur dans une base, puis utiliser la colinéarité pour caractériser l'alignement ou le parallélisme dans l'espace.\n\nSavoirs\n\nSoit (O ; i, j, k) un repère de l'espace. Tout point M est déterminé par le triplet (x ; y ; z) tel que OM = x i + y j + z k. Les coordonnées d'un vecteur AB sont (xB − xA ; yB − yA ; zB − zA). La relation de Chasles AB + BC = AC reste valable. Une famille (i, j, k) est une base si et seulement si tout vecteur de l'espace s'écrit de manière unique comme combinaison linéaire de i, j et k.\n\nSavoir-faire\n\nLire et placer un point dans un repère orthonormé de l'espace. Calculer les coordonnées d'un vecteur. Démontrer que deux vecteurs sont colinéaires (recherche d'un coefficient k, ou proportionnalité des coordonnées). Décomposer un vecteur dans une base donnée. Relier colinéarité et alignement de trois points : A, B, C alignés ⇔ AB et AC colinéaires.",
+    pucesEssentiel: [
+      "Un vecteur de l'espace a une direction, un sens et une norme.",
+      "Deux vecteurs non nuls sont colinéaires s'il existe k réel tel que u = k v.",
+      "Une base de l'espace est un triplet de vecteurs non coplanaires.",
+      "Dans un repère (O ; i, j, k), un point M a des coordonnées (x ; y ; z).",
+    ],
+    analogie: analogie(
+      "Un vecteur, c'est une flèche : où elle pointe (direction), de quel côté (sens), et quelle longueur (norme). Colinéaires, c'est deux flèches sur la même route, éventuellement à l'envers. Un repère, c'est trois flèches d'origine O qui te disent « avance de x, de y, de z ».",
+      "Vecteurs de l'espace",
+      "Trois flèches depuis O : les coordonnées d'un point.",
+    ),
+    sectionsDetaillees: [
+      {
+        id: "competence",
+        titre: "Compétence visée (APC)",
+        paragraphes: [
+          "Repérer un point et décomposer un vecteur dans une base, puis utiliser la colinéarité pour l'alignement dans l'espace.",
+        ],
+      },
+    ],
+  },
 };
 
 function fallbackFiche(chapitreId: string): FicheCoursData {
@@ -613,15 +649,20 @@ function fallbackFiche(chapitreId: string): FicheCoursData {
     : chapitreId === "digest"
       ? "2d"
       : undefined;
+  const essentialText = `« ${titre} » : retiens le fil du chapitre, pas le détail des preuves.\n\n• Les [définitions] et les [propriétés] sont les mots cardinaux à restituer.\n• Relie chaque [notion] à un exemple du programme de ta classe.\n• Vérifie-toi ensuite avec le [quizz] d'assimilation 10/10.\n\nCette synthèse est autonome : elle ne recopie pas En Détails. Passe à l'autre onglet pour le cours APC développé.`;
+  const detailedText = `Compétence visée (APC)\n\nMobiliser les savoirs du chapitre « ${titre} » pour résoudre une situation-problème conforme au programme. Tu dois pouvoir définir les objets, appliquer les méthodes, et justifier chaque étape.\n\nSavoirs\n\nLe cours développé pose d'abord le vocabulaire, puis les propriétés et les relations entre elles. Chaque définition doit pouvoir être reformulée sans recopier. Les cas particuliers et les conditions d'application font partie du savoir, pas d'un à-côté. Les enchaînements du raisonnement (hypothèses, théorème, conclusion) sont aussi importants que le résultat numérique.\n\nSavoir-faire\n\nEn situation, tu identifies la notion utile, tu choisis une méthode, tu mènes le calcul ou le raisonnement, puis tu contrôles le résultat (unité, ordre de grandeur, cohérence avec l'énoncé). Le schéma, s'il existe, sert à ancrer le raisonnement. Le quizz d'assimilation 10/10 vérifie que tu peux restituer sans relire la fiche.`;
   return {
     chapitreId,
     titre,
     matiereId,
-    motsClesMasques: [],
+    essentialText,
+    detailedText,
+    motsClesMasques: ["définitions", "propriétés", "notion", "quizz"],
     pucesEssentiel: [
-      `Chapitre **${titre}** — ouvre « En Détails » pour le cours APC complet.`,
-      "Lis les **mots cardinaux** en gras : ce sont les notions à retenir.",
-      "Active **Texte masqué** pour t'auto-interroger avant le quizz.",
+      `« ${titre} » : retiens le fil du chapitre, pas le détail des preuves.`,
+      "Les définitions et les propriétés sont les mots cardinaux à restituer.",
+      "Relie chaque notion à un exemple du programme de ta classe.",
+      "Vérifie-toi ensuite avec le quizz d'assimilation 10/10.",
     ],
     analogie: analogie(
       "Quand une idée paraît abstraite, je la ramène à quelque chose que tu connais déjà. C'est ça, mon boulot : le concept, en d'autres termes.",
@@ -640,14 +681,14 @@ function fallbackFiche(chapitreId: string): FicheCoursData {
         id: "savoirs",
         titre: "Savoirs",
         paragraphes: [
-          "Les définitions et propriétés du chapitre : retiens les **mots cardinaux** (en gras dans L'Essentiel).",
+          "Les définitions, propriétés et conditions d'application du chapitre, reformulées sans recopier.",
         ],
       },
       {
         id: "savoirfaire",
         titre: "Savoir-faire",
         paragraphes: [
-          "Appliquer, schématiser si la matière le demande, et vérifier avec le quizz d'assimilation 10/10.",
+          "Identifier la notion, choisir une méthode, mener le raisonnement, contrôler le résultat, puis valider au quizz 10/10.",
         ],
       },
     ],
@@ -655,14 +696,18 @@ function fallbackFiche(chapitreId: string): FicheCoursData {
   };
 }
 
+const FICHE_ALIASES: Record<string, string> = {
+  "tle-d-complexes": "complexes",
+};
+
 export function ficheForChapter(chapitreId: string, classe?: string): FicheCoursData {
-  const fallback = FICHES[chapitreId] ?? fallbackFiche(chapitreId);
-  return overlayFiche(chapitreId, fallback, classe) ?? fallback;
+  const resolved = FICHE_ALIASES[chapitreId] ?? chapitreId;
+  const fallback = hydrateFiche(FICHES[resolved] ?? FICHES[chapitreId] ?? fallbackFiche(chapitreId));
+  return hydrateFiche(overlayFiche(chapitreId, fallback, classe) ?? fallback);
 }
 
 export function countWords(puces: string[]): number {
-  const raw = puces.join(" ").replace(/\*\*/g, "");
-  return raw.trim().split(/\s+/).filter(Boolean).length;
+  return countWordsInText(puces);
 }
 
 /** @deprecated — compat lecture ancienne maquette */

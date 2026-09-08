@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Poppins } from "next/font/google";
+import SupportProvider from "../components/site/SupportProvider";
+import SpiraFloaters from "../components/site/SpiraFloaters";
 import "./globals.css";
 
 const poppins = Poppins({
@@ -27,18 +29,27 @@ export const metadata: Metadata = {
     locale: "fr_TG",
     type: "website",
     siteName: "LearnFlow",
+    images: [
+      {
+        url: "/brand/logo-lockup-light.png",
+        width: 1536,
+        height: 1024,
+        alt: "LearnFlow",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "LearnFlow — Tes cours, compris pour de vrai",
     description: "App collège-lycée au Togo. Un chapitre validé seulement à 10/10. Même sans internet.",
+    images: ["/brand/logo-lockup-light.png"],
   },
   icons: {
     icon: [
       { url: "/favicon.ico", sizes: "any" },
-      { url: "/favicon.png", type: "image/png" },
+      { url: "/brand/logo-mark.png", type: "image/png" },
     ],
-    apple: "/icon.png",
+    apple: "/brand/logo-mark.png",
     shortcut: "/favicon.ico",
   },
 };
@@ -46,7 +57,12 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="fr" className={`${poppins.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col font-sans">{children}</body>
+      <body className="min-h-full flex flex-col font-sans">
+        <SupportProvider>
+          <SpiraFloaters />
+          {children}
+        </SupportProvider>
+      </body>
     </html>
   );
 }

@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import FileDropZone from "@/components/FileDropZone";
 import { useIncomingFiles } from "@/hooks/useIncomingFiles";
-import { CLASSES, SUBJECTS } from "@/lib/brand";
+import { CLASS_GROUPS, subjectsForClass } from "@/lib/brand";
 import { emptyPayload, type CoursePayload } from "@/lib/contentTypes";
 import { COURSE_ACCEPT } from "@/lib/files";
 
@@ -141,16 +141,20 @@ export default function ProfStudio() {
           <h2 className="font-black text-[#1C1917]">Nouveau cours</h2>
           <label className="mt-3 block text-xs font-extrabold text-[#64748B]">
             Classe
-            <select value={classLevel} onChange={(e) => setClassLevel(e.target.value)} className="mt-1 h-10 w-full rounded-xl border-2 border-[#F0EFEE] px-2 text-sm font-bold">
-              {CLASSES.map((c) => (
-                <option key={c.id} value={c.id}>{c.label}</option>
+            <select value={classLevel} onChange={(e) => { setClassLevel(e.target.value); setSubjectId((prev) => subjectsForClass(e.target.value).some((s) => s.id === prev) ? prev : "svt"); }} className="mt-1 h-10 w-full rounded-xl border-2 border-[#F0EFEE] px-2 text-sm font-bold">
+              {CLASS_GROUPS.map((g) => (
+                <optgroup key={g.id} label={g.label}>
+                  {g.classes.map((c) => (
+                    <option key={c.id} value={c.id}>{c.label}</option>
+                  ))}
+                </optgroup>
               ))}
             </select>
           </label>
           <label className="mt-2 block text-xs font-extrabold text-[#64748B]">
             Matière
             <select value={subjectId} onChange={(e) => setSubjectId(e.target.value)} className="mt-1 h-10 w-full rounded-xl border-2 border-[#F0EFEE] px-2 text-sm font-bold">
-              {SUBJECTS.map((s) => (
+              {subjectsForClass(classLevel).map((s) => (
                 <option key={s.id} value={s.id}>{s.label}</option>
               ))}
             </select>
@@ -193,17 +197,52 @@ export default function ProfStudio() {
               <button type="button" disabled={busy} onClick={() => void saveDraft()} className="rounded-2xl bg-[#F1F5F9] px-4 py-2 text-sm font-extrabold">Sauver</button>
             </div>
             <label className="block text-xs font-extrabold text-[#64748B]">
-              Essentiel (une puce par ligne)
+              L&apos;Essentiel (synthèse autonome, [mots] entre crochets)
               <textarea
-                rows={6}
-                value={payload.fiche.pucesEssentiel.join("\n")}
-                onChange={(e) =>
+                rows={8}
+                value={payload.fiche.essentialText ?? payload.fiche.pucesEssentiel.join("\n")}
+                onChange={(e) => {
+                  const essentialText = e.target.value;
                   setActive({
                     ...active,
-                    payload: { ...payload, fiche: { ...payload.fiche, pucesEssentiel: e.target.value.split("\n") } },
-                  })
-                }
-                className="mt-1 w-full rounded-2xl border-2 border-[#F0EFEE] p-3 text-sm"
+                    payload: {
+                      ...payload,
+                      fiche: {
+                        ...payload.fiche,
+                        essentialText,
+                        pucesEssentiel: essentialText
+                          .split(/\n+/)
+                          .map((l) => l.replace(/^[•\-]\s+/, "").trim())
+                          .filter(Boolean),
+                      },
+                    },
+                  });
+                }}
+                className="mt-1 w-full rounded-2xl border-2 border-[#F0EFEE] p-3 text-sm leading-relaxed"
+              />
+            </label>
+            <label className="block text-xs font-extrabold text-[#64748B]">
+              En Détails (cours APC complet, lecture continue)
+              <textarea
+                rows={10}
+                value={payload.fiche.detailedText ?? payload.fiche.sectionsDetaillees.map((s) => `${s.titre}\n${s.paragraphes.join("\n")}`).join("\n\n")}
+                onChange={(e) => {
+                  const detailedText = e.target.value;
+                  setActive({
+                    ...active,
+                    payload: {
+                      ...payload,
+                      fiche: {
+                        ...payload.fiche,
+                        detailedText,
+                        sectionsDetaillees: detailedText.trim()
+                          ? [{ id: "s1", titre: "Cours développé", paragraphes: [detailedText] }]
+                          : payload.fiche.sectionsDetaillees,
+                      },
+                    },
+                  });
+                }}
+                className="mt-1 w-full rounded-2xl border-2 border-[#F0EFEE] p-3 text-sm leading-relaxed"
               />
             </label>
             <label className="block text-xs font-extrabold text-[#64748B]">

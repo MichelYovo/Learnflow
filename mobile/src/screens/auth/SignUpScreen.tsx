@@ -15,8 +15,8 @@ import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import Icon from "../../components/Icon";
 import Logo from "../../components/Logo";
 import ParentPhoneField from "../../components/ParentPhoneField";
+import ClassPicker from "../../components/ClassPicker";
 import SocialAuth from "../../components/SocialAuth";
-import { CLASSES } from "../../data/mock";
 import { signInWithGoogle } from "../../lib/googleAuth";
 import { isValidTogoLocal, toTogoE164 } from "../../lib/phoneTogo";
 import { savePendingAuth } from "../../lib/pendingAuth";
@@ -239,20 +239,7 @@ export default function SignUpScreen({ navigation }: Props) {
 
           <View style={styles.field}>
             <Text style={[styles.label, { color: colors.textDark }]}>Ma classe</Text>
-            <View style={styles.classGrid}>
-              {CLASSES.map((c) => {
-                const on = classe === c.id;
-                return (
-                  <Pressable
-                    key={c.id}
-                    onPress={() => setClasse(c.id)}
-                    style={[styles.classChip, { backgroundColor: colors.white, borderColor: colors.border }, on && { borderColor: colors.primary, backgroundColor: colors.mathsBg }]}
-                  >
-                    <Text style={[styles.classText, { color: colors.textMuted }, on && styles.classTextOn]}>{c.label}</Text>
-                  </Pressable>
-                );
-              })}
-            </View>
+            <ClassPicker value={classe} onChange={setClasse} />
           </View>
 
           <ParentPhoneField value={parentLocal} onChange={setParentLocal} />

@@ -39,7 +39,14 @@ export function vulgarizeFromFiches(query: string): string | undefined {
       q.split(/\s+/).some((w) => w.length > 4 && title.includes(w));
     if (!hit) continue;
 
-    const bullets = (fiche.pucesEssentiel ?? []).slice(0, 3).map(stripMd).filter(Boolean);
+    const source = fiche.essentialText?.trim()
+      ? fiche.essentialText
+      : (fiche.pucesEssentiel ?? []).join("\n");
+    const bullets = source
+      .split(/\n+/)
+      .map((l) => stripMd(l.replace(/^[•\-]\s+/, "").replace(/\[([^\]]+)\]/g, "$1")))
+      .filter(Boolean)
+      .slice(0, 3);
     if (bullets.length) {
       return `${fiche.titre} — version simple :\n${bullets.map((b) => `• ${b}`).join("\n")}`;
     }

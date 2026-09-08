@@ -32,7 +32,12 @@ body {
   .lf-play-ok,
   .lf-play-ko,
   .lf-play-burst,
-  .lf-play-bar {
+  .lf-play-bar,
+  .lf-spira-fly,
+  .lf-spira-fly-a,
+  .lf-spira-fly-b,
+  .lf-spira-fly-c,
+  .lf-spira-grimace {
     animation: none !important;
   }
 }
@@ -381,4 +386,114 @@ body {
 
 details summary::-webkit-details-marker {
   display: none;
+}
+
+/* Pastille logo des téléphones : disque blanc, pas d’auréole bleue.
+   Le PNG du mark a un fond noir — screen le fait disparaître. */
+.lf-phone-mark {
+  isolation: isolate;
+}
+.lf-phone-mark img {
+  mix-blend-mode: screen;
+}
+
+/* Spira qui vole sur le site vitrine */
+.lf-spira-fly {
+  top: 0;
+  left: 0;
+  will-change: transform;
+}
+
+.lf-spira-fly-a {
+  animation: lf-spira-path-a 32s linear infinite;
+}
+
+.lf-spira-fly-b {
+  animation: lf-spira-path-b 38s linear infinite reverse;
+}
+
+.lf-spira-fly-c {
+  animation: lf-spira-path-c 26s linear infinite;
+}
+
+.lf-spira-grimace {
+  animation: lf-spira-face 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes lf-spira-face {
+  0% {
+    transform: scale(0.82) rotate(-8deg);
+  }
+  60% {
+    transform: scale(1.08) rotate(6deg);
+  }
+  100% {
+    transform: scale(1) rotate(0);
+  }
+}
+
+@keyframes lf-spira-path-a {
+  0% {
+    transform: translate(-8vw, 18vh) rotate(-10deg);
+  }
+  18% {
+    transform: translate(62vw, 8vh) rotate(14deg);
+  }
+  36% {
+    transform: translate(78vw, 42vh) rotate(-6deg);
+  }
+  54% {
+    transform: translate(28vw, 68vh) rotate(12deg);
+  }
+  72% {
+    transform: translate(8vw, 48vh) rotate(-14deg);
+  }
+  100% {
+    transform: translate(-8vw, 18vh) rotate(-10deg);
+  }
+}
+
+@keyframes lf-spira-path-b {
+  0% {
+    transform: translate(88vw, 58vh) rotate(8deg);
+  }
+  25% {
+    transform: translate(12vw, 22vh) rotate(-12deg);
+  }
+  50% {
+    transform: translate(48vw, 8vh) rotate(10deg);
+  }
+  75% {
+    transform: translate(70vw, 72vh) rotate(-8deg);
+  }
+  100% {
+    transform: translate(88vw, 58vh) rotate(8deg);
+  }
+}
+
+@keyframes lf-spira-path-c {
+  0% {
+    transform: translate(40vw, -6vh) rotate(0deg);
+  }
+  20% {
+    transform: translate(6vw, 30vh) rotate(-16deg);
+  }
+  40% {
+    transform: translate(72vw, 56vh) rotate(10deg);
+  }
+  60% {
+    transform: translate(18vw, 78vh) rotate(-8deg);
+  }
+  80% {
+    transform: translate(82vw, 18vh) rotate(14deg);
+  }
+  100% {
+    transform: translate(40vw, -6vh) rotate(0deg);
+  }
+}
+
+@media (max-width: 767px) {
+  .lf-spira-fly-c {
+    display: none;
+  }
 }

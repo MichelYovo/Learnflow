@@ -41,6 +41,7 @@ function mergeChapter(a?: CloudChapterProgress, b?: CloudChapterProgress): Cloud
     grandQuizzUnlocked: unlocked,
     firstTryPerfect: a.firstTryPerfect || b.firstTryPerfect,
     grandQuizzLockedUntil: locks.at(-1) ?? null,
+    read: Boolean(a.read || b.read),
   };
 }
 

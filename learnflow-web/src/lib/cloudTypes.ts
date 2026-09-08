@@ -17,6 +17,7 @@ export type CloudChapterProgress = {
   grandQuizzUnlocked: boolean;
   grandQuizzLockedUntil: string | null;
   firstTryPerfect: boolean;
+  read?: boolean;
 };
 
 export type CloudFlashcardState = {

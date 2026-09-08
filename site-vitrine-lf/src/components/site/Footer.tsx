@@ -1,13 +1,13 @@
-import Image from "next/image";
 import Link from "next/link";
-import { SUPPORT_EMAIL, SUPPORT_MAILTO } from "../../lib/brand";
+import BrandLogo from "./BrandLogo";
+import SupportButton from "./SupportButton";
 
 export default function Footer() {
   return (
     <footer className="border-t border-[#F0EFEE] bg-white">
-      <div className="mx-auto grid max-w-6xl gap-10 px-5 py-12 md:grid-cols-[1.4fr_1fr_1fr]">
+      <div className="mx-auto grid max-w-6xl gap-10 px-5 py-12 md:grid-cols-2 lg:grid-cols-[1.5fr_1fr_1fr_1fr]">
         <div>
-          <Image src="/brand/logo-light.png" alt="LearnFlow" width={260} height={70} className="h-14 w-auto" />
+          <BrandLogo size="footer" variant="onLight" />
           <p className="mt-4 max-w-sm text-sm font-medium leading-relaxed text-[#64748B]">
             L’app de révision pour collégiens et lycéens du Togo. Tes cours, des quiz, et un chapitre validé seulement
             à 10/10. Même sans internet.
@@ -37,9 +37,27 @@ export default function Footer() {
               </Link>
             </li>
             <li>
+              <Link href="/#contact" className="hover:text-[#1677FF]">
+                Contact
+              </Link>
+            </li>
+            <li>
               <Link href="/#faq" className="hover:text-[#1677FF]">
                 Questions
               </Link>
+            </li>
+          </ul>
+        </div>
+        <div>
+          <p className="text-xs font-extrabold uppercase tracking-widest text-[#A8A29E]">Contact</p>
+          <ul className="mt-3 space-y-2 text-sm font-semibold text-[#1C1917]">
+            <li>
+              <SupportButton className="font-extrabold text-[#1677FF] hover:underline">Nous contacter</SupportButton>
+            </li>
+            <li>
+              <SupportButton topic="waitlist" className="hover:text-[#1677FF]">
+                Liste d’attente
+              </SupportButton>
             </li>
           </ul>
         </div>
@@ -55,11 +73,6 @@ export default function Footer() {
               <Link href="/mentions-legales" className="hover:text-[#1677FF]">
                 Mentions légales
               </Link>
-            </li>
-            <li>
-              <a href={SUPPORT_MAILTO} className="hover:text-[#1677FF]">
-                {SUPPORT_EMAIL}
-              </a>
             </li>
           </ul>
         </div>

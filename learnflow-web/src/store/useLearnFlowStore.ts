@@ -37,6 +37,7 @@ import { applySelfRating } from "@/engine/spacedRepetition";
 import { xpAssimilation, xpBlitz } from "@/engine/xp";
 import { createId, nowIso } from "@/lib/ids";
 import { AI_DAILY_QUOTA, remainingAiQuota, todayIsoDate } from "@/data/tutor";
+import { findChapterMeta } from "@/data/programme";
 
 const LOCAL_PARENT_ID = "local-parent";
 
@@ -120,6 +121,7 @@ interface LearnFlowState {
     total: number,
     firstTry: boolean
   ) => { xp: number; unlocked: boolean; challenger: boolean };
+  markChapterRead: (chapitreId: string) => void;
   lockGrandQuizzOneHour: (chapitreId: string) => void;
   unlockGrandQuizz: (chapitreId: string) => void;
   canAccessGrandQuizz: (chapitreId: string) => boolean;
@@ -214,6 +216,7 @@ const defaultChapter = (id: string): ChapterProgress => ({
   grandQuizzUnlocked: false,
   grandQuizzLockedUntil: null,
   firstTryPerfect: false,
+  read: false,
 });
 
 export const useLearnFlowStore = create<LearnFlowState>()(
@@ -444,6 +447,23 @@ export const useLearnFlowStore = create<LearnFlowState>()(
         void import("@/lib/progressSync").then((m) => m.requestProgressSync());
       },
 
+      markChapterRead: (chapitreId) => {
+        const prev = get().chapterProgress[chapitreId] ?? defaultChapter(chapitreId);
+        if (prev.read) return;
+        const profile = get().getActiveProfile();
+        const n = Math.max(1, findChapterMeta(chapitreId)?.chapter.lessons.length ?? 1);
+        set({
+          chapterProgress: {
+            ...get().chapterProgress,
+            [chapitreId]: { ...prev, read: true },
+          },
+          profiles: profile
+            ? get().profiles.map((p) => (p.id === profile.id ? { ...p, lessonsDone: p.lessonsDone + n } : p))
+            : get().profiles,
+        });
+        void import("@/lib/progressSync").then((m) => m.requestProgressSync());
+      },
+
       recordAssimilation: (chapitreId, score, total, firstTry) => {
         const profile = get().getActiveProfile();
         const perfect = score === total;
@@ -474,6 +494,9 @@ export const useLearnFlowStore = create<LearnFlowState>()(
           }
         }
 
+        const alreadyRead = Boolean(prev.read);
+        const n = alreadyRead ? 0 : Math.max(1, findChapterMeta(chapitreId)?.chapter.lessons.length ?? 1);
+
         set({
           chapterProgress: {
             ...get().chapterProgress,
@@ -481,11 +504,16 @@ export const useLearnFlowStore = create<LearnFlowState>()(
               ...prev,
               assimilationScore: score,
               assimilationPerfect: perfect,
-              grandQuizzUnlocked: perfect,
+              grandQuizzUnlocked: perfect || prev.grandQuizzUnlocked,
               grandQuizzLockedUntil: null,
               firstTryPerfect: challenger || prev.firstTryPerfect,
+              read: true,
             },
           },
+          profiles:
+            n > 0 && profile
+              ? get().profiles.map((p) => (p.id === profile.id ? { ...p, lessonsDone: p.lessonsDone + n } : p))
+              : get().profiles,
         });
         void import("@/lib/progressSync").then((m) => m.requestProgressSync());
 

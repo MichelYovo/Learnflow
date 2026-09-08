@@ -19,6 +19,8 @@ export type ProfFlashcard = {
 };
 
 export type ProfFiche = {
+  essentialText?: string;
+  detailedText?: string;
   pucesEssentiel: string[];
   sectionsDetaillees: { id: string; titre: string; paragraphes: string[] }[];
   motsClesMasques: string[];
@@ -45,6 +47,8 @@ export function emptyPayload(): CoursePayload {
     lessons: [{ id: "l1", title: "Leçon 1", duration: "12 min", xp: 50 }],
     fiche: {
       pucesEssentiel: ["Résumé à compléter."],
+      essentialText: "Résumé à compléter. Place les [mots-clés] entre crochets.",
+      detailedText: "Cours APC complet à rédiger ici. Ce texte n'est pas une version allongée du résumé : c'est le cours développé.",
       sectionsDetaillees: [{ id: "s1", titre: "Savoirs", paragraphes: [""] }],
       motsClesMasques: [],
     },

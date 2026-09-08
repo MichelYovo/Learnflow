@@ -27,6 +27,24 @@ export default function FillBlanksPage() {
     preloadSfx();
   }, []);
 
+  if (!item) {
+    return (
+      <div>
+        <ScreenHeader title={chapterTitle(chapterId)} backHref={`/app/cours/${chapterId}`} />
+        <div className="mx-auto max-w-xl px-6 py-16 text-center">
+          <Spira scene="quiz.locked" size={88} />
+          <p className="mt-4 text-lg font-extrabold">Pas d&apos;exercice à trous ici</p>
+          <p className="mt-2 text-sm font-semibold" style={{ color: colors.textMuted }}>
+            Passe le quizz d&apos;assimilation de ce chapitre — il est calé sur le cours, pas sur le discriminant.
+          </p>
+          <div className="mt-6">
+            <PrimaryButton onClick={() => router.push(`/app/quiz/assimilation/${chapterId}`)}>Quizz 10/10</PrimaryButton>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   const choose = (opt: string) => {
     if (locked) return;
     setPicked(opt);

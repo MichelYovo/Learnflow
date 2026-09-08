@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import FileDropZone from "@/components/FileDropZone";
 import { useIncomingFiles } from "@/hooks/useIncomingFiles";
-import { CLASSES } from "@/lib/brand";
+import { CLASS_GROUPS } from "@/lib/brand";
 import type { SchemaPart } from "@/lib/contentTypes";
 import { IMAGE_ACCEPT } from "@/lib/files";
 
@@ -100,8 +100,12 @@ export default function SchemaStudio() {
       <aside className="rounded-[22px] border-2 border-[#F0EFEE] bg-white p-4">
         <h2 className="font-black">Nouveau schéma</h2>
         <select value={classLevel} onChange={(e) => setClassLevel(e.target.value)} className="mt-3 h-10 w-full rounded-xl border-2 border-[#F0EFEE] px-2 text-sm font-bold">
-          {CLASSES.map((c) => (
-            <option key={c.id} value={c.id}>{c.label}</option>
+          {CLASS_GROUPS.map((g) => (
+            <optgroup key={g.id} label={g.label}>
+              {g.classes.map((c) => (
+                <option key={c.id} value={c.id}>{c.label}</option>
+              ))}
+            </optgroup>
           ))}
         </select>
         <input value={chapterId} onChange={(e) => setChapterId(e.target.value)} placeholder="id chapitre (circulation)" className="mt-2 h-10 w-full rounded-xl border-2 border-[#F0EFEE] px-3 text-sm font-bold" />

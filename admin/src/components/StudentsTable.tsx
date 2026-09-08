@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { CLASSES, classLabel, initialsFromName } from "@/lib/brand";
+import { CLASS_GROUPS, classLabel, initialsFromName, normalizeClassId } from "@/lib/brand";
 import { maskTogoPhone } from "@/lib/phoneTogo";
 import type { AdminStudent } from "@/data/seed";
 
@@ -16,7 +16,7 @@ export default function StudentsTable({ students }: { students: AdminStudent[] }
     const query = q.trim().toLowerCase();
     return students.filter((s) => {
       const matchQ = !query || s.name.toLowerCase().includes(query) || s.email.toLowerCase().includes(query);
-      const matchC = classe === "all" || s.classe === classe;
+      const matchC = classe === "all" || s.classe === classe || normalizeClassId(s.classe) === classe;
       return matchQ && matchC;
     });
   }, [students, q, classe]);
@@ -36,10 +36,14 @@ export default function StudentsTable({ students }: { students: AdminStudent[] }
           className="h-11 rounded-2xl border-2 border-[#F0EFEE] bg-white px-3 text-sm font-bold text-[#1C1917] outline-none focus:border-[#1677FF]"
         >
           <option value="all">Toutes les classes</option>
-          {CLASSES.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.label}
-            </option>
+          {CLASS_GROUPS.map((g) => (
+            <optgroup key={g.id} label={g.label}>
+              {g.classes.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.label}
+                </option>
+              ))}
+            </optgroup>
           ))}
         </select>
       </div>

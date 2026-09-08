@@ -1,5 +1,6 @@
 import type { DifficulteFlash, QCMData } from "../types/learnflow";
 import { BLITZ_QCM } from "../data/mock";
+import { shuffleQuizOptions } from "../data/quizFromLesson";
 
 const ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 
@@ -83,7 +84,7 @@ export function blitzDeck(seed?: number, difficulte: DifficulteFlash = "Moyen"):
     seed: s,
     code: encodeChallengeCode(s, difficulte),
     difficulte,
-    questions: shuffleWithSeed(questionsForBlitz(difficulte), s),
+    questions: shuffleQuizOptions(shuffleWithSeed(questionsForBlitz(difficulte), s)),
   };
 }
 

@@ -1,9 +1,12 @@
 import Image from "next/image";
 import { SUBJECTS, TIERS } from "../../lib/brand";
+import BrandLogo from "./BrandLogo";
+import ContactForm from "./ContactForm";
 import Faq from "./Faq";
 import HeroPhones from "./HeroPhones";
 import ModeShowcase from "./ModeShowcase";
 import StoreButtons from "./StoreButtons";
+import SupportButton from "./SupportButton";
 import { CourseDemo, LeagueDemo, OfflineDemo, ParentsDemo, ParcoursDemo, RuleDemo } from "./demos";
 
 const PLAN = [
@@ -12,7 +15,8 @@ const PLAN = [
   { href: "#modes", n: "3", t: "Les 4 modes", d: "Libre, Guidé, Cramming, Blitz." },
   { href: "#cours", n: "4", t: "Tes cours", d: "L’essentiel, puis les détails." },
   { href: "#ligues", n: "5", t: "Ligues", d: "Des points, sans la pression." },
-  { href: "#faq", n: "6", t: "Questions", d: "Tout ce que tu te demandes." },
+  { href: "#contact", n: "6", t: "Nous contacter", d: "Un message, on te répond." },
+  { href: "#faq", n: "7", t: "Questions", d: "Tout ce que tu te demandes." },
 ];
 
 export default function Landing() {
@@ -22,8 +26,10 @@ export default function Landing() {
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(900px_420px_at_80%_-10%,rgba(22,119,255,.16),transparent),radial-gradient(600px_280px_at_10%_20%,rgba(16,185,129,.10),transparent)]" />
         <div className="relative mx-auto grid max-w-6xl items-center gap-10 px-5 pb-12 pt-10 lg:grid-cols-[1.05fr_.95fr] lg:pb-16 lg:pt-14">
           <div>
-            <p className="inline-flex items-center gap-2 rounded-full border-2 border-[#BAE0FF] bg-[#E6F4FF] px-3 py-1 text-xs font-extrabold uppercase tracking-wider text-[#1677FF]">
-              <Image src="/brand/logo-mark.png" alt="" width={28} height={28} className="h-7 w-7 object-contain" />
+            <p className="inline-flex items-center gap-2 rounded-full border-2 border-white bg-white px-3 py-1 text-xs font-extrabold uppercase tracking-wider text-[#0B1B3A] shadow-[0_8px_24px_rgba(15,23,42,0.06)]">
+              <span className="lf-phone-mark inline-flex h-7 w-7 items-center justify-center overflow-hidden rounded-full bg-white">
+                <BrandLogo size="mark" />
+              </span>
               Collège et lycée · Togo
             </p>
             <h1 className="mt-5 max-w-xl text-4xl font-black leading-[1.1] tracking-tight text-[#1C1917] sm:text-5xl lg:text-[56px]">
@@ -32,7 +38,7 @@ export default function Landing() {
             <p className="mt-5 max-w-lg text-lg font-medium leading-relaxed text-[#64748B]">
               LearnFlow, c’est l’app pour réviser sans te perdre. Tu lis, tu t’entraînes, et un chapitre n’est validé
               que quand tu as <strong className="font-extrabold text-[#1C1917]">10/10</strong>. Clique les explications :
-              le téléphone s’anime, avec le son.
+              le téléphone s’anime, et Spira grimace.
             </p>
             <div className="mt-8">
               <StoreButtons />
@@ -42,7 +48,7 @@ export default function Landing() {
                 Voir comment ça marche
               </a>
               {" · "}
-              6e → Terminale · 7 matières
+              6e → Terminale · collège et lycée
             </p>
           </div>
           <HeroPhones />
@@ -118,7 +124,7 @@ export default function Landing() {
             Un mode selon le moment — pas l’inverse.
           </h2>
           <p className="mt-4 max-w-2xl text-base font-medium leading-relaxed text-[#64748B]">
-            Clique sur une carte : le téléphone joue l’écran, avec le son. Choisis selon ta journée.
+            Clique sur une carte : le téléphone joue l’écran. Choisis selon ta journée.
           </p>
           <div className="mt-10">
             <ModeShowcase />
@@ -133,7 +139,7 @@ export default function Landing() {
             L’essentiel d’abord, les détails ensuite.
           </h2>
           <p className="mt-4 max-w-2xl text-base font-medium leading-relaxed text-[#64748B]">
-            Clique une case : tu vois comment un chapitre s’ouvre. 7 matières, selon ta classe.
+            Clique une case : tu vois comment un chapitre s’ouvre. Les matières suivent ta classe.
           </p>
           <div className="mt-4 flex flex-wrap gap-2">
             {SUBJECTS.map((s) => (
@@ -147,7 +153,7 @@ export default function Landing() {
             ))}
           </div>
           <p className="mt-3 text-sm font-medium text-[#64748B]">
-            Maths · SVT · Physique-Chimie · Histoire-Géo · Français · Anglais · EDHC
+            Maths · SVT · PCT (collège) · PC (lycée) · Histoire-Géo · Français · Anglais · ECM · Philosophie
           </p>
           <div className="mt-10">
             <CourseDemo />
@@ -217,6 +223,24 @@ export default function Landing() {
         </div>
       </section>
 
+      <section id="contact" className="scroll-mt-24 border-t border-[#F0EFEE] bg-white py-20">
+        <div className="mx-auto grid max-w-6xl items-start gap-10 px-5 lg:grid-cols-[1fr_.9fr]">
+          <div>
+            <p className="text-xs font-extrabold uppercase tracking-widest text-[#1677FF]">Nous contacter</p>
+            <h2 className="mt-2 max-w-xl text-3xl font-black tracking-tight text-[#1C1917] sm:text-4xl">
+              Une question ? Écris-nous ici.
+            </h2>
+            <p className="mt-4 max-w-lg text-base font-medium leading-relaxed text-[#64748B]">
+              Pas besoin d’ouvrir ta boîte mail. Tu laisses ton nom, ton email et ton message. Ça arrive tout de suite
+              sur le dashboard de l’équipe LearnFlow.
+            </p>
+          </div>
+          <div className="rounded-[28px] border-2 border-[#F0EFEE] bg-[#FAFAF9] p-6">
+            <ContactForm embedded />
+          </div>
+        </div>
+      </section>
+
       <section id="faq" className="scroll-mt-24 border-t border-[#F0EFEE] bg-white py-20">
         <div className="mx-auto max-w-6xl px-5">
           <p className="text-center text-xs font-extrabold uppercase tracking-widest text-[#1677FF]">Questions</p>
@@ -224,7 +248,11 @@ export default function Landing() {
             Les questions que tu te poses vraiment
           </h2>
           <p className="mx-auto mt-3 max-w-xl text-center text-base font-medium text-[#64748B]">
-            Pas de jargon. Si tu ne trouves pas ta réponse, écris-nous — on t’explique comme en classe.
+            Pas de jargon. Si tu ne trouves pas ta réponse,{" "}
+            <SupportButton className="font-extrabold text-[#1677FF] hover:underline">
+              écris-nous
+            </SupportButton>{" "}
+            — on t’explique comme en classe.
           </p>
           <div className="mt-10">
             <Faq />
@@ -237,6 +265,12 @@ export default function Landing() {
           <h2 className="text-3xl font-black sm:text-4xl">Prêt à viser 10/10 ?</h2>
           <p className="mx-auto mt-3 max-w-lg text-base font-medium text-white/90">
             Collège et lycée, programme du Togo. Tes cours restent sur le téléphone — même sans internet.
+          </p>
+          <p className="mt-3 text-sm font-semibold text-white/80">
+            Une question ?{" "}
+            <SupportButton className="underline decoration-white/40 underline-offset-4 hover:text-white">
+              Écrire au support
+            </SupportButton>
           </p>
           <div className="mt-8 flex justify-center">
             <div className="[&_span]:!bg-white [&_span]:!text-[#1677FF] [&_span]:!opacity-100 [&_a]:!bg-white [&_a]:!text-[#1677FF]">

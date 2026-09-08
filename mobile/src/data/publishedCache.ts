@@ -1,4 +1,5 @@
 import { useSyncExternalStore } from "react";
+import { isLyceeClass, normalizeClassId } from "./classes";
 import type { FicheCoursData, ProgrammeLesson, ProgrammeSubject, QCMData } from "../types/learnflow";
 import { L, packSubject, packTheme, SUBJECT_STYLE, type SubjectId } from "./programmeBuild";
 
@@ -10,6 +11,8 @@ export type PublishedLessonRow = {
   payload: {
     lessons?: { id: string; title: string; duration: string; xp: number }[];
     fiche?: Partial<FicheCoursData> & {
+      essentialText?: string;
+      detailedText?: string;
       pucesEssentiel?: string[];
       sectionsDetaillees?: { id: string; titre: string; paragraphes: string[] }[];
       motsClesMasques?: string[];
@@ -67,17 +70,17 @@ export function getPublishedSchemas() {
 }
 
 export function publishedRowForChapter(chapterId: string, classe?: string) {
-  return (
-    lessons.find((r) => r.chapter_id === chapterId && (!classe || r.class_level === classe)) ||
-    lessons.find((r) => r.chapter_id === chapterId)
-  );
+  const wanted = normalizeClassId(classe);
+  if (!wanted) return undefined;
+  return lessons.find((r) => r.chapter_id === chapterId && normalizeClassId(r.class_level) === wanted);
 }
 
 export function mergePublishedProgramme(
   subjects: ProgrammeSubject[],
   classe: string | undefined,
 ): ProgrammeSubject[] {
-  const mine = lessons.filter((r) => !classe || r.class_level === classe);
+  const wanted = normalizeClassId(classe);
+  const mine = lessons.filter((r) => wanted && normalizeClassId(r.class_level) === wanted);
   if (mine.length === 0) return subjects;
   const next = subjects.map((s) => ({
     ...s,
@@ -95,7 +98,8 @@ export function mergePublishedProgramme(
     };
     const idx = next.findIndex((s) => s.id === sid);
     if (idx < 0) {
-      next.push(packSubject(sid, [packTheme(`cloud-${sid}`, "Cours LearnFlow", [chapter])]));
+      const label = sid === "pc" && isLyceeClass(classe) ? "PC" : undefined;
+      next.push(packSubject(sid, [packTheme(`cloud-${sid}`, "Cours LearnFlow", [chapter])], label));
       continue;
     }
     let replaced = false;
@@ -107,7 +111,7 @@ export function mergePublishedProgramme(
         return { ...ch, title: row.chapter_title, lessons: chapter.lessons };
       }),
     }));
-    next[idx] = packSubject(sid, replaced ? themes : [...themes, packTheme(`cloud-${sid}`, "Cours LearnFlow", [chapter])]);
+    next[idx] = packSubject(sid, replaced ? themes : [...themes, packTheme(`cloud-${sid}`, "Cours LearnFlow", [chapter])], next[idx].name);
   }
   return next;
 }
@@ -123,6 +127,16 @@ export function overlayFiche(chapterId: string, fallback: FicheCoursData | undef
     pucesEssentiel: f.pucesEssentiel ?? fallback?.pucesEssentiel ?? [],
     sectionsDetaillees: f.sectionsDetaillees ?? fallback?.sectionsDetaillees ?? [],
     motsClesMasques: f.motsClesMasques ?? fallback?.motsClesMasques ?? [],
+    essentialText: typeof f.essentialText === "string" && f.essentialText.trim()
+      ? f.essentialText
+      : Array.isArray(f.pucesEssentiel)
+        ? undefined
+        : fallback?.essentialText,
+    detailedText: typeof f.detailedText === "string" && f.detailedText.trim()
+      ? f.detailedText
+      : Array.isArray(f.sectionsDetaillees)
+        ? undefined
+        : fallback?.detailedText,
     analogie: f.analogie
       ? {
           kicker: "EN D'AUTRE TERME",

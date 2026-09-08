@@ -2,7 +2,6 @@ import type {
   QCMData,
   FlashcardData,
   ParentNote,
-  ClasseAPC,
   AgendaSession,
   SchoolClass,
   SubjectShortcut,
@@ -10,19 +9,7 @@ import type {
   InboxNotification,
 } from "../types/learnflow";
 
-export const CLASSES: { id: ClasseAPC; label: string }[] = [
-  { id: "6eme", label: "6ème" },
-  { id: "5eme", label: "5ème" },
-  { id: "4eme", label: "4ème" },
-  { id: "3eme", label: "3ème" },
-  { id: "2nde", label: "2nde" },
-  { id: "1ere", label: "1ère" },
-  { id: "Tle", label: "Tle D" },
-];
-
-export function classLabel(id: string) {
-  return CLASSES.find((c) => c.id === id)?.label ?? id;
-}
+export { CLASSES, CLASS_GROUPS, classLabel, isLyceeClass, isTleDClass, normalizeClassId } from "./classes";
 
 export const PROFILE_COLORS = [
   { color: "#1677FF", bg: "#E6F4FF" },

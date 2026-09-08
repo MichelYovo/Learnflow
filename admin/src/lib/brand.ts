@@ -1,6 +1,53 @@
 export const ADMIN_EMAIL_DEFAULT = "admin@learnflow.tg";
 export const SUPPORT_EMAIL = "support@learnflow.tg";
 
+export type CycleScolaire = "college" | "lycee";
+
+export const CLASSES = [
+  { id: "6eme", label: "6ème", cycle: "college" as const },
+  { id: "5eme", label: "5ème", cycle: "college" as const },
+  { id: "4eme", label: "4ème", cycle: "college" as const },
+  { id: "3eme", label: "3ème", cycle: "college" as const },
+  { id: "2nde-A", label: "2nde A", cycle: "lycee" as const },
+  { id: "2nde-S", label: "2nde S", cycle: "lycee" as const },
+  { id: "1ere-A", label: "1ère A", cycle: "lycee" as const },
+  { id: "1ere-C", label: "1ère C", cycle: "lycee" as const },
+  { id: "1ere-D", label: "1ère D", cycle: "lycee" as const },
+  { id: "Tle-A", label: "Tle A", cycle: "lycee" as const },
+  { id: "Tle-C", label: "Tle C", cycle: "lycee" as const },
+  { id: "Tle-D", label: "Tle D", cycle: "lycee" as const },
+] as const;
+
+export const CLASS_GROUPS = [
+  { id: "college" as const, label: "Collège", classes: CLASSES.filter((c) => c.cycle === "college") },
+  { id: "lycee" as const, label: "Lycée", classes: CLASSES.filter((c) => c.cycle === "lycee") },
+];
+
+const LEGACY: Record<string, string> = {
+  "2nde": "2nde-S",
+  "1ere": "1ere-D",
+  Tle: "Tle-D",
+};
+
+export function normalizeClassId(id?: string): string {
+  if (!id) return "";
+  return LEGACY[id] ?? id;
+}
+
+export function classLabel(id: string) {
+  const resolved = normalizeClassId(id);
+  return CLASSES.find((c) => c.id === resolved)?.label ?? id;
+}
+
+export function isLyceeClass(classe?: string): boolean {
+  if (!classe) return false;
+  return /^(2nde|1ere|Tle)/i.test(classe);
+}
+
+export function isTleDClass(classe?: string): boolean {
+  return normalizeClassId(classe) === "Tle-D";
+}
+
 export const SUBJECTS = [
   { id: "maths", label: "Mathématiques", color: "#1677FF", bg: "#E6F4FF" },
   { id: "svt", label: "SVT", color: "#10B981", bg: "#ECFDF5" },
@@ -11,18 +58,20 @@ export const SUBJECTS = [
   { id: "edhc", label: "ECM", color: "#F97316", bg: "#FFF7ED" },
 ] as const;
 
-export const CLASSES = [
-  { id: "6eme", label: "6ème" },
-  { id: "5eme", label: "5ème" },
-  { id: "4eme", label: "4ème" },
-  { id: "3eme", label: "3ème" },
-  { id: "2nde", label: "2nde" },
-  { id: "1ere", label: "1ère" },
-  { id: "Tle", label: "Tle D" },
-] as const;
+export const SUBJECT_PHILO = { id: "philo", label: "Philosophie", color: "#6366F1", bg: "#EEF2FF" } as const;
 
-export function classLabel(id: string) {
-  return CLASSES.find((c) => c.id === id)?.label ?? id;
+export function subjectsForClass(classe?: string) {
+  const lycee = isLyceeClass(classe);
+  return [
+    SUBJECTS[0],
+    SUBJECTS[1],
+    { ...SUBJECTS[2], label: lycee ? "PC" : "PCT" },
+    SUBJECTS[3],
+    SUBJECTS[4],
+    SUBJECTS[5],
+    SUBJECTS[6],
+    ...(lycee ? [SUBJECT_PHILO] : []),
+  ];
 }
 
 export const LEAGUE_TIERS = [

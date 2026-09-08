@@ -19,6 +19,7 @@ const SUBJECT_ICON: Record<string, IconName> = {
   book: "book",
   chatbubble: "chatbubble",
   heart: "heart",
+  brain: "brain",
 };
 
 function CoursInner() {
@@ -27,6 +28,7 @@ function CoursInner() {
   const { colors } = useAppTheme();
   const profile = useLearnFlowStore((s) => s.getActiveProfile());
   const chapterProgress = useLearnFlowStore((s) => s.chapterProgress);
+  const markChapterRead = useLearnFlowStore((s) => s.markChapterRead);
   const catalogEpoch = usePublishedCatalog();
   const programme = useMemo(
     () => programmeForLearner(profile?.classe, profile?.id, chapterProgress),
@@ -47,6 +49,26 @@ function CoursInner() {
     setTheme(null);
     setChapter(null);
   }, [params, programme]);
+
+  useEffect(() => {
+    if (!subject) return;
+    const next = programme.find((s) => s.id === subject.id);
+    if (next && next.progress !== subject.progress) setSubject(next);
+  }, [programme, subject]);
+
+  useEffect(() => {
+    if (!subject || !theme) return;
+    const next = subject.themes.find((t) => t.id === theme.id);
+    if (next && next.lessonsDone !== theme.lessonsDone) setTheme(next);
+  }, [subject, theme]);
+
+  useEffect(() => {
+    if (!theme || !chapter) return;
+    const next = theme.chapters.find((c) => c.id === chapter.id);
+    const nextDone = next?.lessons.filter((l) => l.status === "done").length ?? 0;
+    const curDone = chapter.lessons.filter((l) => l.status === "done").length;
+    if (next && nextDone !== curDone) setChapter(next);
+  }, [theme, chapter]);
 
   const goBack = () => {
     if (level === 3) {
@@ -260,7 +282,10 @@ function CoursInner() {
         {level === 3 && chapter ? (
           <button
             type="button"
-            onClick={() => router.push(`/app/quiz/assimilation/${chapter.id}`)}
+            onClick={() => {
+              markChapterRead(chapter.id);
+              router.push(`/app/quiz/assimilation/${chapter.id}`);
+            }}
             className="mt-2 w-full rounded-[18px] py-[18px] text-[16px] font-extrabold text-white"
             style={{ background: colors.primary }}
           >
