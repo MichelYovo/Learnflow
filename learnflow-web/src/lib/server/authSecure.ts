@@ -137,22 +137,29 @@ async function sendSmtp(to: string, subject: string, html: string, text?: string
   const pass = (process.env.SMTP_PASS ?? "").replace(/\s/g, "").trim();
   if (!user || !pass) return { ok: false, error: "no_smtp" };
   const host = (process.env.SMTP_HOST ?? "smtp.gmail.com").trim();
-  const port = Number(process.env.SMTP_PORT || 465);
+  const preferred = Number(process.env.SMTP_PORT || 465);
   const from = (process.env.SMTP_FROM ?? `LearnFlow <${user}>`).trim();
-  try {
-    const nodemailer = await import("nodemailer");
-    const transporter = nodemailer.createTransport({
-      host,
-      port,
-      secure: port === 465,
-      auth: { user, pass },
-    });
-    await transporter.sendMail({ from, to, subject, html, text: text || subject });
-    return { ok: true };
-  } catch (err) {
-    const message = err instanceof Error ? err.message : "smtp_error";
-    return { ok: false, error: message.slice(0, 240) };
+  const ports = preferred === 587 ? [587, 465] : [465, 587];
+  let lastError = "smtp_error";
+  for (const port of ports) {
+    try {
+      const nodemailer = await import("nodemailer");
+      const transporter = nodemailer.createTransport({
+        host,
+        port,
+        secure: port === 465,
+        connectionTimeout: 8000,
+        greetingTimeout: 8000,
+        socketTimeout: 20000,
+        auth: { user, pass },
+      });
+      await transporter.sendMail({ from, to, subject, html, text: text || subject });
+      return { ok: true };
+    } catch (err) {
+      lastError = err instanceof Error ? err.message : "smtp_error";
+    }
   }
+  return { ok: false, error: lastError.slice(0, 240) };
 }
 
 async function sendHtmlEmail(
