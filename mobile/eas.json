@@ -10,19 +10,28 @@
       "android": {
         "buildType": "apk"
       },
-      "node": "20.19.4"
+      "node": "20.19.4",
+      "env": {
+        "EXPO_PUBLIC_LEARNFLOW_API_URL": "https://learnflow-web.vercel.app"
+      }
     },
     "production": {
       "android": {
         "buildType": "apk"
       },
-      "node": "20.19.4"
+      "node": "20.19.4",
+      "env": {
+        "EXPO_PUBLIC_LEARNFLOW_API_URL": "https://learnflow-web.vercel.app"
+      }
     },
     "store": {
       "android": {
         "buildType": "app-bundle"
       },
-      "node": "20.19.4"
+      "node": "20.19.4",
+      "env": {
+        "EXPO_PUBLIC_LEARNFLOW_API_URL": "https://learnflow-web.vercel.app"
+      }
     }
   }
 }

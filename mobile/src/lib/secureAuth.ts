@@ -1,3 +1,4 @@
+import { Platform } from "react-native";
 import { isSupabaseConfigured, supabase } from "./supabase";
 import { verifyEmailOtp } from "./emailOtp";
 
@@ -13,10 +14,18 @@ type SecureJson = {
   attemptsLeft?: number;
 };
 
+const PRODUCTION_API = "https://learnflow-web.vercel.app";
+
 let lastOtpChannel: OtpChannel = "learnflow";
 
 function apiBase() {
-  return (process.env.EXPO_PUBLIC_LEARNFLOW_API_URL ?? "").replace(/\/$/, "");
+  let base = (process.env.EXPO_PUBLIC_LEARNFLOW_API_URL ?? "").replace(/\/$/, "");
+  if (!base) return PRODUCTION_API;
+  const isLoopback = /localhost|127\.0\.0\.1/i.test(base);
+  if (isLoopback && Platform.OS !== "web") {
+    return PRODUCTION_API;
+  }
+  return base;
 }
 
 async function accessToken(): Promise<string | null> {

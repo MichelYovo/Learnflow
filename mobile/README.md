@@ -75,11 +75,13 @@ Les cours affichés dépendent de la classe. En SVT, les chapitres cœur, ADN, n
 4. **Code à 6 chiffres** envoyé à l’email du compte (2FA), puis **Succès**. Premier compte : classe seulement (numéro parent facultatif).
 5. Après le code : email « connecté à LearnFlow ». WhatsApp parent si un numéro est enregistré.
 
-Pour les alertes connexion, ajoute aussi :
+Pour le code à 6 chiffres (et l’alerte « connecté »), l’app appelle le web. Par défaut : **https://learnflow-web.vercel.app** (Gmail SMTP). Dans `.env` :
 
 ```
-EXPO_PUBLIC_LEARNFLOW_API_URL=http://localhost:3002
+EXPO_PUBLIC_LEARNFLOW_API_URL=https://learnflow-web.vercel.app
 ```
+
+Sur un téléphone, `localhost` ne marche pas : l’app bascule toute seule vers Vercel. Pour tester le web local, mets l’IP du PC (`http://192.168.x.x:3002`).
 
 Le store `isAuthenticated` bascule ensuite vers l’app principale.
 

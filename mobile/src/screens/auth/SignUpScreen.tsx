@@ -162,7 +162,7 @@ export default function SignUpScreen({ navigation }: Props) {
         return;
       }
     }
-    navigation.navigate("OTP", { email: email.trim().toLowerCase(), flow: "signup" });
+    navigation.replace("OTP", { email: email.trim().toLowerCase(), flow: "signup" });
     setBusy(false);
   };
 

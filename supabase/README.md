@@ -206,7 +206,7 @@ Puis **redémarre** `npm run dev` dans `learnflow-web` (port 3002).
 ```
 EXPO_PUBLIC_SUPABASE_URL=https://xxxx.supabase.co
 EXPO_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-EXPO_PUBLIC_LEARNFLOW_API_URL=http://localhost:3002
+EXPO_PUBLIC_LEARNFLOW_API_URL=https://learnflow-web.vercel.app
 ```
 
 Puis **redémarre** Expo (`npm start` dans `mobile`).
@@ -300,10 +300,10 @@ WhatsApp — un des trois :
 Mobile : dans `mobile/.env`, pointe vers le web :
 
 ```
-EXPO_PUBLIC_LEARNFLOW_API_URL=http://localhost:3002
+EXPO_PUBLIC_LEARNFLOW_API_URL=https://learnflow-web.vercel.app
 ```
 
-Sur un téléphone réel, utilise l’IP du PC (`http://192.168.x.x:3002`), pas `localhost`. En production : l’URL Vercel du web.
+Sur un téléphone, `localhost` ne marche pas : l’app utilise Vercel (Gmail) toute seule. Pour le web local, mets l’IP du PC.
 
 Sans Resend (domaine non vérifié), **le code part quand même** via le mailer Supabase (6 chiffres, pas de lien). Sans WhatsApp, seule l’alerte parents est sautée.
 
