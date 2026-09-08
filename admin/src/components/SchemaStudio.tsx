@@ -1,8 +1,11 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import FileDropZone from "@/components/FileDropZone";
+import { useIncomingFiles } from "@/hooks/useIncomingFiles";
 import { CLASSES } from "@/lib/brand";
 import type { SchemaPart } from "@/lib/contentTypes";
+import { IMAGE_ACCEPT } from "@/lib/files";
 
 type Model = {
   id: string;
@@ -21,6 +24,7 @@ export default function SchemaStudio() {
   const [active, setActive] = useState<Model | null>(null);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
   const [classLevel, setClassLevel] = useState("3eme");
   const [chapterId, setChapterId] = useState("circulation");
 
@@ -36,6 +40,7 @@ export default function SchemaStudio() {
 
   const upload = async (file: File) => {
     setBusy(true);
+    setError("");
     setMessage("Prof annote le schéma…");
     const form = new FormData();
     form.set("file", file);
@@ -45,13 +50,21 @@ export default function SchemaStudio() {
     const json = (await res.json()) as { error?: string; model?: Model };
     setBusy(false);
     if (!res.ok) {
-      setMessage(json.error || "Impossible d’annoter l’image.");
+      setMessage("");
+      setError(json.error || "Impossible d’annoter l’image.");
       return;
     }
     setMessage("Schéma prêt. Corrige les pastilles puis enregistre.");
     await load();
     if (json.model) setActive(json.model);
   };
+
+  const { dragging } = useIncomingFiles({
+    accept: IMAGE_ACCEPT,
+    enabled: !busy,
+    onFile: (file) => void upload(file),
+    onError: setError,
+  });
 
   const save = async () => {
     if (!active) return;
@@ -66,8 +79,24 @@ export default function SchemaStudio() {
     await load();
   };
 
+  const dropProps = {
+    accept: IMAGE_ACCEPT,
+    disabled: busy,
+    hot: dragging,
+    onFile: (file: File) => void upload(file),
+    onError: setError,
+    hint: "PNG, JPG, WebP — glisse, clique ou colle (Ctrl+V)",
+  };
+
   return (
-    <div className="grid gap-5 lg:grid-cols-[280px_1fr]">
+    <div className="relative grid gap-5 lg:grid-cols-[280px_1fr]">
+      {dragging ? (
+        <div className="pointer-events-none fixed inset-x-0 top-4 z-50 flex justify-center">
+          <p className="rounded-full bg-[#1677FF] px-5 py-2 text-sm font-extrabold text-white shadow-lg">
+            Relâche n’importe où pour déposer l’image
+          </p>
+        </div>
+      ) : null}
       <aside className="rounded-[22px] border-2 border-[#F0EFEE] bg-white p-4">
         <h2 className="font-black">Nouveau schéma</h2>
         <select value={classLevel} onChange={(e) => setClassLevel(e.target.value)} className="mt-3 h-10 w-full rounded-xl border-2 border-[#F0EFEE] px-2 text-sm font-bold">
@@ -76,15 +105,9 @@ export default function SchemaStudio() {
           ))}
         </select>
         <input value={chapterId} onChange={(e) => setChapterId(e.target.value)} placeholder="id chapitre (circulation)" className="mt-2 h-10 w-full rounded-xl border-2 border-[#F0EFEE] px-3 text-sm font-bold" />
-        <input
-          type="file"
-          accept="image/*"
-          className="mt-2 w-full text-xs"
-          onChange={(e) => {
-            const f = e.target.files?.[0];
-            if (f) void upload(f);
-          }}
-        />
+        <div className="mt-3">
+          <FileDropZone compact title="Déposer l’image" {...dropProps} />
+        </div>
         <ul className="mt-4 space-y-1">
           {models.map((m) => (
             <li key={m.id}>
@@ -96,11 +119,10 @@ export default function SchemaStudio() {
         </ul>
       </aside>
       <section>
+        {error ? <p className="mb-3 rounded-2xl bg-[#FEF2F2] px-4 py-2 text-sm font-bold text-[#DC2626]">{error}</p> : null}
         {message ? <p className="mb-3 rounded-2xl bg-[#ECFDF5] px-4 py-2 text-sm font-bold text-[#059669]">{message}</p> : null}
         {!active ? (
-          <p className="rounded-[22px] border-2 border-dashed border-[#E7E5E4] p-10 text-center text-sm font-semibold text-[#A8A29E]">
-            Envoie une image (cœur, neurone, carte…). Prof pose des pastilles. Tu les déplaces et tu les renommes.
-          </p>
+          <FileDropZone title="Glisse le schéma ici" {...dropProps} />
         ) : (
           <div className="space-y-3">
             <input value={active.title} onChange={(e) => setActive({ ...active, title: e.target.value })} className="h-11 w-full rounded-2xl border-2 border-[#F0EFEE] px-3 font-black" />

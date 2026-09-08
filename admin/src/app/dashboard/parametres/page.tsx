@@ -27,7 +27,7 @@ export default async function SettingsPage() {
             </div>
             <div className="flex justify-between gap-4">
               <dt className="font-semibold text-[#64748B]">IA Prof / Super Prof</dt>
-              <dd className="font-extrabold text-[#1C1917]">{adminHasOpenAi() ? "OPENAI_API_KEY ok" : "Clé absente"}</dd>
+              <dd className="font-extrabold text-[#1C1917]">{adminHasOpenAi() ? "GROQ_API_KEY ok" : "Clé absente"}</dd>
             </div>
           </dl>
           <p className="mt-5 text-sm font-medium leading-relaxed text-[#64748B]">

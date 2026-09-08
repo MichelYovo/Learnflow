@@ -9,7 +9,7 @@ export default async function SchemasPage() {
       <TopBar title="Schémas 3D" email={session?.email ?? ""} />
       <main className="flex-1 p-6">
         <p className="mb-5 max-w-2xl text-sm font-medium leading-relaxed text-[#64748B]">
-          Une image annotée (pas un mesh 3D). Prof propose les pastilles ; tu les corriges et tu les attaches à un chapitre.
+          Une image annotée (pas un mesh 3D). Glisse, clique ou colle (Ctrl+V) le schéma. Prof propose les pastilles ; tu les corriges et tu les attaches à un chapitre.
         </p>
         <SchemaStudio />
       </main>

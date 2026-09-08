@@ -31,6 +31,10 @@ export async function POST(request: Request) {
   if (!(file instanceof File) || file.size === 0) {
     return NextResponse.json({ error: "Envoie une image du schéma." }, { status: 400 });
   }
+  const isImage = (file.type || "").startsWith("image/") || /\.(png|jpe?g|webp|gif)$/i.test(file.name);
+  if (!isImage) {
+    return NextResponse.json({ error: "Pour un schéma, dépose une image (PNG, JPG, WebP)." }, { status: 400 });
+  }
   const buf = Buffer.from(await file.arrayBuffer());
   const mime = file.type || "image/jpeg";
   const dataUrl = `data:${mime};base64,${buf.toString("base64")}`;

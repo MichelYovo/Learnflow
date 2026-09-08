@@ -1,8 +1,11 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import FileDropZone from "@/components/FileDropZone";
+import { useIncomingFiles } from "@/hooks/useIncomingFiles";
 import { CLASSES, SUBJECTS } from "@/lib/brand";
 import { emptyPayload, type CoursePayload } from "@/lib/contentTypes";
+import { COURSE_ACCEPT } from "@/lib/files";
 
 type Draft = {
   id: string;
@@ -20,6 +23,7 @@ export default function ProfStudio() {
   const [active, setActive] = useState<Draft | null>(null);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
   const [classLevel, setClassLevel] = useState("3eme");
   const [subjectId, setSubjectId] = useState("svt");
   const [chapterId, setChapterId] = useState("");
@@ -33,15 +37,29 @@ export default function ProfStudio() {
     const res = await fetch("/api/prof/drafts");
     const json = (await res.json()) as { drafts?: Draft[]; error?: string };
     setDrafts(json.drafts ?? []);
-    if (json.error) setMessage(json.error);
+    if (json.error) setError(json.error);
   }, []);
 
   useEffect(() => {
     void load();
   }, [load]);
 
+  const receiveFile = useCallback((next: File) => {
+    setFile(next);
+    setError("");
+    setMessage(`Fichier prêt : ${next.name}`);
+  }, []);
+
+  const { dragging } = useIncomingFiles({
+    accept: COURSE_ACCEPT,
+    enabled: !busy,
+    onFile: receiveFile,
+    onError: setError,
+  });
+
   const generate = async () => {
     setBusy(true);
+    setError("");
     setMessage("Prof lit le cours…");
     const form = new FormData();
     form.set("class_level", classLevel);
@@ -54,7 +72,8 @@ export default function ProfStudio() {
     const json = (await res.json()) as { error?: string; draft?: Draft; warning?: string };
     setBusy(false);
     if (!res.ok) {
-      setMessage(json.error || "Prof n’a pas pu générer.");
+      setMessage("");
+      setError(json.error || "Prof n’a pas pu générer.");
       return;
     }
     setMessage(json.warning ? `Brouillon prêt (${json.warning})` : "Brouillon prêt. Relis et corrige avant d’envoyer.");
@@ -97,9 +116,26 @@ export default function ProfStudio() {
   };
 
   const payload = active?.payload ?? emptyPayload();
+  const dropProps = {
+    accept: COURSE_ACCEPT,
+    file,
+    disabled: busy,
+    hot: dragging,
+    onFile: receiveFile,
+    onError: setError,
+    onClear: () => setFile(null),
+    hint: "PDF, image ou .txt — glisse, clique ou colle (Ctrl+V)",
+  };
 
   return (
     <div className="grid gap-5 lg:grid-cols-[280px_1fr]">
+      {dragging ? (
+        <div className="pointer-events-none fixed inset-x-0 top-4 z-50 flex justify-center">
+          <p className="rounded-full bg-[#1677FF] px-5 py-2 text-sm font-extrabold text-white shadow-lg">
+            Relâche n’importe où pour déposer le fichier
+          </p>
+        </div>
+      ) : null}
       <aside className="space-y-3">
         <article className="rounded-[22px] border-2 border-[#F0EFEE] bg-white p-4">
           <h2 className="font-black text-[#1C1917]">Nouveau cours</h2>
@@ -121,7 +157,9 @@ export default function ProfStudio() {
           </label>
           <input value={chapterTitle} onChange={(e) => setChapterTitle(e.target.value)} placeholder="Titre du chapitre" className="mt-2 h-10 w-full rounded-xl border-2 border-[#F0EFEE] px-3 text-sm font-bold" />
           <input value={chapterId} onChange={(e) => setChapterId(e.target.value)} placeholder="id (ex. digestion)" className="mt-2 h-10 w-full rounded-xl border-2 border-[#F0EFEE] px-3 text-sm font-bold" />
-          <input type="file" accept="application/pdf,.pdf,.txt" className="mt-2 w-full text-xs" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
+          <div className="mt-3">
+            <FileDropZone compact title="Déposer le cours" {...dropProps} />
+          </div>
           <textarea value={text} onChange={(e) => setText(e.target.value)} rows={5} placeholder="Ou colle le texte du cours…" className="mt-2 w-full rounded-xl border-2 border-[#F0EFEE] p-2 text-sm" />
           <button type="button" disabled={busy} onClick={() => void generate()} className="mt-2 w-full rounded-2xl bg-[#1677FF] py-2.5 text-sm font-extrabold text-white disabled:opacity-60">
             {busy ? "Prof travaille…" : "Analyser avec Prof"}
@@ -144,11 +182,10 @@ export default function ProfStudio() {
       </aside>
 
       <section className="space-y-4">
+        {error ? <p className="rounded-2xl bg-[#FEF2F2] px-4 py-3 text-sm font-bold text-[#DC2626]">{error}</p> : null}
         {message ? <p className="rounded-2xl bg-[#E6F4FF] px-4 py-3 text-sm font-bold text-[#1677FF]">{message}</p> : null}
         {!active ? (
-          <p className="rounded-[22px] border-2 border-dashed border-[#E7E5E4] p-10 text-center text-sm font-semibold text-[#A8A29E]">
-            Envoie un PDF. Prof prépare résumé, leçons et quiz. Tu corriges, puis tu publies sur le web, le mobile, ou les deux.
-          </p>
+          <FileDropZone title="Glisse le PDF ou l’image ici" {...dropProps} />
         ) : (
           <>
             <div className="flex flex-wrap gap-2">

@@ -153,7 +153,11 @@ export async function deleteAuthUser(id: string): Promise<{ ok: boolean; error?:
 }
 
 export function adminHasOpenAi() {
-  return Boolean(process.env.OPENAI_API_KEY?.trim() || process.env.OPENAI_COMPATIBLE_API_KEY?.trim());
+  return Boolean(
+    process.env.GROQ_API_KEY?.trim() ||
+      process.env.OPENAI_API_KEY?.trim() ||
+      process.env.OPENAI_COMPATIBLE_API_KEY?.trim()
+  );
 }
 
 export { supabaseUrl };
