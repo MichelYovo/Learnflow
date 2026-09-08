@@ -248,22 +248,52 @@ function goTrueErrorMessage(body: string, status: number) {
   }
 }
 
-/** Mailer Supabase : 6 chiffres ({{ .Token }}), sans lien de connexion. */
+/** Mailer Supabase : 6 chiffres, sans lien. create_user true sinon « otp_disabled ». */
 async function sendGoTrueOtp(email: string): Promise<{ ok?: true; error?: string }> {
   const url = supabaseUrl();
-  const anon = anonKey();
-  if (!url || !anon) return { error: "Supabase n’est pas configuré." };
+  const key = secretKey() || anonKey();
+  if (!url || !key) return { error: "Supabase n’est pas configuré." };
   const res = await fetch(`${url.replace(/\/$/, "")}/auth/v1/otp`, {
     method: "POST",
     headers: {
-      apikey: anon,
-      Authorization: `Bearer ${anon}`,
+      apikey: key,
+      Authorization: `Bearer ${key}`,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ email, create_user: false }),
+    body: JSON.stringify({ email, create_user: true }),
   });
   if (!res.ok) return { error: goTrueErrorMessage(await res.text(), res.status) };
   return { ok: true };
+}
+
+async function generateEmailOtp(email: string): Promise<{ code?: string; error?: string }> {
+  const url = supabaseUrl();
+  const key = secretKey();
+  if (!url || !key) return { error: "La vérification n’est pas configurée (clé secrète Supabase)." };
+  for (const type of ["magiclink", "signup"] as const) {
+    const res = await fetch(`${url.replace(/\/$/, "")}/auth/v1/admin/generate_link`, {
+      method: "POST",
+      headers: {
+        apikey: key,
+        Authorization: `Bearer ${key}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ type, email }),
+    });
+    const body = await res.text();
+    if (!res.ok) {
+      if (type === "signup") return { error: goTrueErrorMessage(body, res.status) };
+      continue;
+    }
+    try {
+      const json = JSON.parse(body) as { email_otp?: string; properties?: { email_otp?: string } };
+      const code = String(json.email_otp || json.properties?.email_otp || "").replace(/\D/g, "").slice(0, 6);
+      if (code.length === 6) return { code };
+    } catch {
+      /* try next type */
+    }
+  }
+  return { error: "Impossible de générer le code." };
 }
 
 function secondsLeft(fromIso: string, windowMs: number) {
@@ -333,7 +363,8 @@ export async function handleSendOtp(
   }
 
   const expiresAt = new Date(Date.now() + OTP_TTL_MS).toISOString();
-  const code = String(randomInt(100000, 1000000));
+  const generated = await generateEmailOtp(email);
+  const code = generated.code || String(randomInt(100000, 1000000));
   const sent = await sendResend(email, "LearnFlow : ton code de confirmation", jumiaCodeEmail(code));
   if (sent.ok) {
     const { error: insertError } = await admin.from("email_challenges").insert({
@@ -345,6 +376,7 @@ export async function handleSendOtp(
     if (insertError) {
       return { error: "Impossible d’enregistrer le code. Relance le SQL schema.sql dans Supabase.", status: 500 };
     }
+    await logNotice(admin, user.id, "email", "otp", "sent", "resend");
     return { ok: true as const, channel: "learnflow" as const, retryAfterSeconds: OTP_RESEND_SECONDS };
   }
 
@@ -357,14 +389,25 @@ export async function handleSendOtp(
       expires_at: expiresAt,
       consumed_at: new Date().toISOString(),
     });
+    await logNotice(admin, user.id, "email", "otp", "sent", "supabase");
     return { ok: true as const, channel: "supabase" as const, retryAfterSeconds: OTP_RESEND_SECONDS };
   }
 
+  await logNotice(admin, user.id, "email", "otp", "error", `${sent.error ?? ""} | ${fallback.error ?? ""}`.slice(0, 280));
   const rate = `${fallback.error ?? ""} ${sent.error ?? ""}`.toLowerCase();
   if (rate.includes("rate") || rate.includes("too many") || rate.includes("after")) {
     return {
-      error: "Attends le minuteur avant de renvoyer le code.",
+      error:
+        "L’email n’a pas pu partir (limite d’envoi). Vérifie un domaine Resend pour envoyer à tous les élèves, puis réessaie dans une minute.",
       status: 429,
+      retryAfterSeconds: OTP_RESEND_SECONDS,
+    };
+  }
+  if ((sent.error ?? "").toLowerCase().includes("testing emails") || (sent.error ?? "").toLowerCase().includes("verify a domain")) {
+    return {
+      error:
+        "Le code n’est pas parti : Resend n’envoie qu’à l’email du compte tant qu’un domaine n’est pas vérifié (resend.com/domains). Change RESEND_FROM vers ce domaine.",
+      status: 502,
       retryAfterSeconds: OTP_RESEND_SECONDS,
     };
   }
