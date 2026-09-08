@@ -243,29 +243,33 @@ Après Google ou un mot de passe, **LearnFlow génère lui-même un code aléato
 
 On ne redemande plus le numéro de téléphone pour entrer : si le profil existe déjà (classe renseignée), ça passe après le code.
 
-### 1. Envoi du code (Resend, obligatoire)
+### 1. Envoi du code (Gmail, pas besoin de domaine)
 
-Le code part par **Resend** (mise en page LearnFlow). Si Resend est encore en mode test, LearnFlow envoie **le même écran de 6 chiffres** via le mailer Supabase — toujours **sans bouton « se connecter »**. L’élève tape le code ; on ne bloque pas le compte.
+Sans nom de domaine, LearnFlow envoie le code **avec ton Gmail**.
 
-En bas de l’écran : minuteur **1:00** avant « Renvoyer le code ». **10 essais** par code, puis il faut attendre le minuteur et demander un nouveau code.
-
-1. Crée un compte [Resend](https://resend.com) et une clé API.
-2. **Vérifie un domaine** (DNS) pour pouvoir écrire à n’importe quel élève.  
-   Tant que tu restes en mode test (`onboarding@resend.dev`), Resend n’envoie **qu’à l’email du compte Resend**.
-3. Ajoute dans `learnflow-web/.env.local` :
+1. Ouvre [Google — mots de passe des applications](https://myaccount.google.com/apppasswords) (la validation en 2 étapes doit être activée).
+2. Nom : `LearnFlow` → Créer. Google affiche **16 lettres**.
+3. Dans `learnflow-web/.env.local` (et Vercel → Environment Variables) :
 
 ```
-SUPABASE_SECRET_KEY=…
-RESEND_API_KEY=re_…
-RESEND_FROM=LearnFlow <noreply@ton-domaine.tg>
-OTP_PEPPER=une-chaine-secrete-longue
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=465
+SMTP_USER=ton.gmail@gmail.com
+SMTP_PASS=xxxxxxxxxxxxxxxx
+SMTP_FROM=LearnFlow <ton.gmail@gmail.com>
 ```
 
-`SUPABASE_SECRET_KEY` sert au serveur web pour stocker le **hash** du code (table `email_challenges`), jamais le code en clair. Relance `schema.sql` si cette table n’existe pas encore.
+`SMTP_PASS` = les 16 lettres, **pas** le mot de passe Gmail habituel. Ne commite jamais ce fichier.
 
-4. Redémarre `npm run dev` dans `learnflow-web`.
+4. Redémarre `npm run dev`. Sur Vercel, ajoute les mêmes variables (Production + Preview `dev`) puis redéploie.
 
-Dans Supabase : **Authentication → Providers → Email** → **Confirm email : désactivé**. C’est LearnFlow qui confirme l’identité avec le code. Si tu laisses « Confirm email », Supabase envoie encore un mail de lien (spam / hameçonnage) et l’élève n’a pas de session pour recevoir le code.
+Le mail part de ton Gmail vers n’importe quel élève. Plus tard tu pourras passer sur un domaine + Resend.
+
+`SUPABASE_SECRET_KEY` reste obligatoire (hash du code). Relance `schema.sql` si `email_challenges` n’existe pas.
+
+Dans Supabase : **Authentication → Providers → Email** → **Confirm email : désactivé**.
+
+En bas de l’écran OTP : minuteur **1:00** avant « Renvoyer le code ». **10 essais** par code.
 
 ### 2. Modèles Supabase (filet de sécurité, pas le login)
 

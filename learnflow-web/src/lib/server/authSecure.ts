@@ -128,6 +128,47 @@ function wrapEmail(title: string, inner: string) {
 </html>`;
 }
 
+function otpPlainText(code: string) {
+  return `LearnFlow — code de confirmation : ${code}\nValable 10 minutes. Aucun lien à cliquer. Ne partage ce code avec personne.`;
+}
+
+async function sendSmtp(to: string, subject: string, html: string, text?: string): Promise<{ ok: boolean; error?: string }> {
+  const user = (process.env.SMTP_USER ?? "").trim();
+  const pass = (process.env.SMTP_PASS ?? "").replace(/\s/g, "").trim();
+  if (!user || !pass) return { ok: false, error: "no_smtp" };
+  const host = (process.env.SMTP_HOST ?? "smtp.gmail.com").trim();
+  const port = Number(process.env.SMTP_PORT || 465);
+  const from = (process.env.SMTP_FROM ?? `LearnFlow <${user}>`).trim();
+  try {
+    const nodemailer = await import("nodemailer");
+    const transporter = nodemailer.createTransport({
+      host,
+      port,
+      secure: port === 465,
+      auth: { user, pass },
+    });
+    await transporter.sendMail({ from, to, subject, html, text: text || subject });
+    return { ok: true };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "smtp_error";
+    return { ok: false, error: message.slice(0, 240) };
+  }
+}
+
+async function sendHtmlEmail(
+  to: string,
+  subject: string,
+  html: string,
+  text?: string,
+): Promise<{ ok: boolean; error?: string; via?: string }> {
+  const smtp = await sendSmtp(to, subject, html, text);
+  if (smtp.ok) return { ok: true, via: "smtp" };
+  const resend = await sendResend(to, subject, html);
+  if (resend.ok) return { ok: true, via: "resend" };
+  const smtpHint = smtp.error && smtp.error !== "no_smtp" ? smtp.error : "";
+  return { ok: false, error: smtpHint || resend.error };
+}
+
 async function sendResend(to: string, subject: string, html: string): Promise<{ ok: boolean; error?: string }> {
   const key = (process.env.RESEND_API_KEY ?? "").trim();
   if (!key) {
@@ -365,7 +406,12 @@ export async function handleSendOtp(
   const expiresAt = new Date(Date.now() + OTP_TTL_MS).toISOString();
   const generated = await generateEmailOtp(email);
   const code = generated.code || String(randomInt(100000, 1000000));
-  const sent = await sendResend(email, "LearnFlow : ton code de confirmation", jumiaCodeEmail(code));
+  const sent = await sendHtmlEmail(
+    email,
+    "LearnFlow : ton code de confirmation",
+    jumiaCodeEmail(code),
+    otpPlainText(code),
+  );
   if (sent.ok) {
     const { error: insertError } = await admin.from("email_challenges").insert({
       user_id: user.id,
@@ -376,7 +422,7 @@ export async function handleSendOtp(
     if (insertError) {
       return { error: "Impossible d’enregistrer le code. Relance le SQL schema.sql dans Supabase.", status: 500 };
     }
-    await logNotice(admin, user.id, "email", "otp", "sent", "resend");
+    await logNotice(admin, user.id, "email", "otp", "sent", sent.via || "mail");
     return { ok: true as const, channel: "learnflow" as const, retryAfterSeconds: OTP_RESEND_SECONDS };
   }
 
@@ -403,10 +449,10 @@ export async function handleSendOtp(
       retryAfterSeconds: OTP_RESEND_SECONDS,
     };
   }
-  if ((sent.error ?? "").toLowerCase().includes("testing emails") || (sent.error ?? "").toLowerCase().includes("verify a domain")) {
+  if ((sent.error ?? "").toLowerCase().includes("testing emails") || (sent.error ?? "").toLowerCase().includes("verify a domain") || (sent.error ?? "") === "no_smtp") {
     return {
       error:
-        "Le code n’est pas parti : Resend n’envoie qu’à l’email du compte tant qu’un domaine n’est pas vérifié (resend.com/domains). Change RESEND_FROM vers ce domaine.",
+        "Le code n’est pas parti. Sans domaine, utilise Gmail : ajoute SMTP_USER (ton Gmail) et SMTP_PASS (mot de passe d’application Google) dans .env.local et Vercel.",
       status: 502,
       retryAfterSeconds: OTP_RESEND_SECONDS,
     };
@@ -505,9 +551,9 @@ export async function handleLoginNotice(
 <strong>Où :</strong> ${appLabel(platform)}</p>
 <p style="margin:18px 0 0;font-size:13px;line-height:1.5;color:#78716C;">Si ce n’est pas toi, change ton mot de passe et contacte le support LearnFlow.</p>`,
     );
-    const sent = await sendResend(email, "LearnFlow — connexion confirmée", html);
-    const emailStatus = sent.ok ? "sent" : sent.error?.startsWith("Ajoute RESEND_API_KEY") ? "skipped" : "error";
-    await logNotice(admin, user.id, "email", event, emailStatus, sent.error);
+    const sent = await sendHtmlEmail(email, "LearnFlow — connexion confirmée", html);
+    const emailStatus = sent.ok ? "sent" : sent.error === "no_smtp" || sent.error?.startsWith("Ajoute RESEND_API_KEY") ? "skipped" : "error";
+    await logNotice(admin, user.id, "email", event, emailStatus, sent.via || sent.error);
   }
 
   const parentPhone = student?.parent_phone?.trim() ?? "";

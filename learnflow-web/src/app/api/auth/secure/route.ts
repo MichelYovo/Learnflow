@@ -8,6 +8,8 @@ import {
   type SecureAction,
 } from "@/lib/server/authSecure";
 
+export const runtime = "nodejs";
+
 const cors = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
