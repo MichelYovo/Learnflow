@@ -1,6 +1,8 @@
 import { makeRedirectUri } from "expo-auth-session";
 import { isSupabaseConfigured, supabase } from "./supabase";
 
+/** Ancien envoi Magic Link Supabase — ne plus l’utiliser pour entrer dans LearnFlow. */
+
 const lastOkAt = new Map<string, number>();
 const inFlight = new Map<string, Promise<{ error?: string }>>();
 const DEDUPE_MS = 20_000;
@@ -19,6 +21,9 @@ export function mapOtpError(message: string): string {
   }
   if (m.includes("signups not allowed") || m.includes("email logins are disabled")) {
     return "Le fournisseur Email n’est pas activé dans Supabase (Authentication → Providers).";
+  }
+  if (m.includes("smtp") || m.includes("error sending") || m.includes("unable to send") || m.includes("mailer")) {
+    return "L’email n’a pas pu partir. Vérifie Authentication → Email (fournisseur activé) et les spams, puis renvoie le code.";
   }
   return message || "Impossible d’envoyer le code. Réessaie.";
 }
@@ -42,7 +47,7 @@ export async function sendEmailOtp(
     const { error } = await supabase.auth.signInWithOtp({
       email: trimmed,
       options: {
-        shouldCreateUser: options?.shouldCreateUser ?? true,
+        shouldCreateUser: options?.shouldCreateUser ?? false,
         data: options?.data,
         emailRedirectTo: redirectTo,
       },

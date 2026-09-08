@@ -24,7 +24,14 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Session expirée. Reconnecte-toi." }, { status: 401, headers: cors });
   }
 
-  let body: { action?: SecureAction; token?: string; platform?: AuthPlatform; event?: string; force?: boolean | string } = {};
+  let body: {
+    action?: SecureAction;
+    token?: string;
+    platform?: AuthPlatform;
+    event?: string;
+    force?: boolean | string;
+    create_user?: boolean | string;
+  } = {};
   try {
     body = (await request.json()) as typeof body;
   } catch {
@@ -34,9 +41,15 @@ export async function POST(request: Request) {
   const platform: AuthPlatform = body.platform === "mobile" ? "mobile" : "web";
 
   if (body.action === "send-otp") {
-    const result = await handleSendOtp(user, body.force === true || body.force === "true");
+    const result = await handleSendOtp(
+      user,
+      body.force === true || body.force === "true",
+      body.create_user === true || body.create_user === "true",
+    );
     if ("error" in result && result.error) {
-      return NextResponse.json({ error: result.error }, { status: result.status ?? 400, headers: cors });
+      const status = "status" in result ? (result.status ?? 400) : 400;
+      const retryAfterSeconds = "retryAfterSeconds" in result ? result.retryAfterSeconds : undefined;
+      return NextResponse.json({ error: result.error, retryAfterSeconds }, { status, headers: cors });
     }
     return NextResponse.json(result, { headers: cors });
   }
@@ -44,7 +57,15 @@ export async function POST(request: Request) {
   if (body.action === "verify-otp") {
     const result = await handleVerifyOtp(user, body.token ?? "");
     if ("error" in result && result.error) {
-      return NextResponse.json({ error: result.error }, { status: result.status ?? 400, headers: cors });
+      const status = "status" in result ? (result.status ?? 400) : 400;
+      return NextResponse.json(
+        {
+          error: result.error,
+          attemptsLeft: "attemptsLeft" in result ? result.attemptsLeft : undefined,
+          retryAfterSeconds: "retryAfterSeconds" in result ? result.retryAfterSeconds : undefined,
+        },
+        { status, headers: cors },
+      );
     }
     return NextResponse.json(result, { headers: cors });
   }

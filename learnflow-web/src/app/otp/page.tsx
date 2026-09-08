@@ -10,6 +10,18 @@ import { sendSecureEmailOtp, verifySecureEmailOtp } from "@/lib/secureAuth";
 import { useLearnFlowStore } from "@/store/useLearnFlowStore";
 import { useAppTheme } from "@/theme/useAppTheme";
 
+function maskEmail(email: string) {
+  const [local, domain] = email.split("@");
+  if (!local || !domain) return email;
+  return `${local.slice(0, Math.min(2, local.length))}***@${domain}`;
+}
+
+function formatMmSs(total: number) {
+  const m = Math.floor(total / 60);
+  const s = total % 60;
+  return `${m}:${String(s).padStart(2, "0")}`;
+}
+
 function OTPInner() {
   const { colors } = useAppTheme();
   const router = useRouter();
@@ -20,10 +32,21 @@ function OTPInner() {
   const [code, setCode] = useState("");
   const [error, setError] = useState("");
   const [info, setInfo] = useState("Envoi du code…");
-  const [busy, setBusy] = useState(false);
-  const sent = useRef(false);
+  const [wait, setWait] = useState(0);
+  const [sending, setSending] = useState(false);
+  const [verifying, setVerifying] = useState(false);
+  const started = useRef(false);
+  const verifyingLock = useRef(false);
 
   useEffect(() => {
+    if (wait <= 0) return;
+    const timer = window.setTimeout(() => setWait((value) => Math.max(0, value - 1)), 1000);
+    return () => window.clearTimeout(timer);
+  }, [wait]);
+
+  useEffect(() => {
+    if (started.current) return;
+    started.current = true;
     const pending = loadPendingAuth();
     const nextEmail = (params.get("email") || pending?.email || "").trim().toLowerCase();
     const nextFlow = (params.get("flow") as AuthFlow | null) || pending?.flow || "login";
@@ -36,26 +59,17 @@ function OTPInner() {
     }
 
     void (async () => {
-      const result = await sendSecureEmailOtp(nextEmail, {
-        shouldCreateUser: nextFlow === "signup",
-        data: pending?.firstName
-          ? {
-              first_name: pending.firstName,
-              last_name: pending.lastName ?? "",
-              class_level: pending.classe ?? "",
-            }
-          : undefined,
-      });
+      setSending(true);
+      const result = await sendSecureEmailOtp(nextEmail);
+      setSending(false);
+      if (result.retryAfterSeconds) setWait(result.retryAfterSeconds);
       if (result.error) {
         setError(result.error);
-        setInfo("");
+        setInfo(`Entre le code envoyé à ${maskEmail(nextEmail)} s’il est déjà arrivé.`);
         return;
       }
-      const account =
-        nextFlow === "google"
-          ? `Compte Google sélectionné : ${nextEmail}.`
-          : `Un code à 6 chiffres a été envoyé à ${nextEmail}.`;
-      setInfo(`${account} Regarde aussi les spams.`);
+      setError("");
+      setInfo(`Un code à 6 chiffres a été envoyé à ${maskEmail(nextEmail)}.`);
     })();
   }, [params]);
 
@@ -66,7 +80,7 @@ function OTPInner() {
   };
 
   const submit = async (value: string) => {
-    if (sent.current || busy) return;
+    if (verifyingLock.current || verifying || sending) return;
     if (value.length !== 6) {
       setError("Entre les 6 chiffres reçus par email.");
       return;
@@ -75,14 +89,15 @@ function OTPInner() {
       setError("Adresse email manquante.");
       return;
     }
-    sent.current = true;
-    setBusy(true);
+    verifyingLock.current = true;
+    setVerifying(true);
     setError("");
     const result = await verifySecureEmailOtp(email, value);
     if (result.error) {
-      sent.current = false;
-      setBusy(false);
+      verifyingLock.current = false;
+      setVerifying(false);
       setError(result.error);
+      if (result.retryAfterSeconds) setWait(result.retryAfterSeconds);
       return;
     }
     markVerified();
@@ -90,20 +105,17 @@ function OTPInner() {
   };
 
   const resend = async () => {
-    if (!email.includes("@") || busy) return;
+    if (!email.includes("@") || sending || wait > 0) return;
     setError("");
-    setBusy(true);
-    const pending = loadPendingAuth();
-    const result = await sendSecureEmailOtp(email, {
-      shouldCreateUser: (pending?.flow ?? flow) === "signup",
-      force: true,
-    });
-    setBusy(false);
+    setSending(true);
+    const result = await sendSecureEmailOtp(email, { force: true });
+    setSending(false);
+    setWait(result.retryAfterSeconds ?? 60);
     if (result.error) {
       setError(result.error);
       return;
     }
-    setInfo(`Nouveau code envoyé à ${email}. Regarde aussi les spams.`);
+    setInfo(`Nouveau code envoyé à ${maskEmail(email)}.`);
   };
 
   return (
@@ -113,15 +125,15 @@ function OTPInner() {
           <div className="mb-4 flex justify-center">
             <Logo height="auth" />
           </div>
-          <h1 className="text-center text-2xl font-extrabold">Vérification LearnFlow</h1>
+          <h1 className="text-center text-2xl font-extrabold">Entre le code</h1>
           <p className="mt-2 mb-6 text-center text-sm font-semibold" style={{ color: colors.textMuted }}>
-            {info || "Entre le code à 6 chiffres reçu par email."}
+            {info || "Le code à 6 chiffres arrive par email. Aucun lien à cliquer."}
           </p>
           <input
             value={code}
             onChange={(e) => {
               setError("");
-              sent.current = false;
+              verifyingLock.current = false;
               const next = e.target.value.replace(/\D/g, "").slice(0, 6);
               setCode(next);
               if (next.length === 6) void submit(next);
@@ -134,17 +146,24 @@ function OTPInner() {
             placeholder="••••••"
           />
           {error ? <p className="mb-3 text-center text-sm font-bold text-red-500">{error}</p> : null}
-          <PrimaryButton onClick={() => void submit(code)} disabled={busy}>
-            {busy ? "Vérification…" : "Valider"}
+          <PrimaryButton onClick={() => void submit(code)} disabled={verifying || sending}>
+            {verifying ? "Vérification…" : "Valider"}
           </PrimaryButton>
-          <button
-            type="button"
-            onClick={() => void resend()}
-            className="mt-4 block w-full text-center text-sm font-bold"
-            style={{ color: colors.primary }}
-          >
-            Renvoyer le code
-          </button>
+          <p className="mt-4 text-center text-sm font-bold" style={{ color: colors.textMuted }}>
+            {wait > 0 ? (
+              `Renvoyer le code dans ${formatMmSs(wait)}`
+            ) : (
+              <button
+                type="button"
+                onClick={() => void resend()}
+                disabled={sending}
+                className="font-bold"
+                style={{ color: colors.primary }}
+              >
+                {sending ? "Envoi…" : "Renvoyer le code"}
+              </button>
+            )}
+          </p>
         </div>
       </AuthStage>
     </Page>

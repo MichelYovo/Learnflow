@@ -2,9 +2,9 @@ import { createHash, randomInt, timingSafeEqual } from "crypto";
 import { createClient } from "@supabase/supabase-js";
 
 const OTP_TTL_MS = 10 * 60 * 1000;
-const OTP_MAX_ATTEMPTS = 5;
-const OTP_MIN_INTERVAL_MS = 25_000;
-const OTP_HOUR_LIMIT = 6;
+const OTP_MAX_ATTEMPTS = 10;
+const OTP_RESEND_SECONDS = 60;
+const OTP_HOUR_LIMIT = 10;
 
 export type SecureAction = "send-otp" | "verify-otp" | "login-notice";
 export type AuthPlatform = "web" | "mobile";
@@ -32,10 +32,6 @@ function secretKey() {
   return (process.env.SUPABASE_SECRET_KEY ?? process.env.SUPABASE_SERVICE_ROLE_KEY ?? "").trim();
 }
 
-function otpPepper() {
-  return (process.env.OTP_PEPPER || secretKey() || "learnflow-otp").slice(0, 64);
-}
-
 function adminClient() {
   const url = supabaseUrl();
   const key = secretKey();
@@ -54,6 +50,10 @@ export async function userFromBearer(authorization: string | null) {
   return data.user;
 }
 
+function otpPepper() {
+  return (process.env.OTP_PEPPER || secretKey() || "learnflow-otp").slice(0, 64);
+}
+
 function hashOtp(userId: string, code: string) {
   return createHash("sha256").update(`${otpPepper()}:${userId}:${code}`).digest("hex");
 }
@@ -63,6 +63,20 @@ function codesEqual(a: string, b: string) {
   const right = Buffer.from(b);
   if (left.length !== right.length) return false;
   return timingSafeEqual(left, right);
+}
+
+function jumiaCodeEmail(code: string) {
+  const digits = code.split("").map(
+    (d) =>
+      `<td style="width:40px;height:48px;border:2px solid #BAE0FF;border-radius:10px;background:#E6F4FF;text-align:center;font-size:22px;font-weight:800;color:#1677FF;letter-spacing:0;">${d}</td>`,
+  );
+  return wrapEmail(
+    "Confirme que c’est toi",
+    `<p style="margin:0 0 16px;font-size:15px;line-height:1.5;">Pour protéger ton compte, entre ce code à 6 chiffres dans <strong>LearnFlow</strong>.</p>
+<table role="presentation" cellspacing="8" cellpadding="0" style="margin:0 auto 20px;"><tr>${digits.join("")}</tr></table>
+<p style="margin:0 0 14px;font-size:14px;line-height:1.5;color:#57534E;">Valable <strong>10 minutes</strong>. Aucun lien à cliquer — copie seulement ces chiffres.</p>
+<p style="margin:0;font-size:13px;line-height:1.5;color:#78716C;">LearnFlow ne te demandera jamais ce code par téléphone. Si tu n’as rien demandé, ignore ce message.</p>`,
+  );
 }
 
 function formatLome(date = new Date()) {
@@ -116,7 +130,12 @@ function wrapEmail(title: string, inner: string) {
 
 async function sendResend(to: string, subject: string, html: string): Promise<{ ok: boolean; error?: string }> {
   const key = (process.env.RESEND_API_KEY ?? "").trim();
-  if (!key) return { ok: false, error: "no_resend" };
+  if (!key) {
+    return {
+      ok: false,
+      error: "Ajoute RESEND_API_KEY dans learnflow-web/.env.local pour envoyer le code à 6 chiffres.",
+    };
+  }
   const from = (process.env.RESEND_FROM ?? "LearnFlow <noreply@learnflow.tg>").trim();
   const res = await fetch("https://api.resend.com/emails", {
     method: "POST",
@@ -128,6 +147,14 @@ async function sendResend(to: string, subject: string, html: string): Promise<{ 
   });
   if (!res.ok) {
     const body = await res.text();
+    const lower = body.toLowerCase();
+    if (lower.includes("only send testing emails") || lower.includes("verify a domain")) {
+      return {
+        ok: false,
+        error:
+          "Resend est encore en mode test : vérifie un domaine, ou envoie d’abord vers l’email du compte Resend.",
+      };
+    }
     return { ok: false, error: body.slice(0, 240) || `HTTP ${res.status}` };
   }
   return { ok: true };
@@ -212,6 +239,38 @@ async function sendWhatsApp(toE164: string, text: string): Promise<{ ok: boolean
   return { ok: false, skipped: true, error: "no_whatsapp" };
 }
 
+function goTrueErrorMessage(body: string, status: number) {
+  try {
+    const json = JSON.parse(body) as { msg?: string; error_description?: string; error?: string; message?: string };
+    return json.msg || json.error_description || json.message || json.error || `HTTP ${status}`;
+  } catch {
+    return body.slice(0, 240) || `HTTP ${status}`;
+  }
+}
+
+/** Mailer Supabase : 6 chiffres ({{ .Token }}), sans lien de connexion. */
+async function sendGoTrueOtp(email: string): Promise<{ ok?: true; error?: string }> {
+  const url = supabaseUrl();
+  const anon = anonKey();
+  if (!url || !anon) return { error: "Supabase n’est pas configuré." };
+  const res = await fetch(`${url.replace(/\/$/, "")}/auth/v1/otp`, {
+    method: "POST",
+    headers: {
+      apikey: anon,
+      Authorization: `Bearer ${anon}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ email, create_user: false }),
+  });
+  if (!res.ok) return { error: goTrueErrorMessage(await res.text(), res.status) };
+  return { ok: true };
+}
+
+function secondsLeft(fromIso: string, windowMs: number) {
+  const elapsed = Date.now() - new Date(fromIso).getTime();
+  return Math.max(0, Math.ceil((windowMs - elapsed) / 1000));
+}
+
 async function logNotice(
   admin: any,
   studentId: string,
@@ -229,12 +288,33 @@ async function logNotice(
   });
 }
 
-export async function handleSendOtp(user: { id: string; email?: string | null }, force = false) {
+export async function handleSendOtp(
+  user: { id: string; email?: string | null },
+  _force = false,
+  _createUser = false,
+) {
   const email = (user.email ?? "").trim().toLowerCase();
   if (!email.includes("@")) return { error: "Email du compte introuvable.", status: 400 };
   const admin = adminClient();
-  if (!admin || !(process.env.RESEND_API_KEY ?? "").trim()) {
-    return { fallback: "supabase_otp" as const };
+  if (!admin) return { error: "La vérification n’est pas configurée (clé secrète Supabase).", status: 500 };
+
+  const { data: last } = await admin
+    .from("email_challenges")
+    .select("created_at, consumed_at")
+    .eq("user_id", user.id)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (last?.created_at) {
+    const wait = secondsLeft(String(last.created_at), OTP_RESEND_SECONDS * 1000);
+    if (wait > 0) {
+      return {
+        ok: true as const,
+        channel: last.consumed_at ? ("supabase" as const) : ("learnflow" as const),
+        reused: true,
+        retryAfterSeconds: wait,
+      };
+    }
   }
 
   const sinceHour = new Date(Date.now() - 60 * 60 * 1000).toISOString();
@@ -244,40 +324,55 @@ export async function handleSendOtp(user: { id: string; email?: string | null },
     .eq("user_id", user.id)
     .gte("created_at", sinceHour);
   if ((count ?? 0) >= OTP_HOUR_LIMIT) {
-    return { error: "Trop de tentatives. Réessaie dans une heure.", status: 429 };
+    const wait = last?.created_at ? secondsLeft(String(last.created_at), 60 * 60 * 1000) : 3600;
+    return {
+      error: "Tu as demandé trop de codes. Attends le minuteur, puis réessaie.",
+      status: 429,
+      retryAfterSeconds: wait || 3600,
+    };
   }
 
-  const { data: last } = await admin
-    .from("email_challenges")
-    .select("created_at")
-    .eq("user_id", user.id)
-    .order("created_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
-  if (last?.created_at && !force && Date.now() - new Date(last.created_at).getTime() < OTP_MIN_INTERVAL_MS) {
-    return { ok: true as const, reused: true };
-  }
-
+  const expiresAt = new Date(Date.now() + OTP_TTL_MS).toISOString();
   const code = String(randomInt(100000, 1000000));
-  const { error } = await admin.from("email_challenges").insert({
-    user_id: user.id,
-    email,
-    code_hash: hashOtp(user.id, code),
-    expires_at: new Date(Date.now() + OTP_TTL_MS).toISOString(),
-  });
-  if (error) return { fallback: "supabase_otp" as const };
+  const sent = await sendResend(email, "LearnFlow : ton code de confirmation", jumiaCodeEmail(code));
+  if (sent.ok) {
+    const { error: insertError } = await admin.from("email_challenges").insert({
+      user_id: user.id,
+      email,
+      code_hash: hashOtp(user.id, code),
+      expires_at: expiresAt,
+    });
+    if (insertError) {
+      return { error: "Impossible d’enregistrer le code. Relance le SQL schema.sql dans Supabase.", status: 500 };
+    }
+    return { ok: true as const, channel: "learnflow" as const, retryAfterSeconds: OTP_RESEND_SECONDS };
+  }
 
-  const html = wrapEmail(
-    "Ton code de vérification",
-    `<p style="margin:0 0 12px;font-size:15px;line-height:1.5;">Bonjour,</p>
-<p style="margin:0 0 18px;font-size:15px;line-height:1.5;">Voici le code à 6 chiffres pour confirmer que c’est bien toi qui te connectes à <strong>LearnFlow</strong>.</p>
-<p style="margin:0 0 8px;font-size:12px;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:0.06em;">Code LearnFlow</p>
-<p style="margin:0 0 22px;font-size:32px;font-weight:800;letter-spacing:0.28em;color:#1677FF;">${code}</p>
-<p style="margin:0;font-size:13px;line-height:1.5;color:#78716C;">Ce code expire dans 10 minutes. Ne le partage avec personne.</p>`,
-  );
-  const sent = await sendResend(email, "LearnFlow — ton code à 6 chiffres", html);
-  if (!sent.ok) return { fallback: "supabase_otp" as const };
-  return { ok: true as const, channel: "learnflow" as const };
+  const fallback = await sendGoTrueOtp(email);
+  if (fallback.ok) {
+    await admin.from("email_challenges").insert({
+      user_id: user.id,
+      email,
+      code_hash: "supabase-mailer",
+      expires_at: expiresAt,
+      consumed_at: new Date().toISOString(),
+    });
+    return { ok: true as const, channel: "supabase" as const, retryAfterSeconds: OTP_RESEND_SECONDS };
+  }
+
+  const rate = `${fallback.error ?? ""} ${sent.error ?? ""}`.toLowerCase();
+  if (rate.includes("rate") || rate.includes("too many") || rate.includes("after")) {
+    return {
+      error: "Attends le minuteur avant de renvoyer le code.",
+      status: 429,
+      retryAfterSeconds: OTP_RESEND_SECONDS,
+    };
+  }
+  return {
+    error: "Impossible d’envoyer le code pour le moment. Vérifie ta boîte mail dans une minute, ou réessaie.",
+    status: 502,
+    retryAfterSeconds: OTP_RESEND_SECONDS,
+  };
 }
 
 export async function handleVerifyOtp(user: { id: string; email?: string | null }, token: string) {
@@ -295,25 +390,46 @@ export async function handleVerifyOtp(user: { id: string; email?: string | null 
     .limit(1)
     .maybeSingle();
 
-  if (!row) return { fallback: "supabase_otp" as const };
-  if (row.attempts >= OTP_MAX_ATTEMPTS) {
-    return { error: "Trop de tentatives. Renvoie un nouveau code.", status: 429 };
+  if (!row?.id || !row.code_hash || row.code_hash === "supabase-mailer") {
+    return { fallback: "supabase_otp" as const };
   }
-  if (new Date(row.expires_at).getTime() < Date.now()) {
-    return { error: "Code expiré. Renvoie un nouveau code.", status: 400 };
+  if (Number(row.attempts) >= OTP_MAX_ATTEMPTS) {
+    await admin.from("email_challenges").update({ consumed_at: new Date().toISOString() }).eq("id", row.id);
+    return {
+      error: "10 essais atteints. Attends le minuteur, puis demande un nouveau code.",
+      status: 429,
+      attemptsLeft: 0,
+      retryAfterSeconds: OTP_RESEND_SECONDS,
+    };
+  }
+  if (new Date(String(row.expires_at)).getTime() < Date.now()) {
+    await admin.from("email_challenges").update({ consumed_at: new Date().toISOString() }).eq("id", row.id);
+    return { error: "Code expiré. Attends le minuteur, puis demande un nouveau code.", status: 400 };
   }
 
   const expected = hashOtp(user.id, code);
-  if (!codesEqual(expected, row.code_hash)) {
-    await admin
-      .from("email_challenges")
-      .update({ attempts: row.attempts + 1 })
-      .eq("id", row.id);
-    return { error: "Code incorrect ou expiré. Vérifie tes emails (et les spams) ou renvoie un code.", status: 400 };
+  if (!codesEqual(expected, String(row.code_hash))) {
+    const nextAttempts = Number(row.attempts) + 1;
+    const attemptsLeft = Math.max(0, OTP_MAX_ATTEMPTS - nextAttempts);
+    await admin.from("email_challenges").update({ attempts: nextAttempts }).eq("id", row.id);
+    if (attemptsLeft <= 0) {
+      await admin.from("email_challenges").update({ consumed_at: new Date().toISOString() }).eq("id", row.id);
+      return {
+        error: "10 essais atteints. Attends le minuteur, puis demande un nouveau code.",
+        status: 429,
+        attemptsLeft: 0,
+        retryAfterSeconds: OTP_RESEND_SECONDS,
+      };
+    }
+    return {
+      error: `Code incorrect. Il te reste ${attemptsLeft} essai${attemptsLeft > 1 ? "s" : ""}.`,
+      status: 400,
+      attemptsLeft,
+    };
   }
 
   await admin.from("email_challenges").update({ consumed_at: new Date().toISOString() }).eq("id", row.id);
-  return { ok: true as const };
+  return { ok: true as const, channel: "learnflow" as const };
 }
 
 export async function handleLoginNotice(
@@ -347,7 +463,8 @@ export async function handleLoginNotice(
 <p style="margin:18px 0 0;font-size:13px;line-height:1.5;color:#78716C;">Si ce n’est pas toi, change ton mot de passe et contacte le support LearnFlow.</p>`,
     );
     const sent = await sendResend(email, "LearnFlow — connexion confirmée", html);
-    await logNotice(admin, user.id, "email", event, sent.ok ? "sent" : sent.error === "no_resend" ? "skipped" : "error", sent.error);
+    const emailStatus = sent.ok ? "sent" : sent.error?.startsWith("Ajoute RESEND_API_KEY") ? "skipped" : "error";
+    await logNotice(admin, user.id, "email", event, emailStatus, sent.error);
   }
 
   const parentPhone = student?.parent_phone?.trim() ?? "";

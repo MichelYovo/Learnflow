@@ -12,6 +12,18 @@ import { colors } from "../../theme/colors";
 import { useAppTheme } from "../../theme/useAppTheme";
 import type { AuthStackParamList } from "../../navigation/types";
 
+function maskEmail(email: string) {
+  const [local, domain] = email.split("@");
+  if (!local || !domain) return email;
+  return `${local.slice(0, Math.min(2, local.length))}***@${domain}`;
+}
+
+function formatMmSs(total: number) {
+  const m = Math.floor(total / 60);
+  const s = total % 60;
+  return `${m}:${String(s).padStart(2, "0")}`;
+}
+
 type Props = NativeStackScreenProps<AuthStackParamList, "OTP">;
 
 export default function OTPScreen({ navigation, route }: Props) {
@@ -22,10 +34,21 @@ export default function OTPScreen({ navigation, route }: Props) {
   const [code, setCode] = useState("");
   const [error, setError] = useState("");
   const [info, setInfo] = useState("Envoi du code…");
-  const [busy, setBusy] = useState(false);
-  const sent = useRef(false);
+  const [wait, setWait] = useState(0);
+  const [sending, setSending] = useState(false);
+  const [verifying, setVerifying] = useState(false);
+  const started = useRef(false);
+  const verifyingLock = useRef(false);
 
   useEffect(() => {
+    if (wait <= 0) return;
+    const timer = setTimeout(() => setWait((value) => Math.max(0, value - 1)), 1000);
+    return () => clearTimeout(timer);
+  }, [wait]);
+
+  useEffect(() => {
+    if (started.current) return;
+    started.current = true;
     let cancelled = false;
     void (async () => {
       const pending = await loadPendingAuth();
@@ -39,18 +62,18 @@ export default function OTPScreen({ navigation, route }: Props) {
         setError("Adresse email manquante. Repars de la connexion.");
         return;
       }
-      const result = await sendSecureEmailOtp(nextEmail, { shouldCreateUser: nextFlow === "signup" });
+      setSending(true);
+      const result = await sendSecureEmailOtp(nextEmail);
       if (cancelled) return;
+      setSending(false);
+      if (result.retryAfterSeconds) setWait(result.retryAfterSeconds);
       if (result.error) {
         setError(result.error);
-        setInfo("");
+        setInfo(`Entre le code envoyé à ${maskEmail(nextEmail)} s’il est déjà arrivé.`);
         return;
       }
-      const account =
-        nextFlow === "google"
-          ? `Compte Google sélectionné : ${nextEmail}.`
-          : `Un code à 6 chiffres a été envoyé à ${nextEmail}.`;
-      setInfo(`${account} Regarde aussi les spams.`);
+      setError("");
+      setInfo(`Un code à 6 chiffres a été envoyé à ${maskEmail(nextEmail)}.`);
     })();
     return () => {
       cancelled = true;
@@ -64,7 +87,7 @@ export default function OTPScreen({ navigation, route }: Props) {
   };
 
   const submit = async (value: string) => {
-    if (sent.current || busy) return;
+    if (verifyingLock.current || verifying || sending) return;
     if (value.length !== 6) {
       setError("Entre les 6 chiffres reçus par email.");
       return;
@@ -73,48 +96,46 @@ export default function OTPScreen({ navigation, route }: Props) {
       setError("Adresse email manquante.");
       return;
     }
-    sent.current = true;
-    setBusy(true);
+    verifyingLock.current = true;
+    setVerifying(true);
     setError("");
     const result = await verifySecureEmailOtp(email, value);
     if (result.error) {
-      sent.current = false;
-      setBusy(false);
+      verifyingLock.current = false;
+      setVerifying(false);
       setError(result.error);
+      if (result.retryAfterSeconds) setWait(result.retryAfterSeconds);
       return;
     }
     await markVerified();
     const settled = await advanceFromSession(navigation, applyCloudUser);
     if (settled.error) {
-      sent.current = false;
-      setBusy(false);
+      verifyingLock.current = false;
+      setVerifying(false);
       setError(settled.error);
     }
   };
 
   const resend = async () => {
-    if (!email.includes("@") || busy) return;
+    if (!email.includes("@") || sending || wait > 0) return;
     setError("");
-    setBusy(true);
-    const pending = await loadPendingAuth();
-    const result = await sendSecureEmailOtp(email, {
-      shouldCreateUser: (pending?.flow ?? flow) === "signup",
-      force: true,
-    });
-    setBusy(false);
+    setSending(true);
+    const result = await sendSecureEmailOtp(email, { force: true });
+    setSending(false);
+    setWait(result.retryAfterSeconds ?? 60);
     if (result.error) {
       setError(result.error);
       return;
     }
-    setInfo(`Nouveau code envoyé à ${email}. Regarde aussi les spams.`);
+    setInfo(`Nouveau code envoyé à ${maskEmail(email)}.`);
   };
 
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: colors.surface }]} edges={["top", "bottom"]}>
       <Logo height={76} style={{ alignSelf: "center", marginBottom: 16 }} />
-      <Text style={[styles.title, { color: colors.textDark }]}>Vérification LearnFlow</Text>
+      <Text style={[styles.title, { color: colors.textDark }]}>Entre le code</Text>
       <Text style={[styles.sub, { color: colors.textMuted }]}>
-        {info || "Entre le code à 6 chiffres reçu par email."}
+        {info || "Le code à 6 chiffres arrive par email. Aucun lien à cliquer."}
       </Text>
       <TextInput
         style={[styles.input, { backgroundColor: colors.white, borderColor: colors.mathsBorder, color: colors.textDark }]}
@@ -123,7 +144,7 @@ export default function OTPScreen({ navigation, route }: Props) {
         value={code}
         onChangeText={(t) => {
           setError("");
-          sent.current = false;
+          verifyingLock.current = false;
           const next = t.replace(/\D/g, "").slice(0, 6);
           setCode(next);
           if (next.length === 6) void submit(next);
@@ -134,13 +155,15 @@ export default function OTPScreen({ navigation, route }: Props) {
         autoFocus
       />
       {error ? <Text style={styles.error}>{error}</Text> : null}
-      <Pressable onPress={() => void submit(code)} disabled={busy} style={styles.btnWrap}>
+      <Pressable onPress={() => void submit(code)} disabled={verifying || sending} style={styles.btnWrap}>
         <LinearGradient colors={[colors.primary, colors.primaryDark]} style={styles.btn}>
-          <Text style={styles.btnText}>{busy ? "Vérification…" : "Valider"}</Text>
+          <Text style={styles.btnText}>{verifying ? "Vérification…" : "Valider"}</Text>
         </LinearGradient>
       </Pressable>
-      <Pressable onPress={() => void resend()} style={{ marginTop: 16 }}>
-        <Text style={[styles.resend, { color: colors.primary }]}>Renvoyer le code</Text>
+      <Pressable onPress={() => void resend()} disabled={wait > 0 || sending} style={{ marginTop: 16 }}>
+        <Text style={[styles.resend, { color: wait > 0 || sending ? colors.textMuted : colors.primary }]}>
+          {wait > 0 ? `Renvoyer le code dans ${formatMmSs(wait)}` : sending ? "Envoi…" : "Renvoyer le code"}
+        </Text>
       </Pressable>
     </SafeAreaView>
   );

@@ -1,3 +1,4 @@
+/** Ancien envoi Magic Link Supabase — ne plus l’utiliser pour entrer dans LearnFlow. */
 import { getBrowserSupabase } from "./supabase";
 
 const lastOkAt = new Map<string, number>();
@@ -18,6 +19,9 @@ export function mapOtpError(message: string): string {
   }
   if (m.includes("signups not allowed") || m.includes("email logins are disabled")) {
     return "Le fournisseur Email n’est pas activé dans Supabase (Authentication → Providers).";
+  }
+  if (m.includes("smtp") || m.includes("error sending") || m.includes("unable to send") || m.includes("mailer")) {
+    return "L’email n’a pas pu partir. Vérifie Authentication → Email (fournisseur activé) et les spams, puis renvoie le code.";
   }
   return message || "Impossible d’envoyer le code. Réessaie.";
 }
@@ -42,7 +46,7 @@ export async function sendEmailOtp(
     const { error } = await supabase.auth.signInWithOtp({
       email: trimmed,
       options: {
-        shouldCreateUser: options?.shouldCreateUser ?? true,
+        shouldCreateUser: options?.shouldCreateUser ?? false,
         data: options?.data,
         emailRedirectTo: origin ? `${origin}/auth/callback` : undefined,
       },

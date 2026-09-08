@@ -1,9 +1,19 @@
 import { isSupabaseConfigured, supabase } from "./supabase";
-import { mapOtpError, sendEmailOtp, verifyEmailOtp } from "./emailOtp";
+import { verifyEmailOtp } from "./emailOtp";
 
 type SecureAction = "send-otp" | "verify-otp" | "login-notice";
+type OtpChannel = "learnflow" | "supabase";
 
-let lastOtpMode: "learnflow" | "supabase" = "supabase";
+type SecureJson = {
+  ok?: boolean;
+  error?: string;
+  fallback?: string;
+  channel?: OtpChannel;
+  retryAfterSeconds?: number;
+  attemptsLeft?: number;
+};
+
+let lastOtpChannel: OtpChannel = "learnflow";
 
 function apiBase() {
   return (process.env.EXPO_PUBLIC_LEARNFLOW_API_URL ?? "").replace(/\/$/, "");
@@ -15,10 +25,7 @@ async function accessToken(): Promise<string | null> {
   return data.session?.access_token ?? null;
 }
 
-async function callSecure(
-  action: SecureAction,
-  extra: Record<string, string> = {},
-): Promise<{ ok?: boolean; fallback?: string; error?: string } | null> {
+async function callSecure(action: SecureAction, extra: Record<string, string> = {}): Promise<SecureJson | null> {
   const token = await accessToken();
   const base = apiBase();
   if (!token || !base) return null;
@@ -31,44 +38,46 @@ async function callSecure(
       },
       body: JSON.stringify({ action, platform: "mobile", ...extra }),
     });
-    const json = (await res.json().catch(() => ({}))) as {
-      ok?: boolean;
-      fallback?: string;
-      error?: string;
-    };
+    const json = (await res.json().catch(() => ({}))) as SecureJson;
     if (!res.ok && !json.fallback) {
-      return { error: json.error || mapOtpError("otp") };
+      return {
+        error: json.error || "Impossible de vérifier le code. Réessaie.",
+        retryAfterSeconds: json.retryAfterSeconds,
+        attemptsLeft: json.attemptsLeft,
+      };
     }
     return json;
   } catch {
-    return null;
+    return { error: "Impossible de joindre LearnFlow. Réessaie." };
   }
 }
 
 export async function sendSecureEmailOtp(
-  email: string,
+  _email: string,
   options?: { shouldCreateUser?: boolean; data?: Record<string, string>; force?: boolean },
-): Promise<{ error?: string }> {
-  const trimmed = email.trim().toLowerCase();
-  const secure = await callSecure("send-otp", options?.force ? { force: "true" } : {});
-  if (secure?.ok && !secure.fallback) {
-    lastOtpMode = "learnflow";
-    return {};
+): Promise<{ error?: string; retryAfterSeconds?: number }> {
+  const viaApi = await callSecure("send-otp", options?.force ? { force: "true" } : {});
+  if (viaApi?.channel) lastOtpChannel = viaApi.channel;
+  if (viaApi?.ok) return { retryAfterSeconds: viaApi.retryAfterSeconds ?? 60 };
+  if (!apiBase()) {
+    return { error: "Ajoute EXPO_PUBLIC_LEARNFLOW_API_URL (adresse du web LearnFlow) pour recevoir le code." };
   }
-  if (secure?.error && /trop de tentatives|une heure/i.test(secure.error)) {
-    return { error: secure.error };
-  }
-  lastOtpMode = "supabase";
-  return sendEmailOtp(trimmed, options);
+  return {
+    error: viaApi?.error || "Session expirée. Repars de la connexion.",
+    retryAfterSeconds: viaApi?.retryAfterSeconds,
+  };
 }
 
-export async function verifySecureEmailOtp(email: string, token: string): Promise<{ error?: string }> {
-  if (lastOtpMode === "learnflow") {
-    const secure = await callSecure("verify-otp", { token });
-    if (secure?.ok) return {};
-    if (secure?.error && !secure.fallback) return { error: secure.error };
+export async function verifySecureEmailOtp(email: string, token: string): Promise<{ error?: string; retryAfterSeconds?: number }> {
+  const viaApi = await callSecure("verify-otp", { token });
+  if (viaApi?.ok) return {};
+  if (viaApi?.fallback === "supabase_otp" || lastOtpChannel === "supabase") {
+    return verifyEmailOtp(email, token);
   }
-  return verifyEmailOtp(email, token);
+  return {
+    error: viaApi?.error || "Session expirée. Repars de la connexion.",
+    retryAfterSeconds: viaApi?.retryAfterSeconds,
+  };
 }
 
 export async function notifySecureLogin(event = "login"): Promise<void> {

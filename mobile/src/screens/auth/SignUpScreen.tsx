@@ -128,7 +128,7 @@ export default function SignUpScreen({ navigation }: Props) {
       password,
       emailOtpVerified: false,
     });
-    const { error: signUpError } = await supabase.auth.signUp({
+    const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
       email: email.trim().toLowerCase(),
       password,
       options: {
@@ -148,6 +148,19 @@ export default function SignUpScreen({ navigation }: Props) {
       }
       setError(signUpError.message);
       return;
+    }
+    if (!signUpData.session) {
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: email.trim().toLowerCase(),
+        password,
+      });
+      if (signInError) {
+        setBusy(false);
+        setError(
+          "Le compte est créé, mais Supabase bloque encore la session. Désactive « Confirm email » (Authentication → Providers → Email) : LearnFlow confirme avec le code à 6 chiffres, pas un lien.",
+        );
+        return;
+      }
     }
     navigation.navigate("OTP", { email: email.trim().toLowerCase(), flow: "signup" });
     setBusy(false);
