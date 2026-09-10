@@ -28,7 +28,7 @@ export default function SupportProvider({ children }: { children: ReactNode }) {
       {children}
       {topic ? (
         <div
-          className="fixed inset-0 z-[80] flex items-end justify-center bg-[#0B1B3A]/55 p-4 sm:items-center"
+          className="fixed inset-0 z-[80] flex items-end justify-center overflow-y-auto bg-[#0B1B3A]/55 p-4 pt-[max(1rem,env(safe-area-inset-top))] pb-[max(1rem,env(safe-area-inset-bottom))] sm:items-center"
           role="presentation"
           onClick={close}
         >
@@ -36,7 +36,7 @@ export default function SupportProvider({ children }: { children: ReactNode }) {
             role="dialog"
             aria-modal="true"
             aria-labelledby="support-title"
-            className="w-full max-w-md rounded-[28px] bg-white p-6 shadow-[0_24px_60px_rgba(15,23,42,.28)]"
+            className="my-auto w-full max-w-md max-h-[min(90dvh,720px)] overflow-y-auto rounded-[28px] bg-white p-5 shadow-[0_24px_60px_rgba(15,23,42,.28)] sm:p-6"
             onClick={(ev) => ev.stopPropagation()}
           >
             <p className="text-xs font-extrabold uppercase tracking-widest text-[#1677FF]">

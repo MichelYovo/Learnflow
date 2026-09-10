@@ -284,6 +284,18 @@ select {
   pointer-events: auto;
 }
 
+.lf-boot-film {
+  background: #050b14;
+}
+
+.lf-boot-film video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 38%;
+}
+
 .lf-boot-out {
   animation: lf-boot-veil-out 0.28s ease-in 0.14s forwards;
 }

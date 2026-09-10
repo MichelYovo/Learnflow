@@ -5,8 +5,8 @@ import { useEffect, useState } from "react";
 const MOODS = ["joyeux", "surpris", "confiant", "timide", "calme", "determine", "enerve", "neutre"] as const;
 
 const FLOATERS = [
-  { mood0: 0, size: 78, className: "lf-spira-fly-a hidden md:block", delay: "0s" },
-  { mood0: 3, size: 68, className: "lf-spira-fly-b", delay: "0.6s" },
+  { mood0: 0, size: 78, className: "lf-spira-fly-a hidden xl:block", delay: "0s" },
+  { mood0: 3, size: 68, className: "lf-spira-fly-b hidden lg:block", delay: "0.6s" },
 ];
 
 export default function SpiraFloaters() {

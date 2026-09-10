@@ -2,17 +2,20 @@
 
 import { useEffect, useRef, useState } from "react";
 import Logo from "./Logo";
+import LogoIntro from "./LogoIntro";
 
-const STORAGE_KEY = "lf-intro-flash";
+const STORAGE_KEY = "lf-intro-logo-v3";
+/** Durée de la vidéo source (~10 s), filet de sécurité. */
+export const LOGO_INTRO_MS = 10_400;
 
 type Props = {
-  /** Hold blanc 2 min 50 + flash (premier lancement). Sinon logo stagnant, pour le chargement. */
+  /** Animation logo (premier lancement). Sinon logo stagnant, pour le chargement. */
   cinematic?: boolean;
   onFinish?: () => void;
 };
 
 export default function AnimatedSplash({ cinematic = false, onFinish }: Props) {
-  const [phase, setPhase] = useState<"hold" | "flash" | "gone">("hold");
+  const [phase, setPhase] = useState<"hold" | "gone">("hold");
   const finished = useRef(false);
 
   const finish = () => {
@@ -30,8 +33,9 @@ export default function AnimatedSplash({ cinematic = false, onFinish }: Props) {
   useEffect(() => {
     if (!cinematic) return;
 
+    const force = new URLSearchParams(window.location.search).has("intro");
     try {
-      if (sessionStorage.getItem(STORAGE_KEY) === "1") {
+      if (!force && sessionStorage.getItem(STORAGE_KEY) === "1") {
         finish();
         return;
       }
@@ -40,14 +44,10 @@ export default function AnimatedSplash({ cinematic = false, onFinish }: Props) {
     }
 
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const holdMs = reduced ? 80 : 170_000;
-    const flashMs = reduced ? 40 : 420;
-
-    const tFlash = window.setTimeout(() => setPhase("flash"), holdMs);
-    const tDone = window.setTimeout(finish, holdMs + flashMs);
+    const holdMs = reduced ? 80 : LOGO_INTRO_MS;
+    const tDone = window.setTimeout(finish, holdMs);
 
     return () => {
-      window.clearTimeout(tFlash);
       window.clearTimeout(tDone);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- one-shot intro
@@ -56,15 +56,12 @@ export default function AnimatedSplash({ cinematic = false, onFinish }: Props) {
   if (phase === "gone") return null;
 
   return (
-    <>
-      <div
-        className={`lf-boot ${phase === "flash" ? "lf-boot-out" : ""}`}
-        onClick={cinematic ? finish : undefined}
-        role={cinematic ? "presentation" : undefined}
-      >
-        <Logo height={80} variant="onLight" animated={false} />
-      </div>
-      {phase === "flash" ? <div className="lf-boot-flash" aria-hidden /> : null}
-    </>
+    <div
+      className={cinematic ? "lf-boot lf-boot-film" : "lf-boot"}
+      onClick={cinematic ? finish : undefined}
+      role={cinematic ? "presentation" : undefined}
+    >
+      {cinematic ? <LogoIntro fill onEnded={finish} /> : <Logo height={80} variant="onLight" animated={false} />}
+    </div>
   );
 }

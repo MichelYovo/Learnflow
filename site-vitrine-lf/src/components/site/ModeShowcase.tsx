@@ -27,8 +27,8 @@ export default function ModeShowcase() {
   };
 
   return (
-    <div className="grid items-center gap-12 lg:grid-cols-[1fr_340px]">
-      <div className="grid gap-4 sm:grid-cols-2">
+    <div className="grid min-w-0 items-center gap-8 lg:grid-cols-[minmax(0,1fr)_auto] lg:gap-12">
+      <div className="grid min-w-0 gap-4 sm:grid-cols-2">
         {MODES.map((m) => {
           const on = m.id === id;
           return (
@@ -37,7 +37,7 @@ export default function ModeShowcase() {
               type="button"
               onClick={() => play(m.id)}
               aria-pressed={on}
-              className="rounded-[24px] border-2 p-5 text-left transition"
+              className="rounded-[24px] border-2 p-4 text-left transition duration-300 sm:p-5"
               style={{
                 background: m.bg,
                 borderColor: on ? m.color : m.border,
@@ -71,7 +71,7 @@ export default function ModeShowcase() {
           );
         })}
       </div>
-      <div className="flex flex-col items-center">
+      <div className="flex min-w-0 flex-col items-center lg:sticky lg:top-24">
         <button type="button" onClick={() => play(id)} aria-label="Relancer l’animation" className="cursor-pointer">
           <div key={playKey} className={`lf-demo-phone lf-anim-${screen.anim}`}>
             <Phone glow={screen.glow} dark={screen.dark} label={mode.label}>

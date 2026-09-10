@@ -11,9 +11,14 @@
 
 html {
   scroll-behavior: smooth;
+  overflow-x: clip;
 }
 
 body {
+  min-height: 100%;
+  min-height: 100dvh;
+  max-width: 100%;
+  overflow-x: clip;
   background: #fafaf9;
   color: #1c1917;
   font-family: var(--font-poppins), ui-sans-serif, system-ui, sans-serif;

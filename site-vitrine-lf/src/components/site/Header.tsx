@@ -18,19 +18,23 @@ export default function Header() {
   const [open, setOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-50 bg-[#0B1B3A]">
-      <div className="mx-auto flex h-[72px] max-w-6xl items-center justify-between gap-4 px-5">
-        <Link href="/" className="flex shrink-0 items-center" aria-label="LearnFlow — accueil">
+    <header className="sticky top-0 z-50 bg-[#0B1B3A]/95 pt-[env(safe-area-inset-top)] backdrop-blur-md">
+      <div className="lf-container flex h-16 min-w-0 items-center justify-between gap-3 sm:h-[72px] sm:gap-4">
+        <Link href="/" className="flex min-w-0 shrink-0 items-center" aria-label="LearnFlow — accueil">
           <BrandLogo size="nav" variant="onDark" priority />
         </Link>
-        <nav className="hidden items-center gap-5 lg:flex" aria-label="Sections">
+        <nav className="hidden min-w-0 items-center gap-3 xl:flex xl:gap-5" aria-label="Sections">
           {LINKS.map((l) => (
-            <a key={l.href} href={l.href} className="text-sm font-semibold text-white/75 transition hover:text-white">
+            <a
+              key={l.href}
+              href={l.href}
+              className="whitespace-nowrap text-sm font-semibold text-white/75 transition hover:text-white"
+            >
               {l.label}
             </a>
           ))}
         </nav>
-        <div className="hidden items-center gap-3 lg:flex">
+        <div className="hidden min-w-0 items-center gap-3 xl:flex">
           <SupportButton className="rounded-2xl bg-white px-4 py-2.5 text-sm font-extrabold text-[#1677FF] shadow-sm transition hover:bg-[#E6F4FF]">
             Nous contacter
           </SupportButton>
@@ -38,7 +42,7 @@ export default function Header() {
         </div>
         <button
           type="button"
-          className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-white/20 bg-white/10 lg:hidden"
+          className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-white/20 bg-white/10 xl:hidden"
           aria-expanded={open}
           aria-label={open ? "Fermer le menu" : "Ouvrir le menu"}
           onClick={() => setOpen((v) => !v)}
@@ -52,13 +56,13 @@ export default function Header() {
         </button>
       </div>
       {open ? (
-        <div className="border-t border-white/10 bg-[#0B1B3A] px-5 py-4 lg:hidden">
-          <nav className="flex flex-col gap-3" aria-label="Mobile">
+        <div className="max-h-[min(80dvh,calc(100dvh-4.5rem))] overflow-y-auto border-t border-white/10 bg-[#0B1B3A] px-[clamp(1rem,4vw,2rem)] py-4 pb-[max(1rem,env(safe-area-inset-bottom))] xl:hidden">
+          <nav className="flex flex-col gap-2" aria-label="Mobile">
             {LINKS.map((l) => (
               <a
                 key={l.href}
                 href={l.href}
-                className="rounded-xl px-3 py-2 text-base font-bold text-white"
+                className="rounded-xl px-3 py-2.5 text-base font-bold text-white"
                 onClick={() => setOpen(false)}
               >
                 {l.label}

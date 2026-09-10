@@ -58,9 +58,9 @@ export default function Faq() {
           className="group rounded-[20px] border-2 border-[#F0EFEE] bg-white px-5 py-4 open:border-[#BAE0FF]"
         >
           <summary className="cursor-pointer list-none text-base font-extrabold text-[#1C1917] marker:content-none">
-            <span className="flex items-center justify-between gap-4">
-              {item.q}
-              <span className="text-[#1677FF] transition group-open:rotate-45">+</span>
+            <span className="flex items-start justify-between gap-3 sm:gap-4">
+              <span className="min-w-0">{item.q}</span>
+              <span className="shrink-0 text-[#1677FF] transition group-open:rotate-45">+</span>
             </span>
           </summary>
           <p className="mt-3 text-sm font-medium leading-relaxed text-[#64748B]">{item.a}</p>
@@ -68,9 +68,9 @@ export default function Faq() {
       ))}
       <details className="group rounded-[20px] border-2 border-[#F0EFEE] bg-white px-5 py-4 open:border-[#BAE0FF]">
         <summary className="cursor-pointer list-none text-base font-extrabold text-[#1C1917] marker:content-none">
-          <span className="flex items-center justify-between gap-4">
+          <span className="flex items-start justify-between gap-3 sm:gap-4">
             Comment je télécharge l’app ?
-            <span className="text-[#1677FF] transition group-open:rotate-45">+</span>
+            <span className="shrink-0 text-[#1677FF] transition group-open:rotate-45">+</span>
           </span>
         </summary>
         <p className="mt-3 text-sm font-medium leading-relaxed text-[#64748B]">

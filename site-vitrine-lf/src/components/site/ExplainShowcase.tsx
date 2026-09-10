@@ -37,8 +37,8 @@ export default function ExplainShowcase({ items, columns = 1 }: Props) {
   if (!current) return null;
 
   return (
-    <div className="grid items-center gap-10 lg:grid-cols-[1fr_340px]">
-      <div className={columns === 2 ? "grid gap-4 sm:grid-cols-2" : "space-y-3"}>
+    <div className="grid min-w-0 items-center gap-8 lg:grid-cols-[minmax(0,1fr)_auto] lg:gap-12">
+      <div className={`min-w-0 ${columns === 2 ? "grid gap-4 sm:grid-cols-2" : "space-y-3"}`}>
         {items.map((item) => {
           const on = item.id === id;
           return (
@@ -47,7 +47,7 @@ export default function ExplainShowcase({ items, columns = 1 }: Props) {
               type="button"
               aria-pressed={on}
               onClick={() => play(item)}
-              className={`w-full rounded-[24px] border-2 p-5 text-left transition ${
+              className={`w-full rounded-[24px] border-2 p-4 text-left transition duration-300 sm:p-5 ${
                 on ? "border-[#1677FF] bg-[#E6F4FF] shadow-[0_12px_32px_rgba(22,119,255,.16)]" : "border-[#F0EFEE] bg-white hover:border-[#BAE0FF]"
               }`}
             >
@@ -77,7 +77,7 @@ export default function ExplainShowcase({ items, columns = 1 }: Props) {
           );
         })}
       </div>
-      <div className="flex flex-col items-center">
+      <div className="flex min-w-0 flex-col items-center lg:sticky lg:top-24">
         <button
           type="button"
           onClick={() => play(current)}

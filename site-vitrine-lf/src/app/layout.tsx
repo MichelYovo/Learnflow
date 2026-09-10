@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Poppins } from "next/font/google";
 import SupportProvider from "../components/site/SupportProvider";
 import SpiraFloaters from "../components/site/SpiraFloaters";
@@ -54,10 +54,17 @@ export const metadata: Metadata = {
   },
 };
 
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: "#0B1B3A",
+};
+
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="fr" className={`${poppins.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col font-sans">
+      <body className="flex min-h-dvh w-full max-w-[100vw] flex-col overflow-x-hidden font-sans">
         <SupportProvider>
           <SpiraFloaters />
           {children}

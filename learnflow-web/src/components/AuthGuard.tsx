@@ -32,7 +32,7 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
     const isApp = pathname.startsWith("/app");
     const isComplete = pathname === "/complete-profile";
 
-    if (!onboardingCompleted && pathname !== "/onboarding") {
+    if (!onboardingCompleted && pathname !== "/onboarding" && pathname !== "/intro") {
       router.replace("/onboarding");
       return;
     }

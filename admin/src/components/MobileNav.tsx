@@ -16,7 +16,7 @@ export default function MobileNav() {
   }
 
   return (
-    <nav className="flex gap-2 overflow-x-auto border-b border-[#F0EFEE] bg-white px-3 py-2 md:hidden">
+    <nav className="sticky top-0 z-40 flex gap-2 overflow-x-auto border-b border-[#F0EFEE] bg-white px-3 py-2 pt-[max(0.5rem,env(safe-area-inset-top))] md:hidden">
       {ADMIN_LINKS.map((link) => {
         const active = pathname === link.href || (link.href !== "/dashboard" && pathname.startsWith(link.href));
         return (

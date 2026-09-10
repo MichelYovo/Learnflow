@@ -5,7 +5,7 @@ import SupportButton from "./SupportButton";
 export default function Footer() {
   return (
     <footer className="border-t border-[#F0EFEE] bg-white">
-      <div className="mx-auto grid max-w-6xl gap-10 px-5 py-12 md:grid-cols-2 lg:grid-cols-[1.5fr_1fr_1fr_1fr]">
+      <div className="lf-container grid gap-10 py-10 sm:py-12 md:grid-cols-2 lg:grid-cols-[1.5fr_1fr_1fr_1fr]">
         <div>
           <BrandLogo size="footer" variant="onLight" />
           <p className="mt-4 max-w-sm text-sm font-medium leading-relaxed text-[#64748B]">
@@ -77,7 +77,7 @@ export default function Footer() {
           </ul>
         </div>
       </div>
-      <div className="border-t border-[#F0EFEE] py-5 text-center text-xs font-semibold text-[#A8A29E]">
+      <div className="border-t border-[#F0EFEE] px-4 py-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] text-center text-xs font-semibold text-[#A8A29E]">
         LearnFlow Togo · Collège et lycée · Version 1.0.0
       </div>
     </footer>
