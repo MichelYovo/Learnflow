@@ -38,7 +38,7 @@ export default function ModeWorkSelector({ selectedMode, guideInactive, onSelect
                 setHelp(null);
                 onSelectMode(def.id);
               }}
-              className="min-h-[92px] rounded-3xl p-2.5 text-left min-[380px]:min-h-[100px] min-[380px]:p-3 sm:min-h-[128px] sm:p-[18px] [@media(hover:hover)]:hover:brightness-[.98] [@media(hover:hover)]:active:scale-[0.97]"
+              className="min-h-[92px] min-w-0 rounded-3xl p-2.5 text-left min-[380px]:min-h-[100px] min-[380px]:p-3 sm:min-h-[128px] sm:p-[18px] [@media(hover:hover)]:hover:brightness-[.98] [@media(hover:hover)]:active:scale-[0.97]"
               style={{
                 background: def.bg,
                 border: `${selected ? 2 : 1}px solid ${selected ? def.color : def.border}`,
@@ -51,7 +51,7 @@ export default function ModeWorkSelector({ selectedMode, guideInactive, onSelect
                 </span>
                 {inactive ? <Icon name="alert-circle" size={16} color="#94A3B8" /> : null}
               </div>
-              <p className="text-[16px] font-extrabold" style={{ color: inactive ? "#94A3B8" : def.color }}>
+              <p className="truncate text-[15px] font-extrabold sm:text-[16px]" style={{ color: inactive ? "#94A3B8" : def.color }}>
                 {def.label.replace("Mode ", "").replace(" 60s", "")}
               </p>
             </button>

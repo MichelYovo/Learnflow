@@ -79,9 +79,9 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="flex min-h-dvh max-w-[100vw] overflow-x-clip" style={{ background: colors.surface, color: colors.textDark }}>
+    <div className="flex min-h-dvh w-full max-w-[100vw] overflow-x-hidden" style={{ background: colors.surface, color: colors.textDark }}>
       <aside
-        className="hidden w-[min(220px,26vw)] shrink-0 flex-col border-r lg:flex"
+        className="hidden w-[min(240px,28vw)] shrink-0 flex-col border-r lg:flex"
         style={{ background: colors.white, borderColor: colors.border }}
       >
         <nav className="flex flex-col gap-0.5 p-3" aria-label="Navigation">

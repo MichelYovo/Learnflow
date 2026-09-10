@@ -125,7 +125,7 @@ export default function ProfilPage() {
               style={{ borderColor: colors.mathsBorder, background: colors.white, color: colors.textDark }}
             />
           ) : (
-            <p className="text-[20px] font-extrabold">{profile.nom}</p>
+            <p className="max-w-full px-2 text-center text-[20px] font-extrabold sm:text-[20px]">{profile.nom}</p>
           )}
           <div className="mt-2.5 flex flex-wrap justify-center gap-2">
             <span className="rounded-full border-2 border-[#BAE0FF] bg-[#E6F4FF] px-3 py-1 text-[13px] font-extrabold text-[#1677FF]">{grade}</span>
@@ -180,7 +180,7 @@ export default function ProfilPage() {
             <Icon name="chevron-right" size={10} color={colors.primary} />
           </button>
         </div>
-        <div className="mt-2.5 flex gap-2">
+        <div className="mt-2.5 flex min-w-0 gap-2">
           {TROPHIES.map((t) => {
             const unlocked = profile.badgesDebloques.some((b) => b.toLowerCase().includes(t.label.toLowerCase().split(" ")[0]));
             return (
@@ -194,7 +194,7 @@ export default function ProfilPage() {
                 }}
               >
                 <Icon name={unlocked ? t.icon : "lock"} size={18} color={unlocked ? t.color : colors.textMuted} />
-                <span className="text-[13px] font-extrabold" style={{ color: unlocked ? t.color : colors.textMuted }}>
+                <span className="px-1 text-center text-[11px] font-extrabold leading-tight sm:text-[13px]" style={{ color: unlocked ? t.color : colors.textMuted }}>
                   {t.label}
                 </span>
               </div>
@@ -214,7 +214,7 @@ export default function ProfilPage() {
             <span className="flex h-9 w-9 items-center justify-center rounded-xl" style={{ background: darkMode ? "#0C1A33" : colors.mathsBg }}>
               <Icon name={darkMode ? "moon" : "sun"} size={16} color={colors.primary} />
             </span>
-            <span className="flex-1 text-[16px] font-extrabold">Mode sombre</span>
+              <span className="min-w-0 flex-1 text-[16px] font-extrabold">Mode sombre</span>
             <input type="checkbox" checked={darkMode} onChange={(e) => setDarkMode(e.target.checked)} />
           </label>
           <div className="mx-3.5 border-t" style={{ borderColor: colors.border }} />
@@ -222,7 +222,7 @@ export default function ProfilPage() {
             <span className="flex h-9 w-9 items-center justify-center rounded-xl" style={{ background: colors.mathsBg }}>
               <Icon name="people" size={16} color={colors.primary} />
             </span>
-            <span className="flex-1 text-[16px] font-extrabold">Multi-profil</span>
+            <span className="min-w-0 flex-1 text-[16px] font-extrabold">Multi-profil</span>
             <input
               type="checkbox"
               checked={multiProfileEnabled || showPinSetup}

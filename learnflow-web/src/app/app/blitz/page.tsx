@@ -361,8 +361,8 @@ function BlitzInner() {
 
   return (
     <Arena critical={critical}>
-      <div className="flex min-h-0 flex-1 flex-col px-4 py-3 md:px-10 md:py-5">
-        <div className="flex items-center justify-between gap-4">
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col px-[clamp(0.75rem,3.6vw,2.5rem)] py-3 md:px-10 md:py-5">
+        <div className="flex items-center justify-between gap-2 sm:gap-4">
           <Spira scene={critical ? "mode.blitz.panic" : "mode.blitz.play"} size={56} message="" />
           <BlitzRing
             progress={timeLeft / DURATION}
@@ -370,7 +370,7 @@ function BlitzInner() {
             warning={warning}
             label={String(Math.ceil(timeLeft))}
           />
-          <p className="min-w-[72px] text-right text-sm font-extrabold text-red-200/80 md:text-base">
+          <p className="min-w-0 shrink-0 text-right text-sm font-extrabold text-red-200/80 md:min-w-[72px] md:text-base">
             {score} pts
             <span className="mt-0.5 block text-xs font-bold text-white/40">Q{answered + 1}</span>
           </p>
@@ -388,7 +388,7 @@ function BlitzInner() {
           <p className="text-[11px] font-black tracking-[0.16em] text-orange-500 md:text-xs">
             {(q.matiere ?? "MIX").toUpperCase()} · {deck.difficulte.toUpperCase()}
           </p>
-          <h1 className="mt-2 text-2xl font-extrabold leading-snug md:text-4xl md:leading-tight">{q.enonceQuestion}</h1>
+          <h1 className="mt-2 text-[clamp(1.15rem,3vw+0.7rem,2.25rem)] font-extrabold leading-snug md:leading-tight">{q.enonceQuestion}</h1>
           <div className="mt-4 flex min-h-0 flex-1 flex-col gap-2.5 md:mt-6 md:gap-3">
             {q.optionsProposees.map((opt, i) => {
               const on = selected === i;
@@ -403,7 +403,7 @@ function BlitzInner() {
                     pick(i);
                   }}
                   onClick={() => pick(i)}
-                  className="flex min-h-[56px] flex-1 items-center rounded-2xl border-2 px-5 text-left text-base font-bold md:min-h-[72px] md:rounded-3xl md:px-6 md:text-xl"
+                  className="flex min-h-[52px] min-w-0 flex-1 items-center rounded-2xl border-2 px-4 text-left text-sm font-bold sm:min-h-[56px] sm:px-5 sm:text-base md:min-h-[72px] md:rounded-3xl md:px-6 md:text-xl"
                   style={{
                     borderColor: ok ? "#34D399" : ko ? "#F87171" : "rgba(239,68,68,0.28)",
                     background: ok ? "rgba(16,185,129,0.16)" : ko ? "rgba(239,68,68,0.22)" : "rgba(0,0,0,0.35)",

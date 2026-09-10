@@ -4,13 +4,13 @@ import Link from "next/link";
 import { useAppTheme } from "@/theme/useAppTheme";
 import Icon, { type IconName } from "./Icon";
 
-/** Même largeur / padding pour header et contenu — colonne centrée. */
-export const APP_MAX = "max-w-3xl";
-export const APP_PAD = "px-3 min-[380px]:px-4 sm:px-6 lg:px-8";
-export const APP_COL = `mx-auto w-full ${APP_MAX} ${APP_PAD}`;
-export const APP_NARROW = `mx-auto w-full max-w-xl ${APP_PAD}`;
+/** Même largeur / padding pour header et contenu — colonne centrée, fluide. */
+export const APP_MAX = "max-w-3xl xl:max-w-4xl";
+export const APP_PAD = "px-[clamp(0.75rem,3.6vw,2rem)]";
+export const APP_COL = `mx-auto w-full min-w-0 ${APP_MAX} ${APP_PAD}`;
+export const APP_NARROW = `mx-auto w-full min-w-0 max-w-xl ${APP_PAD}`;
 export const AUTH_COL =
-  "mx-auto flex min-h-0 w-full max-w-md flex-1 flex-col px-4 py-4 min-[380px]:px-5 sm:max-w-lg sm:px-8 sm:py-6";
+  "mx-auto flex min-h-0 w-full min-w-0 max-w-md flex-1 flex-col px-[clamp(1rem,4vw,2rem)] py-4 sm:max-w-lg sm:py-6";
 
 export function AuthStage({
   children,
@@ -54,7 +54,7 @@ export function AppBar({
       }}
     >
       <div
-        className={`mx-auto flex w-full ${APP_MAX} ${APP_PAD} py-3 ${stack ? "flex-col items-stretch" : "items-center"} ${innerClassName}`}
+        className={`mx-auto flex w-full min-w-0 ${APP_MAX} ${APP_PAD} py-3 ${stack ? "flex-col items-stretch" : "items-center"} ${innerClassName}`}
       >
         {children}
       </div>
@@ -104,7 +104,7 @@ export function ScreenHeader({
           <Icon name="arrow-left" size={18} color={colors.textDark} />
         </Link>
       ) : null}
-      <h1 className="min-w-0 flex-1 truncate text-lg font-extrabold md:text-xl">{title}</h1>
+      <h1 className="min-w-0 flex-1 text-lg font-extrabold leading-tight md:text-xl">{title}</h1>
       {right ? <div className="shrink-0">{right}</div> : null}
     </AppBar>
   );
@@ -162,13 +162,13 @@ export function CardButton({
   return (
     <Link
       href={href}
-      className="flex items-center gap-3 rounded-2xl border bg-white p-4 [@media(hover:hover)]:hover:brightness-[.98]"
+      className="flex min-w-0 items-center gap-3 rounded-2xl border bg-white p-4 [@media(hover:hover)]:hover:brightness-[.98]"
       style={{ borderColor: border ?? colors.border, background: colors.white }}
     >
-      <span className="flex h-12 w-12 items-center justify-center rounded-2xl" style={{ background: iconBg }}>
+      <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl" style={{ background: iconBg }}>
         <Icon name={icon} size={22} color={iconColor} />
       </span>
-      <span className="flex-1">
+      <span className="min-w-0 flex-1">
         <span className="block text-[15px] font-extrabold" style={{ color: colors.textDark }}>
           {title}
         </span>
@@ -218,10 +218,10 @@ export function SettingsToggleRow({
     <button
       type="button"
       onClick={() => onChange(!value)}
-      className="flex w-full items-center gap-3 px-4 py-3.5 text-left"
+      className="flex w-full min-w-0 items-center gap-3 px-4 py-3.5 text-left"
       style={{ borderBottom: last ? "none" : `1px solid ${colors.border}` }}
     >
-      <span className="flex-1">
+      <span className="min-w-0 flex-1">
         <span className="block text-[15px] font-extrabold" style={{ color: colors.textDark }}>
           {label}
         </span>

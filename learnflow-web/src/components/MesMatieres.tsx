@@ -41,7 +41,7 @@ export default function MesMatieres({
           <Icon name="chevron-right" size={12} color={colors.primary} />
         </button>
       </div>
-      <div className="grid grid-cols-5 gap-1 sm:gap-2">
+      <div className="grid grid-cols-3 gap-2 min-[360px]:grid-cols-4 sm:grid-cols-5 sm:gap-2">
         {preview.map((s) => {
           const scheme = resolveSubjectScheme(s.colorScheme);
           return (
@@ -61,8 +61,8 @@ export default function MesMatieres({
       </div>
 
       {open ? (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-slate-900/45 md:items-center">
-          <div className="max-h-[82%] w-full max-w-lg rounded-t-[28px] p-5 md:rounded-3xl" style={{ background: colors.white }}>
+        <div className="fixed inset-0 z-50 flex items-end justify-center overflow-y-auto bg-slate-900/45 p-0 md:items-center md:p-4">
+          <div className="max-h-[min(90dvh,82%)] w-full max-w-lg rounded-t-[28px] p-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] md:rounded-3xl" style={{ background: colors.white }}>
             <div className="mx-auto mb-3 h-1 w-10 rounded-full" style={{ background: colors.borderStrong }} />
             <div className="mb-3 flex items-start justify-between">
               <h3 className="text-lg font-extrabold">Toutes les matières</h3>

@@ -106,7 +106,7 @@ export default function LiguePage() {
       </AppBar>
 
       {tab === "classement" ? (
-        <div className="mx-auto w-full max-w-3xl px-4 pb-8 sm:px-6 lg:px-8">
+        <div className="mx-auto w-full min-w-0 max-w-3xl px-[clamp(0.75rem,3.6vw,2rem)] pb-8 xl:max-w-4xl">
           <div className="flex items-center justify-center gap-2 overflow-x-auto py-3 sm:gap-3">
             {TIER_ORDER.map((id, index) => {
               const on = selectedTier === id;
@@ -153,7 +153,7 @@ export default function LiguePage() {
                 <p className="mb-4 text-center text-[11px] font-extrabold uppercase tracking-widest" style={{ color: colors.textMuted }}>
                   Podium de la semaine
                 </p>
-                <div className="flex items-end justify-center gap-1 px-2 sm:gap-2 sm:px-4">
+                <div className="flex items-end justify-center gap-1 px-1 sm:gap-2 sm:px-4">
                   {[{ player: second, place: 2 as const }, { player: first, place: 1 as const }, { player: third, place: 3 as const }].map(({ player, place }) => {
                     const meta = PLACE[place];
                     return (
@@ -205,7 +205,7 @@ export default function LiguePage() {
                         <div
                           className="relative w-full rounded-t-[18px]"
                           style={{
-                            height: meta.height,
+                            height: place === 1 ? "clamp(72px, 22vw, 108px)" : place === 2 ? "clamp(56px, 16vw, 78px)" : "clamp(48px, 13vw, 62px)",
                             background: meta.bar,
                             boxShadow: "inset 0 2px 0 rgba(255,255,255,0.5)",
                           }}
@@ -288,9 +288,9 @@ export default function LiguePage() {
           ) : null}
         </div>
       ) : (
-        <div className="mx-auto w-full max-w-3xl space-y-3 px-4 py-4 pb-8 sm:px-6 lg:px-8">
+        <div className="mx-auto w-full min-w-0 max-w-3xl space-y-3 px-[clamp(0.75rem,3.6vw,2rem)] py-4 pb-8 xl:max-w-4xl">
           <p className="text-[18px] font-extrabold">Paliers</p>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
             {LEAGUE_TIERS.map((tier, index) => {
               const unlocked = index <= currentIndex;
               return (
@@ -309,7 +309,7 @@ export default function LiguePage() {
             })}
           </div>
           <p className="pt-4 text-[18px] font-extrabold">Succès</p>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
             {ACHIEVEMENTS.map((b) => {
               const earned = badges.includes(b.key) || ["Série 7", "Blitz King", "Lecteur Pro"].includes(b.key);
               return (

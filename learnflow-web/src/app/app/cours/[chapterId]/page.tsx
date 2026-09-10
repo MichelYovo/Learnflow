@@ -67,8 +67,8 @@ export default function CoursePage() {
     <div>
       <ScreenHeader title={lesson.title} backHref="/app/cours" />
       <AppMain className="space-y-4 py-5 pb-10">
-        <div className="flex gap-2.5">
-          <button type="button" onClick={() => selectTab("essentiel")} className="flex-1 rounded-[18px] border px-3 py-3" style={tabStyle("essentiel")}>
+        <div className="flex flex-col gap-2 sm:flex-row sm:gap-2.5">
+          <button type="button" onClick={() => selectTab("essentiel")} className="min-w-0 flex-1 rounded-[18px] border px-3 py-3" style={tabStyle("essentiel")}>
             <p className="text-center text-[16px] font-extrabold" style={{ color: tabStyle("essentiel").color }}>
               L&apos;Essentiel
             </p>
@@ -76,7 +76,7 @@ export default function CoursePage() {
               Synthèse · {words} mots
             </p>
           </button>
-          <button type="button" onClick={() => selectTab("details")} className="flex-1 rounded-[18px] border px-3 py-3" style={tabStyle("details")}>
+          <button type="button" onClick={() => selectTab("details")} className="min-w-0 flex-1 rounded-[18px] border px-3 py-3" style={tabStyle("details")}>
             <p className="text-center text-[16px] font-extrabold" style={{ color: tabStyle("details").color }}>
               En Détails
             </p>
@@ -138,7 +138,7 @@ export default function CoursePage() {
         )}
 
         {show2d || show3d ? (
-          <div className="flex gap-2 rounded-3xl p-4" style={{ background: colors.svtBg }}>
+          <div className="flex flex-col gap-2 rounded-3xl p-4 min-[420px]:flex-row" style={{ background: colors.svtBg }}>
             {show2d ? (
               <button type="button" onClick={() => router.push(`/app/schema/${chapterId}`)} className="flex flex-1 items-center justify-center gap-2 rounded-2xl py-4 font-extrabold" style={{ background: colors.white }}>
                 <Icon name="grid" size={18} color={colors.secondary} />

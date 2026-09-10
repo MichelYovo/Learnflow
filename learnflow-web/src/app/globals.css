@@ -11,18 +11,27 @@
 
 html {
   height: 100%;
+  width: 100%;
   max-width: 100%;
-  overflow-x: clip;
+  overflow-x: hidden;
 }
 
 body {
   min-height: 100%;
   min-height: 100dvh;
+  width: 100%;
   max-width: 100%;
-  overflow-x: clip;
+  overflow-x: hidden;
   background: #fafaf9;
   color: #1c1917;
   font-family: var(--font-poppins), ui-sans-serif, system-ui, sans-serif;
+}
+
+h1,
+h2,
+h3,
+p {
+  overflow-wrap: break-word;
 }
 
 html.dark body {

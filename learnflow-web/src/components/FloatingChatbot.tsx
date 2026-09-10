@@ -25,15 +25,15 @@ export default function FloatingChatbot() {
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="fixed right-[max(12px,env(safe-area-inset-right))] bottom-[calc(5.25rem+env(safe-area-inset-bottom,0px))] z-50 flex h-12 w-12 items-center justify-center rounded-full shadow-lg sm:h-14 sm:w-14 lg:bottom-6 lg:right-6"
-        style={{ background: colors.primary }}
-        aria-label="Tuteur local"
-      >
-        <Icon name={open ? "x" : "message"} size={22} color="#fff" />
-      </button>
-      {open ? (
-        <div
-          className="fixed right-[max(8px,env(safe-area-inset-right))] bottom-[calc(8.5rem+env(safe-area-inset-bottom,0px))] z-50 w-[min(360px,calc(100vw-1rem))] overflow-hidden rounded-3xl border shadow-xl lg:bottom-24 lg:right-6"
+          className="fixed right-[max(12px,env(safe-area-inset-right))] bottom-[calc(5.25rem+env(safe-area-inset-bottom,0px))] z-50 flex h-12 w-12 items-center justify-center rounded-full shadow-lg sm:h-14 sm:w-14 lg:bottom-6 lg:right-6"
+          style={{ background: colors.primary }}
+          aria-label="Tuteur local"
+        >
+          <Icon name={open ? "x" : "message"} size={22} color="#fff" />
+        </button>
+        {open ? (
+          <div
+            className="fixed inset-x-2 bottom-[calc(8.5rem+env(safe-area-inset-bottom,0px))] z-50 mx-auto w-[min(360px,calc(100vw-1rem))] max-h-[min(70dvh,28rem)] overflow-hidden rounded-3xl border shadow-xl sm:inset-x-auto sm:right-[max(8px,env(safe-area-inset-right))] sm:left-auto lg:bottom-24 lg:right-6"
           style={{
             background: colors.white,
             borderColor: colors.border,

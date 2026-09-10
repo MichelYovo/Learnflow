@@ -75,7 +75,7 @@ function FlashInner() {
   }
 
   return (
-    <div className="mx-auto flex min-h-[calc(100dvh-5.5rem)] max-w-xl flex-col px-4 py-4 lg:min-h-dvh">
+    <div className="mx-auto flex min-h-[calc(100dvh-5.5rem)] w-full min-w-0 max-w-xl flex-col px-[clamp(0.75rem,3.6vw,1.5rem)] py-4 lg:min-h-dvh">
       <div className="mb-2 flex items-center gap-3 px-2">
         <button type="button" onClick={() => router.back()} aria-label="Retour">
           <Icon name="arrow-left" size={20} color={colors.textDark} />
@@ -91,7 +91,7 @@ function FlashInner() {
       <button
         type="button"
         onClick={() => setFlipped((v) => !v)}
-        className="mx-2 mt-2 flex min-h-[260px] w-[calc(100%-16px)] items-center justify-center rounded-[28px] p-7 text-center text-2xl font-extrabold leading-8"
+        className="mx-auto mt-2 flex min-h-[min(52vh,420px)] w-full max-w-full items-center justify-center rounded-[28px] p-5 text-center text-[clamp(1.15rem,4vw+0.4rem,1.5rem)] font-extrabold leading-snug sm:p-7"
         style={{ background: colors.white }}
       >
         {flipped ? card.verso : card.recto}

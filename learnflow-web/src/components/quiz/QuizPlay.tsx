@@ -79,8 +79,8 @@ export default function QuizPlay({
   }, [answered, onContinue, onPick, options.length]);
 
   return (
-    <div className="mx-auto flex h-dvh min-h-dvh w-full max-w-xl flex-col" style={{ background: colors.surface }}>
-      <div className="flex items-center gap-3 px-4 pb-2 pt-[max(0.75rem,env(safe-area-inset-top))]">
+    <div className="mx-auto flex h-dvh min-h-dvh w-full min-w-0 max-w-xl flex-col sm:max-w-2xl" style={{ background: colors.surface }}>
+      <div className="flex items-center gap-3 px-[clamp(0.75rem,3.6vw,1.5rem)] pb-2 pt-[max(0.75rem,env(safe-area-inset-top))]">
         <button
           type="button"
           onClick={onBack}
@@ -102,13 +102,13 @@ export default function QuizPlay({
         {headerRight}
       </div>
 
-      <div key={question} className="flex min-h-0 flex-1 flex-col overflow-y-auto px-5 pt-3 lf-slide-in">
+      <div key={question} className="lf-slide-in flex min-h-0 min-w-0 flex-1 flex-col overflow-y-auto px-[clamp(0.75rem,3.6vw,1.5rem)] pt-3">
         {kicker ? (
           <p className="text-[11px] font-extrabold uppercase tracking-[0.14em]" style={{ color: colors.textMuted }}>
             {kicker}
           </p>
         ) : null}
-        <h1 className="mt-2 text-[22px] font-extrabold leading-7 sm:text-[24px] sm:leading-8">{question}</h1>
+        <h1 className="mt-2 text-[clamp(1.15rem,4vw+0.6rem,1.5rem)] font-extrabold leading-snug">{question}</h1>
 
         <div className="mt-6 flex flex-col gap-3 pb-4">
           {options.map((opt, i) => {
