@@ -87,12 +87,12 @@ export const MODE_DEFINITIONS: ModeDefinition[] = [
     label: "Blitz 60s",
     sub: "Survive 60s",
     purpose:
-      "60 secondes, mix de chapitres. Choisis Facile, Moyen ou Difficile, puis envoie le code défi sur WhatsApp.",
+      "60 secondes chrono, mix de chapitres. Envoie un code duel sur WhatsApp : ton ami joue exactement la même série.",
     icon: "timer",
     color: "#EF4444",
     bg: "#FEF2F2",
     border: "#FECACA",
-    hint: "Difficulté · WhatsApp",
+    hint: "Duel · code WhatsApp",
     hintIcon: undefined,
   },
 ];

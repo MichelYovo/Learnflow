@@ -5,6 +5,7 @@ import { useParams, useRouter, useSearchParams } from "next/navigation";
 import Icon from "@/components/Icon";
 import QuizPlay from "@/components/quiz/QuizPlay";
 import Spira from "@/components/Spira";
+import SpiraCelebrate from "@/components/SpiraCelebrate";
 import { questionsForChapter } from "@/data/modeContent";
 import { usePublishedCatalog } from "@/data/publishedCache";
 import { playSfx, preloadSfx } from "@/lib/sfx";
@@ -22,7 +23,6 @@ function QuizInner() {
   const bank = useMemo(() => questionsForChapter(chapterId, classe), [chapterId, classe, catalogEpoch]);
   const [queue, setQueue] = useState(bank);
   const recordAssimilation = useLearnFlowStore((s) => s.recordAssimilation);
-  const markChapterRead = useLearnFlowStore((s) => s.markChapterRead);
   const lockGrandQuizzOneHour = useLearnFlowStore((s) => s.lockGrandQuizzOneHour);
   const firstTryRef = useRef(true);
   const missedRef = useRef<typeof bank>([]);
@@ -41,7 +41,6 @@ function QuizInner() {
     const nextScore = score + (selected === q?.indexReponseCorrecte ? 1 : 0);
     setScore(nextScore);
     if (current + 1 >= queue.length) {
-      markChapterRead(chapterId);
       const res = recordAssimilation(chapterId, nextScore, queue.length, firstTryRef.current);
       setResult(res);
       setDone(true);
@@ -73,7 +72,7 @@ function QuizInner() {
             className="flex flex-col items-center gap-2.5 px-7 py-8 text-center text-white"
             style={{ background: perfect ? "linear-gradient(135deg,#10B981,#059669)" : "linear-gradient(135deg,#F59E0B,#D97706)" }}
           >
-            <Icon name={perfect ? "award" : "alert-circle"} size={40} color="#fff" />
+            {perfect ? <SpiraCelebrate size={220} /> : <Icon name="alert-circle" size={40} color="#fff" />}
             <p className="text-[28px] font-extrabold">
               {score}/{queue.length}
             </p>
@@ -120,8 +119,8 @@ function QuizInner() {
           className="flex flex-col items-center gap-2.5 px-7 py-8 text-center text-white"
           style={{ background: perfect ? "linear-gradient(135deg,#10B981,#059669)" : "linear-gradient(135deg,#EF4444,#DC2626)" }}
         >
-          <Icon name={perfect ? "award" : "alert-circle"} size={40} color="#fff" />
-          <p className="text-[28px] font-extrabold">{perfect ? "Parfait !" : `${score}/${queue.length}`}</p>
+          {perfect ? <SpiraCelebrate size={220} /> : <Icon name="alert-circle" size={40} color="#fff" />}
+          <p className="text-[28px] font-extrabold">{perfect ? "Parfait !" : `${score}/{queue.length}`}</p>
           <p className="text-[13px] font-semibold text-white/90">
             {perfect
               ? `Règle du 10/10 validée · +${result.xp} XP${result.challenger ? " · Badge CHALLENGER" : ""}`
@@ -169,9 +168,6 @@ function QuizInner() {
                 </span>
               </span>
             </button>
-            <div className="flex justify-center pt-2">
-              <Spira scene={result.challenger ? "quiz.perfect" : "quiz.pass"} size={result.challenger ? 88 : 80} />
-            </div>
           </div>
         ) : (
           <div className="flex flex-col items-center gap-3 px-5 py-5">

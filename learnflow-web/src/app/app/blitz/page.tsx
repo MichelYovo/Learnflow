@@ -4,16 +4,17 @@ import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Icon from "@/components/Icon";
 import Spira from "@/components/Spira";
-import { BLITZ_DIFFICULTES, blitzDeck, parseChallengeInput } from "@/engine/blitzChallenge";
+import BlitzInviteCard from "@/components/BlitzInviteCard";
+import { BLITZ_DIFFICULTES, blitzDeck, blitzShareText, blitzWhatsAppUrl, parseChallengeInput } from "@/engine/blitzChallenge";
 import { playSfx, preloadSfx } from "@/lib/sfx";
 import { useLearnFlowStore } from "@/store/useLearnFlowStore";
 import type { DifficulteFlash } from "@/types/learnflow";
 
 const DURATION = 60;
 const DIFF_META: Record<DifficulteFlash, { color: string; hint: string }> = {
-  Facile: { color: "#34D399", hint: "Rappels rapides" },
-  Moyen: { color: "#FBBF24", hint: "Mix standard" },
-  Difficile: { color: "#F87171", hint: "Pièges & précision" },
+  Facile: { color: "#34D399", hint: "Échauffement — tu chauffes le chrono" },
+  Moyen: { color: "#FBBF24", hint: "Le vrai duel — mix standard" },
+  Difficile: { color: "#F87171", hint: "Seulement si t'as le cran" },
 };
 
 function HazardTape() {
@@ -109,6 +110,8 @@ function BlitzInner() {
   const [deck, setDeck] = useState(startDeck);
   const [difficulte, setDifficulte] = useState<DifficulteFlash>(startDeck.difficulte);
   const [codeInput, setCodeInput] = useState("");
+  const [joined, setJoined] = useState(false);
+  const [joinError, setJoinError] = useState("");
   const [phase, setPhase] = useState<"ready" | "playing" | "done">("ready");
   const [timeLeft, setTimeLeft] = useState(DURATION);
   const [qIdx, setQIdx] = useState(0);
@@ -179,12 +182,31 @@ function BlitzInner() {
     }, 280);
   };
 
-  const share = () => {
-    const text = shareOk
-      ? `Blitz LearnFlow ${deck.code} — ${score} justes. Rejoins-moi !`
-      : `Défie-moi sur LearnFlow Blitz : ${deck.code}`;
-    if (navigator.share) void navigator.share({ text });
-    else void navigator.clipboard.writeText(text);
+  const share = (withScore = false) => {
+    const text = blitzShareText({
+      code: deck.code,
+      difficulte: deck.difficulte,
+      score: withScore && shareOk ? score : undefined,
+      answered: withScore && shareOk ? answered : undefined,
+    });
+    const wa = blitzWhatsAppUrl(text);
+    if (navigator.share) void navigator.share({ text, title: "Duel Blitz LearnFlow" }).catch(() => window.open(wa, "_blank"));
+    else window.open(wa, "_blank");
+  };
+
+  const joinCode = () => {
+    const parsed = parseChallengeInput(codeInput);
+    if (!parsed) {
+      setJoinError("Code invalide. Exemple : LF-M7K2");
+      return false;
+    }
+    setDeck(parsed);
+    setDifficulte(parsed.difficulte);
+    setBlitzDifficulte(parsed.difficulte);
+    setJoined(true);
+    setJoinError("");
+    setCodeInput("");
+    return true;
   };
 
   const start = () => {
@@ -217,11 +239,11 @@ function BlitzInner() {
             <div className="mt-2 md:mt-4">
               <BlitzRing progress={1} critical warning={false} label="60" />
             </div>
-            <h1 className="mt-4 text-4xl font-black tracking-tight md:text-5xl">Blitz 60s</h1>
+            <h1 className="mt-3 text-3xl font-black tracking-tight md:mt-4 md:text-5xl">Duel Blitz</h1>
             <p className="mt-2 max-w-md text-sm font-semibold text-red-200/70 md:text-base">
-              Survive 60 secondes. Code défi : {deck.code}
+              60 secondes. Mix de chapitres. Envoie le code, ton ami joue la même série.
             </p>
-            <div className="mt-6 grid w-full grid-cols-3 gap-2 md:gap-3">
+            <div className="mt-5 grid w-full grid-cols-3 gap-2 md:gap-3">
               {BLITZ_DIFFICULTES.map((d) => {
                 const on = d === difficulte;
                 const meta = DIFF_META[d];
@@ -233,6 +255,7 @@ function BlitzInner() {
                       setDifficulte(d);
                       setBlitzDifficulte(d);
                       setDeck(blitzDeck(undefined, d));
+                      setJoined(false);
                     }}
                     className="rounded-2xl border-2 py-3 text-sm font-black md:py-4 md:text-base"
                     style={{
@@ -247,27 +270,26 @@ function BlitzInner() {
               })}
             </div>
             <p className="mt-2 text-xs font-semibold text-red-200/55 md:text-sm">{DIFF_META[difficulte].hint}</p>
-            <form
-              className="mt-5 flex w-full max-w-md gap-2"
-              onSubmit={(e) => {
-                e.preventDefault();
-                const parsed = parseChallengeInput(codeInput);
-                if (parsed) {
-                  setDeck(parsed);
-                  setDifficulte(parsed.difficulte);
-                }
-              }}
-            >
-              <input
-                value={codeInput}
-                onChange={(e) => setCodeInput(e.target.value.toUpperCase())}
-                placeholder="LF-MXXXX"
-                className="min-h-12 flex-1 rounded-2xl border border-white/20 bg-white/10 px-4 text-sm font-bold uppercase outline-none md:min-h-14 md:text-base"
+            <div className="mt-5 w-full max-w-md">
+              <BlitzInviteCard
+                code={deck.code}
+                difficulte={deck.difficulte}
+                codeInput={codeInput}
+                onCodeInput={(value) => {
+                  setJoinError("");
+                  setCodeInput(value);
+                }}
+                onJoin={joinCode}
+                onCreate={() => {
+                  setDeck(blitzDeck(undefined, difficulte));
+                  setJoined(false);
+                }}
+                onShare={() => share(false)}
+                incoming={Boolean(incoming) && !joined}
+                joined={joined}
+                joinError={joinError}
               />
-              <button type="submit" className="rounded-2xl bg-white/20 px-4 text-sm font-extrabold md:px-5">
-                OK
-              </button>
-            </form>
+            </div>
           </div>
 
           <div className="mx-auto w-full max-w-2xl pb-2 pt-4">
@@ -278,7 +300,7 @@ function BlitzInner() {
               style={{ background: "linear-gradient(90deg,#EF4444,#7F1D1D)" }}
             >
               <Icon name="flame" size={18} color="#fff" />
-              Je relève le défi
+              Entrer dans l&apos;arène
             </button>
           </div>
         </div>
@@ -312,9 +334,10 @@ function BlitzInner() {
           <p className="mt-2 font-semibold text-red-200/70 md:text-lg">
             {survived ? "Le mix n'a pas eu ta peau." : "Trop lent sur cette série."} · {deck.difficulte} · +{xp} XP
           </p>
+          <p className="mt-3 font-black tracking-[0.18em] text-amber-300">{deck.code}</p>
           <div className="mt-8 flex w-full flex-col gap-3">
-            <button type="button" onClick={share} className="rounded-2xl bg-[#25D366] py-4 text-base font-extrabold md:py-5">
-              Défier un ami · {deck.code}
+            <button type="button" onClick={() => share(true)} className="rounded-2xl bg-[#25D366] py-4 text-base font-extrabold md:py-5">
+              Envoie le duel sur WhatsApp
             </button>
             <button
               type="button"

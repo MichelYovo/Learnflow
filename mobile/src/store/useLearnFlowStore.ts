@@ -36,7 +36,7 @@ import { applySelfRating } from "../engine/spacedRepetition";
 import { xpAssimilation, xpBlitz } from "../engine/xp";
 import { createId, nowIso } from "../lib/ids";
 import { AI_DAILY_QUOTA, remainingAiQuota, todayIsoDate } from "../data/tutor";
-import { findChapterMeta } from "../data/programme";
+import { chapterActivityDone } from "../data/programme";
 import { requestBackgroundSync } from "../lib/SyncManager";
 import {
   addXpToProfile,
@@ -135,7 +135,7 @@ interface LearnFlowState {
     total: number,
     firstTry: boolean
   ) => { xp: number; unlocked: boolean; challenger: boolean };
-  markChapterRead: (chapitreId: string) => void;
+  markChapterPart: (chapitreId: string, part: "essential" | "details") => void;
   lockGrandQuizzOneHour: (chapitreId: string) => void;
   unlockGrandQuizz: (chapitreId: string) => void;
   canAccessGrandQuizz: (chapitreId: string) => boolean;
@@ -226,6 +226,8 @@ const defaultChapter = (id: string): ChapterProgress => ({
   grandQuizzLockedUntil: null,
   firstTryPerfect: false,
   read: false,
+  essentialRead: false,
+  detailsRead: false,
 });
 
 export const useLearnFlowStore = create<LearnFlowState>()(
@@ -514,19 +516,27 @@ export const useLearnFlowStore = create<LearnFlowState>()(
         void import("../lib/progressSync").then((m) => m.requestProgressSync());
       },
 
-      markChapterRead: (chapitreId) => {
+      markChapterPart: (chapitreId, part) => {
         const prev = get().chapterProgress[chapitreId] ?? defaultChapter(chapitreId);
-        if (prev.read) return;
+        if (part === "essential" && prev.essentialRead) return;
+        if (part === "details" && prev.detailsRead) return;
+        const next = {
+          ...prev,
+          essentialRead: prev.essentialRead || part === "essential",
+          detailsRead: prev.detailsRead || part === "details",
+          read: true,
+        };
         const profile = get().getActiveProfile();
-        const n = Math.max(1, findChapterMeta(chapitreId)?.chapter.lessons.length ?? 1);
+        const gained = chapterActivityDone(next) - chapterActivityDone(prev);
         set({
           chapterProgress: {
             ...get().chapterProgress,
-            [chapitreId]: { ...prev, read: true },
+            [chapitreId]: next,
           },
-          profiles: profile
-            ? get().profiles.map((p) => (p.id === profile.id ? { ...p, lessonsDone: p.lessonsDone + n } : p))
-            : get().profiles,
+          profiles:
+            gained > 0 && profile
+              ? get().profiles.map((p) => (p.id === profile.id ? { ...p, lessonsDone: p.lessonsDone + gained } : p))
+              : get().profiles,
         });
         void import("../lib/progressSync").then((m) => m.requestProgressSync());
       },
@@ -561,25 +571,24 @@ export const useLearnFlowStore = create<LearnFlowState>()(
           }
         }
 
-        const alreadyRead = Boolean(prev.read);
-        const n = alreadyRead ? 0 : Math.max(1, findChapterMeta(chapitreId)?.chapter.lessons.length ?? 1);
+        const next = {
+          ...prev,
+          assimilationScore: score,
+          assimilationPerfect: perfect,
+          grandQuizzUnlocked: perfect || prev.grandQuizzUnlocked,
+          grandQuizzLockedUntil: null,
+          firstTryPerfect: challenger || prev.firstTryPerfect,
+        };
+        const gained = chapterActivityDone(next) - chapterActivityDone(prev);
 
         set({
           chapterProgress: {
             ...get().chapterProgress,
-            [chapitreId]: {
-              ...prev,
-              assimilationScore: score,
-              assimilationPerfect: perfect,
-              grandQuizzUnlocked: perfect || prev.grandQuizzUnlocked,
-              grandQuizzLockedUntil: null,
-              firstTryPerfect: challenger || prev.firstTryPerfect,
-              read: true,
-            },
+            [chapitreId]: next,
           },
           profiles:
-            n > 0 && profile
-              ? get().profiles.map((p) => (p.id === profile.id ? { ...p, lessonsDone: p.lessonsDone + n } : p))
+            gained > 0 && profile
+              ? get().profiles.map((p) => (p.id === profile.id ? { ...p, lessonsDone: p.lessonsDone + gained } : p))
               : get().profiles,
         });
         void import("../lib/progressSync").then((m) => m.requestProgressSync());

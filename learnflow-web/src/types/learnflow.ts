@@ -87,6 +87,9 @@ export interface ProgrammeChapter {
   id: string;
   title: string;
   lessons: ProgrammeLesson[];
+  /** Essentiel + Détails + quiz. 100 % only when all three are done. */
+  progressDone?: number;
+  progressTotal?: number;
 }
 
 export interface ProgrammeTheme {
@@ -285,8 +288,10 @@ export interface ChapterProgress {
   grandQuizzUnlocked: boolean;
   grandQuizzLockedUntil: string | null;
   firstTryPerfect: boolean;
-  /** Cours lu (L'Essentiel / En Détails) — fait avancer les barres sans 10/10. */
+  /** Legacy: course page opened. Bars now use essentialRead / detailsRead / quiz. */
   read?: boolean;
+  essentialRead?: boolean;
+  detailsRead?: boolean;
 }
 
 export interface ParentNote {

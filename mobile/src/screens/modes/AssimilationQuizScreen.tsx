@@ -7,6 +7,7 @@ import CorrectBurst from "../../components/CorrectBurst";
 import Icon from "../../components/Icon";
 import QuizPlay from "../../components/quiz/QuizPlay";
 import Spira from "../../components/Spira";
+import SpiraCelebrate from "../../components/SpiraCelebrate";
 import { questionsForChapter } from "../../data/modeContent";
 import { usePublishedCatalog } from "../../data/publishedCache";
 import { playSfx, preloadSfx } from "../../lib/sfx";
@@ -25,7 +26,6 @@ export default function AssimilationQuizScreen({ navigation, route }: Props) {
   const [queue, setQueue] = useState(bank);
   const questions = queue;
   const recordAssimilation = useLearnFlowStore((s) => s.recordAssimilation);
-  const markChapterRead = useLearnFlowStore((s) => s.markChapterRead);
   const lockGrandQuizzOneHour = useLearnFlowStore((s) => s.lockGrandQuizzOneHour);
   const firstTryRef = useRef(true);
   const missedRef = useRef<typeof bank>([]);
@@ -47,7 +47,6 @@ export default function AssimilationQuizScreen({ navigation, route }: Props) {
     const nextScore = score + (selected === q?.indexReponseCorrecte ? 1 : 0);
     setScore(nextScore);
     if (current + 1 >= questions.length) {
-      markChapterRead(chapterId);
       const res = recordAssimilation(chapterId, nextScore, questions.length, firstTryRef.current);
       setResult(res);
       setDone(true);
@@ -80,7 +79,7 @@ export default function AssimilationQuizScreen({ navigation, route }: Props) {
             colors={perfect ? ["#10B981", "#059669"] : ["#F59E0B", "#D97706"]}
             style={styles.resultHero}
           >
-            <Icon name={perfect ? "award" : "alert-circle"} size={40} color={colors.white} />
+            {perfect ? <SpiraCelebrate size={220} /> : <Icon name="alert-circle" size={40} color={colors.white} />}
             <Text style={styles.resultTitle}>{score}/{questions.length}</Text>
             <Text style={styles.resultSub}>
               {perfect
@@ -119,8 +118,8 @@ export default function AssimilationQuizScreen({ navigation, route }: Props) {
           colors={perfect ? ["#10B981", "#059669"] : ["#EF4444", "#DC2626"]}
           style={styles.resultHero}
         >
-          <Icon name={perfect ? "award" : "alert-circle"} size={40} color={colors.white} />
-          <Text style={styles.resultTitle}>{perfect ? "Parfait !" : `${score}/${questions.length}`}</Text>
+          {perfect ? <SpiraCelebrate size={220} /> : <Icon name="alert-circle" size={40} color={colors.white} />}
+          <Text style={styles.resultTitle}>{perfect ? "Parfait !" : `${score}/{questions.length}`}</Text>
           <Text style={styles.resultSub}>
             {perfect
               ? `Règle du 10/10 validée · +${result.xp} XP${result.challenger ? " · Badge CHALLENGER" : ""}`
@@ -154,11 +153,6 @@ export default function AssimilationQuizScreen({ navigation, route }: Props) {
                 <Text style={styles.muted}>Verrouille 1h + rappel local (démo)</Text>
               </View>
             </Pressable>
-            {result.challenger ? (
-              <Spira scene="quiz.perfect" size={88} />
-            ) : (
-              <Spira scene="quiz.pass" size={80} />
-            )}
           </View>
         ) : (
           <View style={styles.choices}>

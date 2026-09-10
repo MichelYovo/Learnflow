@@ -20,7 +20,7 @@ type ActiveTab = "essentiel" | "details";
 
 export default function CourseScreen({ navigation, route }: Props) {
   const { colors } = useAppTheme();
-  const markChapterRead = useLearnFlowStore((s) => s.markChapterRead);
+  const markChapterPart = useLearnFlowStore((s) => s.markChapterPart);
   const chapterId = route.params?.chapterId ?? "eq2";
   const catalogEpoch = usePublishedCatalog();
   const fiche = useMemo(() => ficheForChapter(chapterId), [chapterId, catalogEpoch]);
@@ -39,8 +39,8 @@ export default function CourseScreen({ navigation, route }: Props) {
 
   useEffect(() => {
     void import("../../lib/cloud").then((m) => m.trackActivity("chapter_open", { chapterId }));
-    markChapterRead(chapterId);
-  }, [chapterId, markChapterRead]);
+    markChapterPart(chapterId, "essential");
+  }, [chapterId, markChapterPart]);
 
   const reveal = (word: string) => {
     setRevealed((prev) => new Set(prev).add(normalizeKeyword(word)));
@@ -51,6 +51,9 @@ export default function CourseScreen({ navigation, route }: Props) {
     if (next === "details") {
       setMasked(false);
       setRevealed(new Set());
+      markChapterPart(chapterId, "details");
+    } else {
+      markChapterPart(chapterId, "essential");
     }
   };
 
@@ -179,10 +182,7 @@ export default function CourseScreen({ navigation, route }: Props) {
 
         <Pressable
           style={[styles.primary, { backgroundColor: colors.primary }]}
-          onPress={() => {
-            markChapterRead(chapterId);
-            navigation.navigate("AssimilationQuiz", { chapterId });
-          }}
+          onPress={() => navigation.navigate("AssimilationQuiz", { chapterId })}
         >
           <Text style={styles.primaryText}>Passer le quizz d'assimilation</Text>
         </Pressable>

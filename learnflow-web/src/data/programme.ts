@@ -44,6 +44,13 @@ export function programmeStartingFresh(subjects: ProgrammeSubject[]): ProgrammeS
   });
 }
 
+export const CHAPTER_ACTIVITY_TOTAL = 3;
+
+export function chapterActivityDone(p?: ChapterProgress | null): number {
+  if (!p) return 0;
+  return (p.essentialRead ? 1 : 0) + (p.detailsRead ? 1 : 0) + (p.assimilationScore != null ? 1 : 0);
+}
+
 export function applyChapterProgress(
   subjects: ProgrammeSubject[],
   chapterProgress: Record<string, ChapterProgress> = {}
@@ -52,15 +59,24 @@ export function applyChapterProgress(
     const themes = subject.themes.map((theme) => {
       const chapters = theme.chapters.map((chapter) => {
         const p = chapterProgress[chapter.id];
-        // Course opened, or the 10-question quiz finished (even if the lesson was not fully read).
-        const completed = Boolean(p?.read) || p?.assimilationScore != null;
-        if (!completed) return chapter;
+        const progressDone = chapterActivityDone(p);
+        const progressTotal = CHAPTER_ACTIVITY_TOTAL;
+        const complete = progressDone >= progressTotal;
         return {
           ...chapter,
-          lessons: chapter.lessons.map((lesson) => ({ ...lesson, status: "done" as const })),
+          progressDone,
+          progressTotal,
+          lessons: complete
+            ? chapter.lessons.map((lesson) => ({ ...lesson, status: "done" as const }))
+            : chapter.lessons,
         };
       });
-      return packTheme(theme.id, theme.title, chapters);
+      const packed = packTheme(theme.id, theme.title, chapters);
+      return {
+        ...packed,
+        lessonsDone: chapters.reduce((a, c) => a + (c.progressDone ?? 0), 0),
+        lessonsTotal: chapters.length * CHAPTER_ACTIVITY_TOTAL,
+      };
     });
     return packSubject(subject.id as SubjectId, themes, subject.name);
   });
@@ -148,10 +164,11 @@ export function continueLessonForLearner(
   for (const subject of programme) {
     for (const theme of subject.themes) {
       for (const chapter of theme.chapters) {
+        const done = chapter.progressDone ?? 0;
+        const total = chapter.progressTotal ?? CHAPTER_ACTIVITY_TOTAL;
+        if (done >= total) continue;
         const current = chapter.lessons.find((l) => l.status === "current");
-        if (!current) continue;
-        const done = chapter.lessons.filter((l) => l.status === "done").length;
-        const total = chapter.lessons.length || 1;
+        if (!current && done === 0) continue;
         return {
           chapterId: chapter.id,
           title: chapter.title,

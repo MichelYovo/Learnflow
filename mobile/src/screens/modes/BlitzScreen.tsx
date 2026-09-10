@@ -19,7 +19,7 @@ import CorrectBurst from "../../components/CorrectBurst";
 import Icon from "../../components/Icon";
 import Spira from "../../components/Spira";
 import TimesUpFlash from "../../components/TimesUpFlash";
-import { BLITZ_DIFFICULTES, blitzDeck, parseChallengeInput } from "../../engine/blitzChallenge";
+import { BLITZ_DIFFICULTES, blitzDeck, blitzShareText, blitzWhatsAppUrl, parseChallengeInput } from "../../engine/blitzChallenge";
 import { playSfx, preloadSfx } from "../../lib/sfx";
 import { useLearnFlowStore } from "../../store/useLearnFlowStore";
 import { colors } from "../../theme/colors";
@@ -50,9 +50,9 @@ function ringTone(seconds: number): "warn" | "critical" {
 }
 
 const DIFF_META: Record<DifficulteFlash, { color: string; hint: string }> = {
-  Facile: { color: "#34D399", hint: "Rappels rapides" },
-  Moyen: { color: "#FBBF24", hint: "Mix standard" },
-  Difficile: { color: "#F87171", hint: "Pièges & précision" },
+  Facile: { color: "#34D399", hint: "Échauffement — tu chauffes le chrono" },
+  Moyen: { color: "#FBBF24", hint: "Le vrai duel — mix standard" },
+  Difficile: { color: "#F87171", hint: "Seulement si t'as le cran" },
 };
 
 export default function BlitzScreen({ navigation, route }: Props) {
@@ -71,7 +71,9 @@ export default function BlitzScreen({ navigation, route }: Props) {
   const [deck, setDeck] = useState(startDeck);
   const [difficulte, setDifficulte] = useState<DifficulteFlash>(startDeck.difficulte);
   const [codeInput, setCodeInput] = useState("");
-  const [challengeOpen, setChallengeOpen] = useState(false);
+  const [challengeOpen, setChallengeOpen] = useState(true);
+  const [joined, setJoined] = useState(false);
+  const [joinError, setJoinError] = useState("");
   const [phase, setPhase] = useState<"ready" | "playing" | "done">("ready");
   const [timeLeft, setTimeLeft] = useState(DURATION);
   const [ringProgress, setRingProgress] = useState(1);
@@ -180,33 +182,37 @@ export default function BlitzScreen({ navigation, route }: Props) {
 
   const shareChallenge = (withScore: boolean) => {
     const allow = useLearnFlowStore.getState().settings.privacy.shareBlitzScores;
+    const text = blitzShareText({
+      code: deck.code,
+      difficulte: deck.difficulte,
+      score: withScore && allow ? score : undefined,
+      answered: withScore && allow ? answered : undefined,
+    });
     if (withScore && !allow) {
       Alert.alert(
-        "Partage désactivé",
-        "Active « Partage de score Blitz » dans Profil → Confidentialité."
+        "Partage du score désactivé",
+        "Le code part sans ton score. Active « Partage de score Blitz » dans Profil → Confidentialité pour narguer tes potes."
       );
-      return;
     }
-    const body = withScore
-      ? `LearnFlow Blitz — Survive 60s · ${deck.difficulte}\nCode défi : ${deck.code}\nMon score : ${score}/${answered}\nMême série. Tu bats ${score} ?`
-      : `LearnFlow Blitz — Survive 60s · ${deck.difficulte}\nCode défi : ${deck.code}\nEntre le code, même série. Tu tiens 60 secondes ?`;
-    const text = encodeURIComponent(body);
-    void Linking.openURL(`whatsapp://send?text=${text}`).catch(() =>
-      Linking.openURL(`https://wa.me/?text=${text}`)
+    const encoded = encodeURIComponent(text);
+    void Linking.openURL(`whatsapp://send?text=${encoded}`).catch(() =>
+      Linking.openURL(blitzWhatsAppUrl(text))
     );
   };
 
   const joinCode = () => {
     const parsed = parseChallengeInput(codeInput);
     if (!parsed) {
-      Alert.alert("Code invalide", "Format attendu : LF-MXXXX (la lettre indique la difficulté).");
+      setJoinError("Code invalide. Exemple : LF-M7K2");
       return;
     }
     setDeck(parsed);
     setDifficulte(parsed.difficulte);
     setBlitzDifficulte(parsed.difficulte);
     setCodeInput("");
-    Alert.alert("Défi chargé", `Code ${parsed.code} · ${parsed.difficulte} — mêmes questions que ton ami.`);
+    setJoined(true);
+    setJoinError("");
+    Alert.alert("Défi verrouillé", `Même série que ton ami · ${parsed.code} · ${parsed.difficulte}. 60 secondes. C'est parti ?`);
   };
 
   const loadDifficulty = (d: DifficulteFlash) => {
@@ -214,6 +220,7 @@ export default function BlitzScreen({ navigation, route }: Props) {
     setDifficulte(d);
     setBlitzDifficulte(d);
     setDeck(blitzDeck(undefined, d));
+    setJoined(false);
   };
 
   const start = () => {
@@ -235,12 +242,21 @@ export default function BlitzScreen({ navigation, route }: Props) {
     <BlitzChallengeDrawer
       code={deck.code}
       codeInput={codeInput}
-      onCodeInput={setCodeInput}
+      onCodeInput={(value) => {
+        setJoinError("");
+        setCodeInput(value);
+      }}
       expanded={challengeOpen}
       onToggle={() => setChallengeOpen((v) => !v)}
-      onCreate={() => setDeck(blitzDeck(undefined, difficulte))}
+      onCreate={() => {
+        setDeck(blitzDeck(undefined, difficulte));
+        setJoined(false);
+      }}
       onJoin={joinCode}
       onShare={() => shareChallenge(phase === "done")}
+      incoming={Boolean(incoming) && !joined}
+      joined={joined}
+      joinError={joinError}
     />
   );
 
@@ -270,7 +286,8 @@ export default function BlitzScreen({ navigation, route }: Props) {
             <BlitzRing value={60} progress={1} size={168} unit="sec" tone="critical" />
           </Animated.View>
 
-          <Text style={styles.readyTitle}>60 secondes</Text>
+          <Text style={styles.readyTitle}>Duel Blitz</Text>
+          <Text style={styles.readySub}>60 secondes. Envoie le code, ton ami joue la même série.</Text>
 
           <View style={styles.diffRow}>
             {BLITZ_DIFFICULTES.map((d) => {
@@ -295,11 +312,12 @@ export default function BlitzScreen({ navigation, route }: Props) {
               );
             })}
           </View>
+          <Text style={styles.diffHint}>{DIFF_META[difficulte].hint}</Text>
 
           <Pressable onPress={start} style={styles.startWrap}>
             <LinearGradient colors={["#EF4444", "#7F1D1D"]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.start}>
               <Icon name="flame" size={18} color={colors.white} />
-              <Text style={styles.startText}>Je relève le défi</Text>
+              <Text style={styles.startText}>Entrer dans l'arène</Text>
             </LinearGradient>
           </Pressable>
         </ScrollView>
@@ -327,8 +345,9 @@ export default function BlitzScreen({ navigation, route }: Props) {
           <Text style={styles.doneSub}>
             {survived ? "Le mix n'a pas eu ta peau." : "Trop lent sur cette série."} · {deck.difficulte} · +{xp} XP
           </Text>
+          <Text style={styles.doneCode}>{deck.code}</Text>
           <Pressable style={styles.whatsapp} onPress={() => shareChallenge(true)}>
-            <Text style={styles.whatsappText}>Défier un ami · {deck.code}</Text>
+            <Text style={styles.whatsappText}>Envoie le duel sur WhatsApp</Text>
           </Pressable>
           <Pressable
             onPress={() => {
@@ -462,7 +481,7 @@ const styles = StyleSheet.create({
     letterSpacing: 1.6,
   },
   readyTitle: { fontSize: 28, fontWeight: "900", color: colors.white, letterSpacing: -0.4, textAlign: "center" },
-  readySub: { color: "rgba(254,202,202,0.72)", textAlign: "center", fontWeight: "600", lineHeight: 20 },
+  readySub: { color: "rgba(254,202,202,0.72)", textAlign: "center", fontWeight: "600", lineHeight: 20, maxWidth: 320 },
   warnRow: { flexDirection: "row", flexWrap: "wrap", justifyContent: "center", gap: 8, marginTop: 4 },
   warnChip: {
     flexDirection: "row",
@@ -550,6 +569,7 @@ const styles = StyleSheet.create({
   optText: { color: colors.white, fontWeight: "700" },
   doneTitle: { fontSize: 44, fontWeight: "900", color: colors.white },
   doneSub: { color: "rgba(254,202,202,0.7)", textAlign: "center", fontWeight: "600" },
+  doneCode: { color: "#FDE68A", fontWeight: "900", letterSpacing: 3, fontSize: 22, marginTop: 4 },
   whatsapp: { backgroundColor: "#25D366", paddingHorizontal: 24, paddingVertical: 14, borderRadius: 16, marginTop: 8 },
   whatsappText: { color: colors.white, fontWeight: "800" },
   linkHit: { marginTop: 4, padding: 8 },

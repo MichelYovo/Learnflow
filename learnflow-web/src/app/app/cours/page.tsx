@@ -28,7 +28,6 @@ function CoursInner() {
   const { colors } = useAppTheme();
   const profile = useLearnFlowStore((s) => s.getActiveProfile());
   const chapterProgress = useLearnFlowStore((s) => s.chapterProgress);
-  const markChapterRead = useLearnFlowStore((s) => s.markChapterRead);
   const catalogEpoch = usePublishedCatalog();
   const programme = useMemo(
     () => programmeForLearner(profile?.classe, profile?.id, chapterProgress),
@@ -184,10 +183,10 @@ function CoursInner() {
 
         {level === 2 && liveTheme
           ? liveTheme.chapters.map((c, ci) => {
-              const done = c.lessons.filter((l) => l.status === "done").length;
-              const total = c.lessons.length;
+              const done = c.progressDone ?? 0;
+              const total = c.progressTotal ?? 3;
               const pct = Math.round((done / total) * 100);
-              const current = c.lessons.some((l) => l.status === "current");
+              const current = done > 0 && done < total;
               return (
                 <button
                   key={c.id}
@@ -274,10 +273,7 @@ function CoursInner() {
         {level === 3 && liveChapter ? (
           <button
             type="button"
-            onClick={() => {
-              markChapterRead(liveChapter.id);
-              router.push(`/app/quiz/assimilation/${liveChapter.id}`);
-            }}
+            onClick={() => router.push(`/app/quiz/assimilation/${liveChapter.id}`)}
             className="mt-2 w-full rounded-[18px] py-[18px] text-[16px] font-extrabold text-white"
             style={{ background: colors.primary }}
           >

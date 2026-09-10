@@ -28,7 +28,6 @@ export default function ApprendreScreen() {
   const { colors } = useAppTheme();
   const profile = useLearnFlowStore((s) => s.getActiveProfile());
   const chapterProgress = useLearnFlowStore((s) => s.chapterProgress);
-  const markChapterRead = useLearnFlowStore((s) => s.markChapterRead);
   const catalogEpoch = usePublishedCatalog();
   const programme = useMemo(
     () => programmeForLearner(profile?.classe, profile?.id, chapterProgress),
@@ -224,10 +223,10 @@ export default function ApprendreScreen() {
 
         {level === 2 &&
           liveTheme?.chapters.map((c, ci) => {
-            const done = c.lessons.filter((l) => l.status === "done").length;
-            const total = c.lessons.length;
+            const done = c.progressDone ?? 0;
+            const total = c.progressTotal ?? 3;
             const pct = Math.round((done / total) * 100);
-            const current = c.lessons.some((l) => l.status === "current");
+            const current = done > 0 && done < total;
             return (
               <Pressable
                 key={c.id}
@@ -330,10 +329,7 @@ export default function ApprendreScreen() {
         {level === 3 && liveChapter ? (
           <Pressable
             style={[styles.quizBtn, { backgroundColor: colors.mathsBg, borderColor: colors.mathsBorder }]}
-            onPress={() => {
-              markChapterRead(liveChapter.id);
-              nav.navigate("AssimilationQuiz", { chapterId: liveChapter.id });
-            }}
+            onPress={() => nav.navigate("AssimilationQuiz", { chapterId: liveChapter.id })}
           >
             <Text style={styles.quizBtnText}>Quizz 10/10</Text>
           </Pressable>

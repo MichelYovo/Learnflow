@@ -22,13 +22,13 @@ export default function CoursePage() {
   const fiche = useMemo(() => ficheForChapter(chapterId), [chapterId, catalogEpoch]);
   const lesson = useMemo(() => toLessonContent(fiche), [fiche]);
   const { colors } = useAppTheme();
-  const markChapterRead = useLearnFlowStore((s) => s.markChapterRead);
+  const markChapterPart = useLearnFlowStore((s) => s.markChapterPart);
 
   useEffect(() => {
     if (!chapterId) return;
     void import("@/lib/cloud").then((m) => m.trackActivity("chapter_open", { chapterId }));
-    markChapterRead(chapterId);
-  }, [chapterId, markChapterRead]);
+    markChapterPart(chapterId, "essential");
+  }, [chapterId, markChapterPart]);
 
   const [activeTab, setActiveTab] = useState<ActiveTab>("essentiel");
   const [masked, setMasked] = useState(false);
@@ -48,6 +48,9 @@ export default function CoursePage() {
     if (next === "details") {
       setMasked(false);
       setRevealed(new Set());
+      markChapterPart(chapterId, "details");
+    } else {
+      markChapterPart(chapterId, "essential");
     }
   };
 
@@ -153,10 +156,7 @@ export default function CoursePage() {
 
         <button
           type="button"
-          onClick={() => {
-            markChapterRead(chapterId);
-            router.push(`/app/quiz/assimilation/${chapterId}`);
-          }}
+          onClick={() => router.push(`/app/quiz/assimilation/${chapterId}`)}
           className="w-full rounded-[18px] py-[18px] text-[17px] font-extrabold text-white"
           style={{ background: colors.primary }}
         >

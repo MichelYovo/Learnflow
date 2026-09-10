@@ -93,3 +93,50 @@ export function parseChallengeInput(input: string) {
   if (!parsed) return null;
   return blitzDeck(parsed.seed, parsed.difficulte);
 }
+
+export function blitzInviteHook(code: string): string {
+  const hooks = [
+    "Même questions. Même chrono. Aucune excuse.",
+    "Envoie le code : ton ami joue exactement ta série.",
+    "Un code = un duel. Qui tient 60 secondes ?",
+    "Colle ça sur WhatsApp et attends qu'il craque.",
+  ];
+  const n = [...code].reduce((a, ch) => a + ch.charCodeAt(0), 0);
+  return hooks[n % hooks.length];
+}
+
+export function blitzShareText(input: {
+  code: string;
+  difficulte: DifficulteFlash;
+  score?: number;
+  answered?: number;
+}): string {
+  const { code, difficulte, score, answered } = input;
+  if (score != null && answered != null) {
+    return [
+      `⚡ DUEL BLITZ — j'ai claqué ${score} juste${score > 1 ? "s" : ""} en 60s`,
+      "",
+      `Code arène : ${code}`,
+      `Niveau : ${difficulte}`,
+      "",
+      "Même questions. Même chrono.",
+      `Tu bats ${score} ou tu t'inclines ?`,
+      "",
+      "LearnFlow → Blitz → colle le code.",
+    ].join("\n");
+  }
+  return [
+    "🔥 DUEL BLITZ — 60 secondes chrono",
+    "",
+    "J'ouvre l'arène. Tu rentres ?",
+    "",
+    `Code : ${code}`,
+    `Niveau : ${difficulte}`,
+    "",
+    "Même série que moi. Tape le code dans LearnFlow et on verra qui tient.",
+  ].join("\n");
+}
+
+export function blitzWhatsAppUrl(text: string) {
+  return `https://wa.me/?text=${encodeURIComponent(text)}`;
+}
