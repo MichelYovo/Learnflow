@@ -25,6 +25,7 @@ export default function AssimilationQuizScreen({ navigation, route }: Props) {
   const [queue, setQueue] = useState(bank);
   const questions = queue;
   const recordAssimilation = useLearnFlowStore((s) => s.recordAssimilation);
+  const markChapterRead = useLearnFlowStore((s) => s.markChapterRead);
   const lockGrandQuizzOneHour = useLearnFlowStore((s) => s.lockGrandQuizzOneHour);
   const firstTryRef = useRef(true);
   const missedRef = useRef<typeof bank>([]);
@@ -46,6 +47,7 @@ export default function AssimilationQuizScreen({ navigation, route }: Props) {
     const nextScore = score + (selected === q?.indexReponseCorrecte ? 1 : 0);
     setScore(nextScore);
     if (current + 1 >= questions.length) {
+      markChapterRead(chapterId);
       const res = recordAssimilation(chapterId, nextScore, questions.length, firstTryRef.current);
       setResult(res);
       setDone(true);

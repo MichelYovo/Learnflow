@@ -7,14 +7,17 @@ import Icon from "@/components/Icon";
 import Logo from "@/components/Logo";
 import SocialAuth from "@/components/SocialAuth";
 import { AuthStage, Page, PrimaryButton } from "@/components/ui";
+import { advanceFromSession } from "@/lib/advanceAuth";
 import { savePendingAuth } from "@/lib/pendingAuth";
 import { getBrowserSupabase } from "@/lib/supabase";
+import { useLearnFlowStore } from "@/store/useLearnFlowStore";
 import { useAppTheme } from "@/theme/useAppTheme";
 
 function LoginInner() {
   const { colors } = useAppTheme();
   const router = useRouter();
   const params = useSearchParams();
+  const applyCloudUser = useLearnFlowStore((s) => s.applyCloudUser);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPw, setShowPw] = useState(false);
@@ -48,7 +51,8 @@ function LoginInner() {
       return;
     }
     savePendingAuth({ email: email.trim().toLowerCase(), flow: "login", emailOtpVerified: false });
-    router.replace(`/otp?email=${encodeURIComponent(email.trim().toLowerCase())}&flow=login`);
+    await advanceFromSession(applyCloudUser, (path) => router.replace(path));
+    setBusy(false);
   };
 
   return (

@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Logo from "@/components/Logo";
 import { AuthStage, Page, PrimaryButton } from "@/components/ui";
 import { advanceFromSession } from "@/lib/advanceAuth";
+import { fetchOwnStudentProfile } from "@/lib/cloud";
 import { loadPendingAuth, savePendingAuth, type AuthFlow } from "@/lib/pendingAuth";
 import { sendSecureEmailOtp, verifySecureEmailOtp } from "@/lib/secureAuth";
 import { useLearnFlowStore } from "@/store/useLearnFlowStore";
@@ -59,6 +60,14 @@ function OTPInner() {
     }
 
     void (async () => {
+      const existing = await fetchOwnStudentProfile();
+      if (existing) {
+        setInfo("Compte déjà reconnu, connexion…");
+        const current = loadPendingAuth();
+        if (current) savePendingAuth({ ...current, emailOtpVerified: true });
+        await advanceFromSession(applyCloudUser, (path) => router.replace(path));
+        return;
+      }
       setSending(true);
       const result = await sendSecureEmailOtp(nextEmail);
       setSending(false);

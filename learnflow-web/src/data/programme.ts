@@ -52,6 +52,7 @@ export function applyChapterProgress(
     const themes = subject.themes.map((theme) => {
       const chapters = theme.chapters.map((chapter) => {
         const p = chapterProgress[chapter.id];
+        // Course opened, or the 10-question quiz finished (even if the lesson was not fully read).
         const completed = Boolean(p?.read) || p?.assimilationScore != null;
         if (!completed) return chapter;
         return {

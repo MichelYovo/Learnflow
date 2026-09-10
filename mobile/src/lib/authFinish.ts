@@ -28,13 +28,22 @@ export async function settleVerifiedUser(): Promise<
   if (!user) return { next: "login", error: "session" };
 
   const pending = await loadPendingAuth();
-  if (pending?.email && pending.emailOtpVerified !== true) {
-    return { next: "otp" };
-  }
   const email = user.email ?? pending?.email ?? "";
   const metaName = String(user.user_metadata?.full_name ?? user.user_metadata?.name ?? "").trim();
 
-  if (pending?.flow === "signup" && pending.classe && pending.parentPhone) {
+  const profile = await fetchOwnStudentProfile();
+  if (profile?.status === "suspendu") {
+    await supabase.auth.signOut();
+    return { next: "login", error: "suspended" };
+  }
+
+  const knownAccount = Boolean(profile);
+  const otpOk = pending?.emailOtpVerified === true;
+  if (!knownAccount && !otpOk) {
+    return { next: "otp" };
+  }
+
+  if (!profile && pending?.flow === "signup" && pending.classe && pending.parentPhone) {
     const nom = `${pending.firstName ?? ""} ${pending.lastName ?? ""}`.trim() || metaName || email.split("@")[0] || "Élève";
     if (pending.password) {
       await supabase.auth.updateUser({ password: pending.password });
@@ -74,11 +83,6 @@ export async function settleVerifiedUser(): Promise<
     };
   }
 
-  const profile = await fetchOwnStudentProfile();
-  if (profile?.status === "suspendu") {
-    await supabase.auth.signOut();
-    return { next: "login", error: "suspended" };
-  }
   if (!isProfileComplete(profile)) {
     return { next: "complete-profile" };
   }

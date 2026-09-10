@@ -38,6 +38,18 @@ function CoursInner() {
   const [subject, setSubject] = useState<ProgrammeSubject | null>(null);
   const [theme, setTheme] = useState<ProgrammeTheme | null>(null);
   const [chapter, setChapter] = useState<ProgrammeChapter | null>(null);
+  const liveSubject = useMemo(
+    () => (subject ? programme.find((s) => s.id === subject.id) ?? subject : null),
+    [programme, subject],
+  );
+  const liveTheme = useMemo(
+    () => (liveSubject && theme ? liveSubject.themes.find((t) => t.id === theme.id) ?? theme : null),
+    [liveSubject, theme],
+  );
+  const liveChapter = useMemo(
+    () => (liveTheme && chapter ? liveTheme.chapters.find((c) => c.id === chapter.id) ?? chapter : null),
+    [liveTheme, chapter],
+  );
 
   useEffect(() => {
     const subjectId = params.get("subjectId");
@@ -49,26 +61,6 @@ function CoursInner() {
     setTheme(null);
     setChapter(null);
   }, [params, programme]);
-
-  useEffect(() => {
-    if (!subject) return;
-    const next = programme.find((s) => s.id === subject.id);
-    if (next && next.progress !== subject.progress) setSubject(next);
-  }, [programme, subject]);
-
-  useEffect(() => {
-    if (!subject || !theme) return;
-    const next = subject.themes.find((t) => t.id === theme.id);
-    if (next && next.lessonsDone !== theme.lessonsDone) setTheme(next);
-  }, [subject, theme]);
-
-  useEffect(() => {
-    if (!theme || !chapter) return;
-    const next = theme.chapters.find((c) => c.id === chapter.id);
-    const nextDone = next?.lessons.filter((l) => l.status === "done").length ?? 0;
-    const curDone = chapter.lessons.filter((l) => l.status === "done").length;
-    if (next && nextDone !== curDone) setChapter(next);
-  }, [theme, chapter]);
 
   const goBack = () => {
     if (level === 3) {
@@ -95,27 +87,27 @@ function CoursInner() {
         )}
         <div className="min-w-0 flex-1">
           {level === 0 ? <h1 className="text-xl font-extrabold sm:text-[22px]">Mes cours</h1> : null}
-          {level === 1 && subject ? <h1 className="truncate text-xl font-extrabold sm:text-[22px]">{subject.name}</h1> : null}
-          {level === 2 && theme ? (
+          {level === 1 && liveSubject ? <h1 className="truncate text-xl font-extrabold sm:text-[22px]">{liveSubject.name}</h1> : null}
+          {level === 2 && liveTheme ? (
             <>
               <p className="truncate text-sm font-semibold" style={{ color: colors.textMuted }}>
-                {subject?.name}
+                {liveSubject?.name}
               </p>
-              <h1 className="truncate text-[22px] font-extrabold">{theme.title}</h1>
+              <h1 className="truncate text-[22px] font-extrabold">{liveTheme.title}</h1>
             </>
           ) : null}
-          {level === 3 && chapter ? (
+          {level === 3 && liveChapter ? (
             <>
               <p className="truncate text-sm font-semibold" style={{ color: colors.textMuted }}>
-                {theme?.title}
+                {liveTheme?.title}
               </p>
-              <h1 className="truncate text-[22px] font-extrabold">{chapter.title}</h1>
+              <h1 className="truncate text-[22px] font-extrabold">{liveChapter.title}</h1>
             </>
           ) : null}
         </div>
-        {level > 0 && subject ? (
-          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl" style={{ background: subject.bg }}>
-            <Icon name={SUBJECT_ICON[subject.icon] ?? "book"} size={15} color={subject.color} />
+        {level > 0 && liveSubject ? (
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl" style={{ background: liveSubject.bg }}>
+            <Icon name={SUBJECT_ICON[liveSubject.icon] ?? "book"} size={15} color={liveSubject.color} />
           </span>
         ) : null}
       </AppBar>
@@ -156,8 +148,8 @@ function CoursInner() {
             })
           : null}
 
-        {level === 1 && subject
-          ? subject.themes.map((t, ti) => {
+        {level === 1 && liveSubject
+          ? liveSubject.themes.map((t, ti) => {
               const pct = t.lessonsTotal > 0 ? Math.round((t.lessonsDone / t.lessonsTotal) * 100) : 0;
               return (
                 <button
@@ -170,16 +162,16 @@ function CoursInner() {
                   className="flex w-full items-center gap-3.5 rounded-[22px] border p-4 text-left"
                   style={{ background: colors.white, borderColor: colors.border }}
                 >
-                  <span className="flex h-11 w-11 items-center justify-center rounded-2xl text-[16px] font-extrabold" style={{ background: subject.bg, color: subject.color }}>
+                  <span className="flex h-11 w-11 items-center justify-center rounded-2xl text-[16px] font-extrabold" style={{ background: liveSubject.bg, color: liveSubject.color }}>
                     {ti + 1}
                   </span>
                   <span className="min-w-0 flex-1">
                     <span className="block text-[16px] font-extrabold">{t.title}</span>
                     <span className="mt-2 flex items-center gap-2">
                       <span className="h-2 flex-1 overflow-hidden rounded-full" style={{ background: colors.border }}>
-                        <span className="block h-full rounded-full" style={{ width: `${pct}%`, background: pct === 100 ? colors.secondary : subject.color }} />
+                        <span className="block h-full rounded-full" style={{ width: `${pct}%`, background: pct === 100 ? colors.secondary : liveSubject.color }} />
                       </span>
-                      <span className="text-[13px] font-extrabold" style={{ color: pct === 100 ? colors.secondary : subject.color }}>
+                      <span className="text-[13px] font-extrabold" style={{ color: pct === 100 ? colors.secondary : liveSubject.color }}>
                         {t.lessonsDone}/{t.lessonsTotal}
                       </span>
                     </span>
@@ -190,8 +182,8 @@ function CoursInner() {
             })
           : null}
 
-        {level === 2 && theme
-          ? theme.chapters.map((c, ci) => {
+        {level === 2 && liveTheme
+          ? liveTheme.chapters.map((c, ci) => {
               const done = c.lessons.filter((l) => l.status === "done").length;
               const total = c.lessons.length;
               const pct = Math.round((done / total) * 100);
@@ -207,14 +199,14 @@ function CoursInner() {
                   className="flex w-full items-center gap-3.5 rounded-[22px] border p-4 text-left"
                   style={{
                     background: colors.white,
-                    borderColor: current ? subject?.color ?? colors.primary : colors.border,
+                    borderColor: current ? liveSubject?.color ?? colors.primary : colors.border,
                   }}
                 >
                   <span
                     className="flex h-11 w-11 items-center justify-center rounded-2xl text-[13px] font-extrabold"
                     style={{
-                      background: current ? subject?.bg ?? colors.mathsBg : colors.surfaceAlt,
-                      color: current ? subject?.color : colors.textMuted,
+                      background: current ? liveSubject?.bg ?? colors.mathsBg : colors.surfaceAlt,
+                      color: current ? liveSubject?.color : colors.textMuted,
                     }}
                   >
                     Ch.{ci + 1}
@@ -223,16 +215,16 @@ function CoursInner() {
                     <span className="flex items-center gap-2">
                       <span className="min-w-0 flex-1 truncate text-[16px] font-extrabold">{c.title}</span>
                       {current ? (
-                        <span className="rounded-full px-2.5 py-1 text-[12px] font-extrabold" style={{ background: subject?.bg, color: subject?.color }}>
+                        <span className="rounded-full px-2.5 py-1 text-[12px] font-extrabold" style={{ background: liveSubject?.bg, color: liveSubject?.color }}>
                           En cours
                         </span>
                       ) : null}
                     </span>
                     <span className="mt-2 flex items-center gap-2">
                       <span className="h-2 flex-1 overflow-hidden rounded-full" style={{ background: colors.border }}>
-                        <span className="block h-full rounded-full" style={{ width: `${pct}%`, background: pct === 100 ? colors.secondary : subject?.color }} />
+                        <span className="block h-full rounded-full" style={{ width: `${pct}%`, background: pct === 100 ? colors.secondary : liveSubject?.color }} />
                       </span>
-                      <span className="text-[13px] font-extrabold" style={{ color: pct === 100 ? colors.secondary : subject?.color }}>
+                      <span className="text-[13px] font-extrabold" style={{ color: pct === 100 ? colors.secondary : liveSubject?.color }}>
                         {done}/{total}
                       </span>
                     </span>
@@ -242,26 +234,26 @@ function CoursInner() {
             })
           : null}
 
-        {level === 3 && chapter
-          ? chapter.lessons.map((l, li) => {
+        {level === 3 && liveChapter
+          ? liveChapter.lessons.map((l, li) => {
               const locked = l.status === "locked";
               return (
                 <button
                   key={l.id}
                   type="button"
                   disabled={locked}
-                  onClick={() => router.push(`/app/cours/${chapter.id}`)}
+                  onClick={() => router.push(`/app/cours/${liveChapter.id}`)}
                   className="flex w-full items-center gap-3.5 rounded-[22px] border p-4 text-left disabled:opacity-50"
                   style={{
                     background: colors.white,
-                    borderColor: l.status === "current" ? subject?.color ?? colors.primary : colors.border,
+                    borderColor: l.status === "current" ? liveSubject?.color ?? colors.primary : colors.border,
                   }}
                 >
                   <span
                     className="flex h-10 w-10 items-center justify-center rounded-[14px] text-[12px] font-extrabold"
                     style={{
-                      background: l.status === "done" ? colors.svtBg : l.status === "current" ? subject?.bg ?? colors.mathsBg : colors.surfaceAlt,
-                      color: l.status === "done" ? colors.secondary : l.status === "current" ? subject?.color ?? colors.primary : "#C4C2BF",
+                      background: l.status === "done" ? colors.svtBg : l.status === "current" ? liveSubject?.bg ?? colors.mathsBg : colors.surfaceAlt,
+                      color: l.status === "done" ? colors.secondary : l.status === "current" ? liveSubject?.color ?? colors.primary : "#C4C2BF",
                     }}
                   >
                     {li + 1}
@@ -272,19 +264,19 @@ function CoursInner() {
                   ) : locked ? (
                     <Icon name="lock" size={16} color={colors.textMuted} />
                   ) : (
-                    <Icon name="play-circle" size={18} color={subject?.color ?? colors.primary} />
+                    <Icon name="play-circle" size={18} color={liveSubject?.color ?? colors.primary} />
                   )}
                 </button>
               );
             })
           : null}
 
-        {level === 3 && chapter ? (
+        {level === 3 && liveChapter ? (
           <button
             type="button"
             onClick={() => {
-              markChapterRead(chapter.id);
-              router.push(`/app/quiz/assimilation/${chapter.id}`);
+              markChapterRead(liveChapter.id);
+              router.push(`/app/quiz/assimilation/${liveChapter.id}`);
             }}
             className="mt-2 w-full rounded-[18px] py-[18px] text-[16px] font-extrabold text-white"
             style={{ background: colors.primary }}

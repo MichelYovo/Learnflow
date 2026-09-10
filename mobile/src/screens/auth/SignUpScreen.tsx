@@ -17,6 +17,7 @@ import Logo from "../../components/Logo";
 import ParentPhoneField from "../../components/ParentPhoneField";
 import ClassPicker from "../../components/ClassPicker";
 import SocialAuth from "../../components/SocialAuth";
+import { advanceFromSession } from "../../lib/advanceAuth";
 import { signInWithGoogle } from "../../lib/googleAuth";
 import { isValidTogoLocal, toTogoE164 } from "../../lib/phoneTogo";
 import { savePendingAuth } from "../../lib/pendingAuth";
@@ -60,7 +61,8 @@ export default function SignUpScreen({ navigation }: Props) {
         return;
       }
       await savePendingAuth({ email: nextEmail, flow: "google", emailOtpVerified: false });
-      navigation.replace("OTP", { email: nextEmail, flow: "google" });
+      const settled = await advanceFromSession(navigation, useLearnFlowStore.getState().applyCloudUser);
+      if (settled.error) setError(settled.error);
       setBusy(false);
       return;
     }
@@ -162,7 +164,8 @@ export default function SignUpScreen({ navigation }: Props) {
         return;
       }
     }
-    navigation.replace("OTP", { email: email.trim().toLowerCase(), flow: "signup" });
+    const settled = await advanceFromSession(navigation, useLearnFlowStore.getState().applyCloudUser);
+    if (settled.error) setError(settled.error);
     setBusy(false);
   };
 

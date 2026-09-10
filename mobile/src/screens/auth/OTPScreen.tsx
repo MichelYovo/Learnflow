@@ -5,6 +5,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import Logo from "../../components/Logo";
 import { advanceFromSession } from "../../lib/advanceAuth";
+import { fetchOwnStudentProfile } from "../../lib/cloud";
 import { sendSecureEmailOtp, verifySecureEmailOtp } from "../../lib/secureAuth";
 import { loadPendingAuth, savePendingAuth } from "../../lib/pendingAuth";
 import { useLearnFlowStore } from "../../store/useLearnFlowStore";
@@ -63,6 +64,17 @@ export default function OTPScreen({ navigation, route }: Props) {
         return;
       }
       setSending(true);
+      const existing = await fetchOwnStudentProfile();
+      if (cancelled) return;
+      if (existing) {
+        setSending(false);
+        setInfo("Compte déjà reconnu, connexion…");
+        const current = await loadPendingAuth();
+        if (current) await savePendingAuth({ ...current, emailOtpVerified: true });
+        const settled = await advanceFromSession(navigation, applyCloudUser);
+        if (settled.error) setError(settled.error);
+        return;
+      }
       const result = await sendSecureEmailOtp(nextEmail);
       if (cancelled) return;
       setSending(false);

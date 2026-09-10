@@ -1,5 +1,6 @@
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { settleVerifiedUser, type CloudUserInput } from "./authFinish";
+import { loadPendingAuth } from "./pendingAuth";
 import type { AuthStackParamList } from "../navigation/types";
 
 type ApplyCloudUser = (
@@ -18,7 +19,11 @@ export async function advanceFromSession(
     return { error: "Session expirée. Reconnecte-toi." };
   }
   if (settled.next === "otp") {
-    navigation.replace("OTP");
+    const pending = await loadPendingAuth();
+    navigation.replace("OTP", {
+      email: pending?.email,
+      flow: pending?.flow,
+    });
     return {};
   }
   if (settled.next === "complete-profile") {

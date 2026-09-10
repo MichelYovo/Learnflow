@@ -18,23 +18,27 @@ import SocialAuth from "../../components/SocialAuth";
 import { colors } from "../../theme/colors";
 import { useAppTheme } from "../../theme/useAppTheme";
 import type { AuthStackParamList } from "../../navigation/types";
+import { advanceFromSession } from "../../lib/advanceAuth";
 import { signInWithGoogle } from "../../lib/googleAuth";
 import { savePendingAuth } from "../../lib/pendingAuth";
 import { isSupabaseConfigured, supabase } from "../../lib/supabase";
+import { useLearnFlowStore } from "../../store/useLearnFlowStore";
 
 type Props = NativeStackScreenProps<AuthStackParamList, "Login">;
 
 export default function LoginScreen({ navigation }: Props) {
   const { colors } = useAppTheme();
+  const applyCloudUser = useLearnFlowStore((s) => s.applyCloudUser);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPw, setShowPw] = useState(false);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
 
-  const goOtp = async (nextEmail: string, flow: "google" | "login") => {
+  const enterAfterSession = async (nextEmail: string, flow: "google" | "login") => {
     await savePendingAuth({ email: nextEmail, flow, emailOtpVerified: false });
-    navigation.replace("OTP", { email: nextEmail, flow });
+    const settled = await advanceFromSession(navigation, applyCloudUser);
+    if (settled.error) setError(settled.error);
   };
 
   const goApp = async (provider?: "google" | "apple" | "facebook") => {
@@ -54,7 +58,7 @@ export default function LoginScreen({ navigation }: Props) {
         setError("Impossible de lire l’email Google.");
         return;
       }
-      await goOtp(nextEmail, "google");
+      await enterAfterSession(nextEmail, "google");
       setBusy(false);
       return;
     }
@@ -84,7 +88,7 @@ export default function LoginScreen({ navigation }: Props) {
       setError("Email ou mot de passe incorrect.");
       return;
     }
-    await goOtp(email.trim().toLowerCase(), "login");
+    await enterAfterSession(email.trim().toLowerCase(), "login");
     setBusy(false);
   };
 

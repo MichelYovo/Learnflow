@@ -1,4 +1,5 @@
 import { settleVerifiedUser, type CloudUserInput } from "./authFinish";
+import { loadPendingAuth } from "./pendingAuth";
 
 type ApplyCloudUser = (
   user: CloudUserInput,
@@ -16,7 +17,12 @@ export async function advanceFromSession(
     return;
   }
   if (settled.next === "otp") {
-    go("/otp");
+    const pending = loadPendingAuth();
+    const q = new URLSearchParams();
+    if (pending?.email) q.set("email", pending.email);
+    if (pending?.flow) q.set("flow", pending.flow);
+    const qs = q.toString();
+    go(qs ? `/otp?${qs}` : "/otp");
     return;
   }
   if (settled.next === "complete-profile") {

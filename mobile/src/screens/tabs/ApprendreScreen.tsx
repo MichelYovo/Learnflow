@@ -39,6 +39,18 @@ export default function ApprendreScreen() {
   const [theme, setTheme] = useState<ProgrammeTheme | null>(null);
   const [chapter, setChapter] = useState<ProgrammeChapter | null>(null);
   const [booting, setBooting] = useState(true);
+  const liveSubject = useMemo(
+    () => (subject ? programme.find((s) => s.id === subject.id) ?? subject : null),
+    [programme, subject],
+  );
+  const liveTheme = useMemo(
+    () => (liveSubject && theme ? liveSubject.themes.find((t) => t.id === theme.id) ?? theme : null),
+    [liveSubject, theme],
+  );
+  const liveChapter = useMemo(
+    () => (liveTheme && chapter ? liveTheme.chapters.find((c) => c.id === chapter.id) ?? chapter : null),
+    [liveTheme, chapter],
+  );
 
   useEffect(() => {
     const t = setTimeout(() => setBooting(false), 500);
@@ -51,26 +63,6 @@ export default function ApprendreScreen() {
     setTheme(null);
     setChapter(null);
   }, [profile?.classe]);
-
-  useEffect(() => {
-    if (!subject) return;
-    const next = programme.find((s) => s.id === subject.id);
-    if (next && next.progress !== subject.progress) setSubject(next);
-  }, [programme, subject]);
-
-  useEffect(() => {
-    if (!subject || !theme) return;
-    const next = subject.themes.find((t) => t.id === theme.id);
-    if (next && next.lessonsDone !== theme.lessonsDone) setTheme(next);
-  }, [subject, theme]);
-
-  useEffect(() => {
-    if (!theme || !chapter) return;
-    const next = theme.chapters.find((c) => c.id === chapter.id);
-    const nextDone = next?.lessons.filter((l) => l.status === "done").length ?? 0;
-    const curDone = chapter.lessons.filter((l) => l.status === "done").length;
-    if (next && nextDone !== curDone) setChapter(next);
-  }, [theme, chapter]);
 
   useEffect(() => {
     const subjectId = route.params?.subjectId;
@@ -128,35 +120,35 @@ export default function ApprendreScreen() {
               <Text style={[styles.title, { color: colors.textDark }]}>Mes cours</Text>
             </>
           )}
-          {level === 1 && subject && (
+          {level === 1 && liveSubject && (
             <Text style={[styles.title, { color: colors.textDark }]} numberOfLines={1}>
-              {subject.name}
+              {liveSubject.name}
             </Text>
           )}
-          {level === 2 && theme && (
+          {level === 2 && liveTheme && (
             <>
               <Text style={[styles.sub, { color: colors.textMuted }]} numberOfLines={1}>
-                {subject?.name}
+                {liveSubject?.name}
               </Text>
               <Text style={[styles.title, { color: colors.textDark }]} numberOfLines={1}>
-                {theme.title}
+                {liveTheme.title}
               </Text>
             </>
           )}
-          {level === 3 && chapter && (
+          {level === 3 && liveChapter && (
             <>
               <Text style={[styles.sub, { color: colors.textMuted }]} numberOfLines={1}>
-                {theme?.title}
+                {liveTheme?.title}
               </Text>
               <Text style={[styles.title, { color: colors.textDark }]} numberOfLines={1}>
-                {chapter.title}
+                {liveChapter.title}
               </Text>
             </>
           )}
         </View>
-        {level > 0 && subject ? (
-          <View style={[styles.subjectBadge, { backgroundColor: subject.bg }]}>
-            <Icon name={subject.icon} size={15} color={subject.color} />
+        {level > 0 && liveSubject ? (
+          <View style={[styles.subjectBadge, { backgroundColor: liveSubject.bg }]}>
+            <Icon name={liveSubject.icon} size={15} color={liveSubject.color} />
           </View>
         ) : null}
       </View>
@@ -195,7 +187,7 @@ export default function ApprendreScreen() {
           })}
 
         {level === 1 &&
-          subject?.themes.map((t, ti) => {
+          liveSubject?.themes.map((t, ti) => {
             const pct = t.lessonsTotal > 0 ? Math.round((t.lessonsDone / t.lessonsTotal) * 100) : 0;
             return (
               <Pressable
@@ -206,8 +198,8 @@ export default function ApprendreScreen() {
                 }}
                 style={[styles.card, { backgroundColor: colors.white, borderColor: colors.border }]}
               >
-                <View style={[styles.numBox, { backgroundColor: subject.bg }]}>
-                  <Text style={[styles.num, { color: subject.color }]}>{ti + 1}</Text>
+                <View style={[styles.numBox, { backgroundColor: liveSubject.bg }]}>
+                  <Text style={[styles.num, { color: liveSubject.color }]}>{ti + 1}</Text>
                 </View>
                 <View style={{ flex: 1, minWidth: 0 }}>
                   <Text style={[styles.cardTitle, { color: colors.textDark }]}>{t.title}</Text>
@@ -216,11 +208,11 @@ export default function ApprendreScreen() {
                       <View
                         style={[
                           styles.fill,
-                          { width: `${pct}%`, backgroundColor: pct === 100 ? colors.secondary : subject.color },
+                          { width: `${pct}%`, backgroundColor: pct === 100 ? colors.secondary : liveSubject.color },
                         ]}
                       />
                     </View>
-                    <Text style={[styles.pct, { color: pct === 100 ? colors.secondary : subject.color }]}>
+                    <Text style={[styles.pct, { color: pct === 100 ? colors.secondary : liveSubject.color }]}>
                       {t.lessonsDone}/{t.lessonsTotal}
                     </Text>
                   </View>
@@ -231,7 +223,7 @@ export default function ApprendreScreen() {
           })}
 
         {level === 2 &&
-          theme?.chapters.map((c, ci) => {
+          liveTheme?.chapters.map((c, ci) => {
             const done = c.lessons.filter((l) => l.status === "done").length;
             const total = c.lessons.length;
             const pct = Math.round((done / total) * 100);
@@ -243,23 +235,23 @@ export default function ApprendreScreen() {
                   setChapter(c);
                   setLevel(3);
                 }}
-                style={[styles.card, { backgroundColor: colors.white, borderColor: colors.border }, current && { borderColor: subject?.color ?? colors.primary }]}
+                style={[styles.card, { backgroundColor: colors.white, borderColor: colors.border }, current && { borderColor: liveSubject?.color ?? colors.primary }]}
               >
                 <View
                   style={[
                     styles.numBox,
                     {
-                      backgroundColor: current ? subject?.bg ?? colors.mathsBg : colors.surfaceAlt,
+                      backgroundColor: current ? liveSubject?.bg ?? colors.mathsBg : colors.surfaceAlt,
                     },
                   ]}
                 >
-                  <Text style={[styles.chNum, { color: current ? subject?.color : colors.textMuted }]}>Ch.{ci + 1}</Text>
+                  <Text style={[styles.chNum, { color: current ? liveSubject?.color : colors.textMuted }]}>Ch.{ci + 1}</Text>
                 </View>
                 <View style={{ flex: 1, minWidth: 0 }}>
                   <View style={styles.titleRow}>
                     <Text style={[styles.cardTitle, { flex: 1, color: colors.textDark }]}>{c.title}</Text>
                     {current ? (
-                      <Text style={[styles.pill, { backgroundColor: subject?.bg, color: subject?.color }]}>En cours</Text>
+                      <Text style={[styles.pill, { backgroundColor: liveSubject?.bg, color: liveSubject?.color }]}>En cours</Text>
                     ) : null}
                   </View>
                   <View style={styles.progressRow}>
@@ -267,11 +259,11 @@ export default function ApprendreScreen() {
                       <View
                         style={[
                           styles.fill,
-                          { width: `${pct}%`, backgroundColor: pct === 100 ? colors.secondary : subject?.color },
+                          { width: `${pct}%`, backgroundColor: pct === 100 ? colors.secondary : liveSubject?.color },
                         ]}
                       />
                     </View>
-                    <Text style={[styles.pct, { color: pct === 100 ? colors.secondary : subject?.color }]}>
+                    <Text style={[styles.pct, { color: pct === 100 ? colors.secondary : liveSubject?.color }]}>
                       {done}/{total}
                     </Text>
                   </View>
@@ -281,19 +273,19 @@ export default function ApprendreScreen() {
           })}
 
         {level === 3 &&
-          chapter?.lessons.map((l, li) => {
+          liveChapter?.lessons.map((l, li) => {
             const locked = l.status === "locked";
             return (
               <Pressable
                 key={l.id}
                 disabled={locked}
                 onPress={() => {
-                  if (!locked) nav.navigate("Course", { chapterId: chapter.id });
+                  if (!locked) nav.navigate("Course", { chapterId: liveChapter.id });
                 }}
                 style={[
                   styles.card,
                   { backgroundColor: colors.white, borderColor: colors.border },
-                  l.status === "current" && { borderColor: subject?.color ?? colors.primary },
+                  l.status === "current" && { borderColor: liveSubject?.color ?? colors.primary },
                   locked && { opacity: 0.5 },
                 ]}
               >
@@ -302,7 +294,7 @@ export default function ApprendreScreen() {
                     styles.lessonNum,
                     {
                       backgroundColor:
-                        l.status === "done" ? colors.svtBg : l.status === "current" ? subject?.bg ?? colors.mathsBg : colors.surfaceAlt,
+                        l.status === "done" ? colors.svtBg : l.status === "current" ? liveSubject?.bg ?? colors.mathsBg : colors.surfaceAlt,
                     },
                   ]}
                 >
@@ -314,7 +306,7 @@ export default function ApprendreScreen() {
                         l.status === "done"
                           ? colors.secondary
                           : l.status === "current"
-                            ? subject?.color ?? colors.primary
+                            ? liveSubject?.color ?? colors.primary
                             : "#C4C2BF",
                     }}
                   >
@@ -329,18 +321,18 @@ export default function ApprendreScreen() {
                 ) : l.status === "locked" ? (
                   <Icon name="lock" size={16} color={colors.textMuted} />
                 ) : (
-                  <Icon name="play-circle" size={18} color={subject?.color ?? colors.primary} />
+                  <Icon name="play-circle" size={18} color={liveSubject?.color ?? colors.primary} />
                 )}
               </Pressable>
             );
           })}
 
-        {level === 3 && chapter ? (
+        {level === 3 && liveChapter ? (
           <Pressable
             style={[styles.quizBtn, { backgroundColor: colors.mathsBg, borderColor: colors.mathsBorder }]}
             onPress={() => {
-              markChapterRead(chapter.id);
-              nav.navigate("AssimilationQuiz", { chapterId: chapter.id });
+              markChapterRead(liveChapter.id);
+              nav.navigate("AssimilationQuiz", { chapterId: liveChapter.id });
             }}
           >
             <Text style={styles.quizBtnText}>Quizz 10/10</Text>

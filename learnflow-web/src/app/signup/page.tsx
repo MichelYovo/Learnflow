@@ -10,6 +10,7 @@ import SocialAuth from "@/components/SocialAuth";
 import ClassPicker from "@/components/ClassPicker";
 import { AuthStage, Page, PrimaryButton } from "@/components/ui";
 import { isValidTogoLocal, toTogoE164 } from "@/lib/phoneTogo";
+import { advanceFromSession } from "@/lib/advanceAuth";
 import { savePendingAuth } from "@/lib/pendingAuth";
 import { getBrowserSupabase } from "@/lib/supabase";
 import type { ClasseAPC } from "@/types/learnflow";
@@ -122,7 +123,8 @@ export default function SignUpPage() {
         return;
       }
     }
-    router.replace(`/otp?email=${encodeURIComponent(email.trim().toLowerCase())}&flow=signup`);
+    await advanceFromSession(useLearnFlowStore.getState().applyCloudUser, (path) => router.replace(path));
+    setBusy(false);
   };
 
   return (
