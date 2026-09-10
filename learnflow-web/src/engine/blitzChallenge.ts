@@ -96,10 +96,10 @@ export function parseChallengeInput(input: string) {
 
 export function blitzInviteHook(code: string): string {
   const hooks = [
-    "Même questions. Même chrono. Aucune excuse.",
-    "Envoie le code : ton ami joue exactement ta série.",
-    "Un code = un duel. Qui tient 60 secondes ?",
-    "Colle ça sur WhatsApp et attends qu'il craque.",
+    "Même arène. Même chrono. Vous jouez en même temps.",
+    "Invite un ami : vous entrez tous les deux dans l'arène.",
+    "Duel Blitz : deux joueurs, un chrono, zéro excuse.",
+    "Colle ça sur WhatsApp — il doit rentrer MAINTENANT.",
   ];
   const n = [...code].reduce((a, ch) => a + ch.charCodeAt(0), 0);
   return hooks[n % hooks.length];
@@ -110,30 +110,51 @@ export function blitzShareText(input: {
   difficulte: DifficulteFlash;
   score?: number;
   answered?: number;
+  live?: boolean;
+  link?: string;
+  rivalName?: string;
+  rivalScore?: number;
 }): string {
-  const { code, difficulte, score, answered } = input;
-  if (score != null && answered != null) {
+  const { code, difficulte, score, answered, live, link, rivalName, rivalScore } = input;
+  if (live && score != null && rivalScore != null) {
+    const mine = score > rivalScore ? "j'ai pris l'arène" : score < rivalScore ? "il m'a eu" : "match nul";
     return [
-      `⚡ DUEL BLITZ — j'ai claqué ${score} juste${score > 1 ? "s" : ""} en 60s`,
+      `⚔️ DUEL BLITZ — ${mine}`,
       "",
-      `Code arène : ${code}`,
+      `Moi ${score}  —  ${rivalName || "Rival"} ${rivalScore}`,
       `Niveau : ${difficulte}`,
       "",
-      "Même questions. Même chrono.",
-      `Tu bats ${score} ou tu t'inclines ?`,
+      "Arène collective. 60 secondes. En même temps.",
+    ].join("\n");
+  }
+  if (live) {
+    return [
+      "⚔️ DUEL BLITZ — j'ouvre l'arène",
       "",
-      "LearnFlow → Blitz → colle le code.",
+      "On joue EN MÊME TEMPS. 60 secondes. Même questions.",
+      "",
+      `Code : ${code}`,
+      `Niveau : ${difficulte}`,
+      ...(link ? ["", `Entre maintenant : ${link}`] : []),
+      "",
+      "LearnFlow → Blitz → colle le code. Je t'attends.",
+    ].join("\n");
+  }
+  if (score != null && answered != null) {
+    return [
+      `⚡ BLITZ — j'ai claqué ${score} juste${score > 1 ? "s" : ""} en 60s`,
+      "",
+      `Niveau : ${difficulte}`,
+      "",
+      "60 secondes chrono. Tu tiens autant ?",
     ].join("\n");
   }
   return [
-    "🔥 DUEL BLITZ — 60 secondes chrono",
+    "🔥 BLITZ — 60 secondes chrono",
     "",
-    "J'ouvre l'arène. Tu rentres ?",
-    "",
-    `Code : ${code}`,
     `Niveau : ${difficulte}`,
     "",
-    "Même série que moi. Tape le code dans LearnFlow et on verra qui tient.",
+    "Sprint solo. Survive 60 secondes.",
   ].join("\n");
 }
 

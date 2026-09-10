@@ -25,7 +25,7 @@ const ITEMS = [
   },
   {
     q: "Je ne sais pas quel mode choisir.",
-    a: "Libre si tu as le temps et que tu veux lire tranquillement. Guidé si tu ne sais pas par où commencer : l’app te propose ce qu’il faut réviser aujourd’hui. Cramming si tu as un devoir demain. Blitz si tu veux un défi de 60 secondes, tout seul ou contre un ami.",
+    a: "Libre si tu as le temps et que tu veux lire tranquillement. Guidé si tu ne sais pas par où commencer : l’app te propose ce qu’il faut réviser aujourd’hui. Cramming si tu as un devoir demain. Blitz si tu veux un défi de 60 secondes tout seul — Duel Blitz si tu invites un ami dans la même arène.",
   },
   {
     q: "Spira, c’est qui ?",

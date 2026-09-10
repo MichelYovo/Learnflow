@@ -51,8 +51,8 @@ export const MODES = [
     label: "Blitz 60s",
     sub: "Un défi rapide",
     purpose:
-      "60 secondes, questions mêlées. Facile, Moyen ou Difficile — puis tu peux défier un ami sur WhatsApp.",
-    hint: "Contre la montre · Entre amis",
+      "60 secondes, questions mêlées. Tout seul, ou Duel Blitz : tu invites un ami dans la même arène, en même temps.",
+    hint: "Solo · ou Duel Blitz",
     color: "#EF4444",
     bg: "#FEF2F2",
     border: "#FECACA",

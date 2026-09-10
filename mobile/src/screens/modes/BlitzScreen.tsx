@@ -14,12 +14,14 @@ import Animated, {
 } from "react-native-reanimated";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import BlitzChallengeDrawer from "../../components/BlitzChallengeDrawer";
+import BlitzDuelHud from "../../components/BlitzDuelHud";
 import BlitzRing from "../../components/BlitzRing";
 import CorrectBurst from "../../components/CorrectBurst";
 import Icon from "../../components/Icon";
 import Spira from "../../components/Spira";
 import TimesUpFlash from "../../components/TimesUpFlash";
-import { BLITZ_DIFFICULTES, blitzDeck, blitzShareText, blitzWhatsAppUrl, parseChallengeInput } from "../../engine/blitzChallenge";
+import { BLITZ_DIFFICULTES, blitzDeck, blitzShareText, blitzWhatsAppUrl } from "../../engine/blitzChallenge";
+import { BlitzDuelSession, duelShareLink, extractDuelCode, type DuelState } from "../../engine/blitzDuel";
 import { playSfx, preloadSfx } from "../../lib/sfx";
 import { useLearnFlowStore } from "../../store/useLearnFlowStore";
 import { colors } from "../../theme/colors";
@@ -51,30 +53,30 @@ function ringTone(seconds: number): "warn" | "critical" {
 
 const DIFF_META: Record<DifficulteFlash, { color: string; hint: string }> = {
   Facile: { color: "#34D399", hint: "Échauffement — tu chauffes le chrono" },
-  Moyen: { color: "#FBBF24", hint: "Le vrai duel — mix standard" },
+  Moyen: { color: "#FBBF24", hint: "Mix standard — le rythme Blitz" },
   Difficile: { color: "#F87171", hint: "Seulement si t'as le cran" },
 };
 
 export default function BlitzScreen({ navigation, route }: Props) {
   const recordBlitz = useLearnFlowStore((s) => s.recordBlitz);
   const setBlitzDifficulte = useLearnFlowStore((s) => s.setBlitzDifficulte);
-  const incoming = route.params?.challengeCode;
+  const incoming = route.params?.duelCode ?? route.params?.challengeCode;
   const startDeck = useMemo(() => {
-    const parsed = incoming ? parseChallengeInput(incoming) : null;
-    if (parsed) return parsed;
     const d =
       route.params?.difficulte ??
       useLearnFlowStore.getState().settings.blitzDifficulte ??
       "Moyen";
     return blitzDeck(undefined, d);
-  }, [incoming, route.params?.difficulte]);
+  }, [route.params?.difficulte]);
   const [deck, setDeck] = useState(startDeck);
   const [difficulte, setDifficulte] = useState<DifficulteFlash>(startDeck.difficulte);
   const [codeInput, setCodeInput] = useState("");
   const [challengeOpen, setChallengeOpen] = useState(true);
-  const [joined, setJoined] = useState(false);
   const [joinError, setJoinError] = useState("");
-  const [phase, setPhase] = useState<"ready" | "playing" | "done">("ready");
+  const [duelBusy, setDuelBusy] = useState(false);
+  const [duel, setDuel] = useState<DuelState | null>(null);
+  const [countLeft, setCountLeft] = useState(3);
+  const [phase, setPhase] = useState<"ready" | "lobby" | "countdown" | "playing" | "done">("ready");
   const [timeLeft, setTimeLeft] = useState(DURATION);
   const [ringProgress, setRingProgress] = useState(1);
   const [qIdx, setQIdx] = useState(0);
@@ -87,18 +89,130 @@ export default function BlitzScreen({ navigation, route }: Props) {
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const endedRef = useRef(false);
   const warnedRef = useRef(false);
+  const duelSessionRef = useRef<BlitzDuelSession | null>(null);
+  const playStartedFor = useRef<number | null>(null);
+  const autoJoinRef = useRef(false);
 
   const pulse = useSharedValue(1);
   const critical = phase === "playing" && timeLeft <= 10;
   const warning = phase === "playing" && timeLeft <= 20;
 
+  const leaveDuel = () => {
+    duelSessionRef.current?.leave();
+    duelSessionRef.current = null;
+    setDuel(null);
+    setCountLeft(3);
+    playStartedFor.current = null;
+  };
+
   useEffect(() => {
     preloadSfx();
+    return () => {
+      duelSessionRef.current?.leave();
+    };
   }, []);
+
+  const onDuelUpdate = (state: DuelState) => {
+    setDuel(state);
+  };
+
+  const inviteDuel = async () => {
+    setDuelBusy(true);
+    setJoinError("");
+    leaveDuel();
+    const next = blitzDeck(undefined, difficulte);
+    const name = useLearnFlowStore.getState().getActiveProfile().nom;
+    const session = await BlitzDuelSession.host({
+      code: next.code,
+      seed: next.seed,
+      difficulte: next.difficulte,
+      name,
+      onUpdate: onDuelUpdate,
+    });
+    setDuelBusy(false);
+    if ("error" in session) {
+      setJoinError(session.error);
+      Alert.alert("Duel Blitz", session.error);
+      return null;
+    }
+    duelSessionRef.current = session;
+    setDeck(next);
+    setDuel(session.snapshot());
+    setChallengeOpen(false);
+    setPhase("lobby");
+    return session;
+  };
+
+  const joinDuel = async (raw: string) => {
+    const code = extractDuelCode(raw) ?? raw;
+    setDuelBusy(true);
+    setJoinError("");
+    leaveDuel();
+    const name = useLearnFlowStore.getState().getActiveProfile().nom;
+    const session = await BlitzDuelSession.join({ code, name, onUpdate: onDuelUpdate });
+    setDuelBusy(false);
+    if ("error" in session) {
+      setJoinError(session.error);
+      return false;
+    }
+    duelSessionRef.current = session;
+    const snap = session.snapshot();
+    setDeck(blitzDeck(snap.seed, snap.difficulte));
+    setDifficulte(snap.difficulte);
+    setBlitzDifficulte(snap.difficulte);
+    setDuel(snap);
+    setCodeInput("");
+    setChallengeOpen(false);
+    setPhase((current) => {
+      if (current === "playing" || current === "countdown" || current === "done") return current;
+      if (snap.startedAt && snap.startedAt <= Date.now()) return "playing";
+      if (snap.startedAt) return "countdown";
+      return "lobby";
+    });
+    return true;
+  };
+
+  useEffect(() => {
+    if (!incoming || autoJoinRef.current) return;
+    autoJoinRef.current = true;
+    void joinDuel(incoming);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [incoming]);
+
+  useEffect(() => {
+    if (!duel?.startedAt) return;
+    if (phase === "playing" || phase === "done") return;
+    const startedAt = duel.startedAt;
+    const tick = () => {
+      const ms = startedAt - Date.now();
+      if (ms > 0) {
+        setCountLeft(Math.ceil(ms / 1000));
+        setPhase("countdown");
+        return;
+      }
+      if (playStartedFor.current !== startedAt) {
+        playStartedFor.current = startedAt;
+        endedRef.current = false;
+        warnedRef.current = false;
+        setRinging(false);
+        setScore(0);
+        setAnswered(0);
+        setQIdx(0);
+        setSelected(null);
+        setTimeLeft(DURATION);
+        setRingProgress(1);
+        setBurstKey(0);
+      }
+      setPhase("playing");
+    };
+    tick();
+    const id = setInterval(tick, 50);
+    return () => clearInterval(id);
+  }, [duel?.startedAt, phase]);
 
   useEffect(() => {
     if (phase !== "playing") return;
-    const started = Date.now();
+    const started = duel?.startedAt && playStartedFor.current === duel.startedAt ? duel.startedAt : Date.now();
     timerRef.current = setInterval(() => {
       const elapsed = (Date.now() - started) / 1000;
       const left = Math.max(0, DURATION - elapsed);
@@ -116,14 +230,20 @@ export default function BlitzScreen({ navigation, route }: Props) {
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
-  }, [phase]);
+  }, [phase, duel?.startedAt]);
 
   useEffect(() => {
     if (phase === "done") {
       setXp(recordBlitz(score, answered, deck.difficulte));
       setChallengeOpen(true);
+      void duelSessionRef.current?.report(score, answered, true);
     }
   }, [phase]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (!duel || (phase !== "playing" && phase !== "done")) return;
+    void duelSessionRef.current?.report(score, answered, phase === "done");
+  }, [score, answered, phase, duel]);
 
   useEffect(() => {
     if (!ringing) return;
@@ -145,8 +265,8 @@ export default function BlitzScreen({ navigation, route }: Props) {
       pulse.value = 1;
       return;
     }
-    const duration = critical ? 180 : phase === "ready" ? 640 : warning ? 360 : 820;
-    const scaleTo = critical ? 1.14 : phase === "ready" ? 1.08 : 1.05;
+    const duration = critical ? 180 : phase === "ready" || phase === "lobby" ? 640 : warning ? 360 : 820;
+    const scaleTo = critical ? 1.14 : phase === "ready" || phase === "lobby" ? 1.08 : 1.05;
     pulse.value = withRepeat(
       withSequence(
         withTiming(scaleTo, { duration, easing: Easing.inOut(Easing.quad) }),
@@ -180,13 +300,18 @@ export default function BlitzScreen({ navigation, route }: Props) {
     }, 450);
   };
 
-  const shareChallenge = (withScore: boolean) => {
+  const shareChallenge = (withScore: boolean, liveState: DuelState | null = duel) => {
     const allow = useLearnFlowStore.getState().settings.privacy.shareBlitzScores;
+    const live = Boolean(liveState);
     const text = blitzShareText({
-      code: deck.code,
-      difficulte: deck.difficulte,
+      code: liveState?.code ?? deck.code,
+      difficulte: liveState?.difficulte ?? deck.difficulte,
+      live,
+      link: live ? duelShareLink(liveState?.code ?? deck.code) : undefined,
       score: withScore && allow ? score : undefined,
       answered: withScore && allow ? answered : undefined,
+      rivalName: withScore ? liveState?.rival?.name : undefined,
+      rivalScore: withScore && allow ? liveState?.rival?.score : undefined,
     });
     if (withScore && !allow) {
       Alert.alert(
@@ -200,30 +325,15 @@ export default function BlitzScreen({ navigation, route }: Props) {
     );
   };
 
-  const joinCode = () => {
-    const parsed = parseChallengeInput(codeInput);
-    if (!parsed) {
-      setJoinError("Code invalide. Exemple : LF-M7K2");
-      return;
-    }
-    setDeck(parsed);
-    setDifficulte(parsed.difficulte);
-    setBlitzDifficulte(parsed.difficulte);
-    setCodeInput("");
-    setJoined(true);
-    setJoinError("");
-    Alert.alert("Défi verrouillé", `Même série que ton ami · ${parsed.code} · ${parsed.difficulte}. 60 secondes. C'est parti ?`);
-  };
-
   const loadDifficulty = (d: DifficulteFlash) => {
     if (d === difficulte) return;
     setDifficulte(d);
     setBlitzDifficulte(d);
     setDeck(blitzDeck(undefined, d));
-    setJoined(false);
   };
 
   const start = () => {
+    leaveDuel();
     endedRef.current = false;
     warnedRef.current = false;
     setTimeLeft(DURATION);
@@ -240,7 +350,7 @@ export default function BlitzScreen({ navigation, route }: Props) {
 
   const drawer = (
     <BlitzChallengeDrawer
-      code={deck.code}
+      difficulte={difficulte}
       codeInput={codeInput}
       onCodeInput={(value) => {
         setJoinError("");
@@ -248,17 +358,31 @@ export default function BlitzScreen({ navigation, route }: Props) {
       }}
       expanded={challengeOpen}
       onToggle={() => setChallengeOpen((v) => !v)}
-      onCreate={() => {
-        setDeck(blitzDeck(undefined, difficulte));
-        setJoined(false);
+      onInvite={() => {
+        void inviteDuel().then((session) => {
+          if (session) shareChallenge(false, session.snapshot());
+        });
       }}
-      onJoin={joinCode}
-      onShare={() => shareChallenge(phase === "done")}
-      incoming={Boolean(incoming) && !joined}
-      joined={joined}
+      onJoin={() => {
+        void joinDuel(codeInput);
+      }}
+      incoming={Boolean(incoming)}
+      busy={duelBusy}
       joinError={joinError}
     />
   );
+
+  const hud = duel ? (
+    <BlitzDuelHud
+      me={{ name: duel.me.name, score, answered, done: phase === "done" }}
+      rival={
+        duel.rival
+          ? { name: duel.rival.name, score: duel.rival.score, answered: duel.rival.answered, done: duel.rival.done }
+          : null
+      }
+      code={phase === "lobby" || phase === "countdown" ? duel.code : undefined}
+    />
+  ) : null;
 
   const shell = (child: React.ReactNode) => (
     <LinearGradient colors={critical ? ARENA_CRITICAL : ARENA} style={styles.root} start={{ x: 0.15, y: 0 }} end={{ x: 0.9, y: 1 }}>
@@ -274,7 +398,13 @@ export default function BlitzScreen({ navigation, route }: Props) {
     return shell(
       <>
         <View style={styles.topBar}>
-          <Pressable style={styles.back} onPress={() => navigation.goBack()}>
+          <Pressable
+            style={styles.back}
+            onPress={() => {
+              leaveDuel();
+              navigation.goBack();
+            }}
+          >
             <Icon name="arrow-left" size={18} color={colors.white} />
           </Pressable>
         </View>
@@ -286,8 +416,8 @@ export default function BlitzScreen({ navigation, route }: Props) {
             <BlitzRing value={60} progress={1} size={168} unit="sec" tone="critical" />
           </Animated.View>
 
-          <Text style={styles.readyTitle}>Duel Blitz</Text>
-          <Text style={styles.readySub}>60 secondes. Envoie le code, ton ami joue la même série.</Text>
+          <Text style={styles.readyTitle}>Blitz</Text>
+          <Text style={styles.readySub}>60 secondes. Mix de chapitres. Entre seul, ou invite un ami pour un Duel Blitz.</Text>
 
           <View style={styles.diffRow}>
             {BLITZ_DIFFICULTES.map((d) => {
@@ -325,32 +455,111 @@ export default function BlitzScreen({ navigation, route }: Props) {
     );
   }
 
-  if (phase === "done") {
+  if (phase === "lobby" || phase === "countdown") {
     return shell(
       <>
-        {drawer}
+        <View style={styles.topBar}>
+          <Pressable
+            style={styles.back}
+            onPress={() => {
+              leaveDuel();
+              setPhase("ready");
+              setChallengeOpen(true);
+            }}
+          >
+            <Icon name="arrow-left" size={18} color={colors.white} />
+          </Pressable>
+        </View>
         <View style={styles.center}>
-          <View style={[styles.dangerBadge, survived ? styles.survivedBadge : null]}>
-            <Icon name={survived ? "flame" : "alert-circle"} size={14} color={survived ? "#F97316" : "#F59E0B"} />
-            <Text style={styles.dangerBadgeText}>{survived ? "CHRONO TENU" : "CHRONO GAGNANT"}</Text>
+          <Text style={styles.lobbyKicker}>DUEL BLITZ</Text>
+          <Text style={styles.readyTitle}>Arène collective</Text>
+          <Text style={styles.readySub}>
+            {duel?.rival
+              ? "Les deux joueurs sont dans l'arène. Ça part."
+              : "Envoie le code. Ton ami entre ici — vous jouez en même temps."}
+          </Text>
+          <View style={{ width: "100%", marginTop: 8 }}>{hud}</View>
+          {phase === "countdown" ? (
+            <Text style={styles.countHuge}>{countLeft}</Text>
+          ) : (
+            <>
+              <Text style={styles.doneCode}>{duel?.code}</Text>
+              <Text style={styles.waitHint}>{duelBusy ? "Connexion…" : "En attente du rival"}</Text>
+              <Pressable style={styles.whatsapp} onPress={() => shareChallenge(false)}>
+                <Text style={styles.whatsappText}>Envoie l'invitation</Text>
+              </Pressable>
+            </>
+          )}
+        </View>
+      </>
+    );
+  }
+
+  if (phase === "done") {
+    const rivalScore = duel?.rival?.score ?? null;
+    const rivalDone = duel?.rival?.done ?? false;
+    const duelOutcome =
+      !duel || rivalScore == null
+        ? null
+        : !rivalDone
+          ? "pending"
+          : score > rivalScore
+            ? "win"
+            : score < rivalScore
+              ? "lose"
+              : "draw";
+    const badge =
+      duel
+        ? duelOutcome === "pending"
+          ? "RIVAL ENCORE EN JEU"
+          : duelOutcome === "win"
+            ? "TU PRENDS L'ARÈNE"
+            : duelOutcome === "lose"
+              ? "RIVAL EN TÊTE"
+              : "MATCH NUL"
+        : survived
+          ? "CHRONO TENU"
+          : "CHRONO GAGNANT";
+    return shell(
+      <>
+        <View style={styles.center}>
+          <View style={[styles.dangerBadge, survived || duelOutcome === "win" ? styles.survivedBadge : null]}>
+            <Icon name={survived || duelOutcome === "win" ? "flame" : "alert-circle"} size={14} color={survived || duelOutcome === "win" ? "#F97316" : "#F59E0B"} />
+            <Text style={styles.dangerBadgeText}>{badge}</Text>
           </View>
           <Spira
-            scene={survived ? "mode.blitz.win" : "mode.blitz.lose"}
+            scene={duelOutcome === "lose" ? "mode.blitz.lose" : survived || duelOutcome === "win" ? "mode.blitz.win" : "mode.blitz.lose"}
             size={96}
-            message={survived ? "60 secondes. Tu as tenu." : "Le chrono t'a eu. Reviens plus affûté."}
+            message={
+              duel
+                ? duelOutcome === "pending"
+                  ? "Ton rival finit encore."
+                  : duelOutcome === "win"
+                    ? "L'arène est à toi."
+                    : duelOutcome === "lose"
+                      ? "Il a tenu plus juste."
+                      : "Même arène, même score."
+                : survived
+                  ? "60 secondes. Tu as tenu."
+                  : "Le chrono t'a eu. Reviens plus affûté."
+            }
           />
+          {duel ? <View style={{ width: "100%" }}>{hud}</View> : null}
           <Text style={styles.doneTitle}>
             {score}/{answered}
           </Text>
           <Text style={styles.doneSub}>
-            {survived ? "Le mix n'a pas eu ta peau." : "Trop lent sur cette série."} · {deck.difficulte} · +{xp} XP
+            {duel ? "Duel Blitz" : survived ? "Le mix n'a pas eu ta peau." : "Trop lent sur cette série."} · {deck.difficulte} · +{xp} XP
           </Text>
-          <Text style={styles.doneCode}>{deck.code}</Text>
-          <Pressable style={styles.whatsapp} onPress={() => shareChallenge(true)}>
-            <Text style={styles.whatsappText}>Envoie le duel sur WhatsApp</Text>
-          </Pressable>
+          {duel ? <Text style={styles.doneCode}>{duel.code}</Text> : null}
+          {duel ? (
+            <Pressable style={styles.whatsapp} onPress={() => shareChallenge(true)}>
+              <Text style={styles.whatsappText}>Envoie le score sur WhatsApp</Text>
+            </Pressable>
+          ) : null}
           <Pressable
             onPress={() => {
+              leaveDuel();
               endedRef.current = false;
               warnedRef.current = false;
               setDeck(blitzDeck(undefined, difficulte));
@@ -358,13 +567,20 @@ export default function BlitzScreen({ navigation, route }: Props) {
               setRingProgress(1);
               setRinging(false);
               setBurstKey(0);
+              setChallengeOpen(true);
               setPhase("ready");
             }}
             style={styles.linkHit}
           >
             <Text style={styles.link}>Nouvelle série</Text>
           </Pressable>
-          <Pressable onPress={() => navigation.goBack()} style={styles.linkHit}>
+          <Pressable
+            onPress={() => {
+              leaveDuel();
+              navigation.goBack();
+            }}
+            style={styles.linkHit}
+          >
             <Text style={styles.link}>Quitter le défi</Text>
           </Pressable>
         </View>
@@ -374,32 +590,50 @@ export default function BlitzScreen({ navigation, route }: Props) {
 
   return shell(
     <>
-      <View style={styles.playTop}>
-        <Spira scene={critical ? "mode.blitz.panic" : "mode.blitz.play"} size={48} />
-        <Animated.View style={pulseStyle}>
-          <BlitzRing
-            value={timeLeft}
-            progress={ringProgress}
-            size={118}
-            unit="sec"
-            tone={ringTone(timeLeft)}
-          />
-        </Animated.View>
-        <Text style={styles.scoreLive}>
-          {score} pts{"\n"}Q{answered + 1}
-        </Text>
-      </View>
-      {critical ? (
-        <Text style={styles.criticalBanner}>DERNIÈRES SECONDES — NE LÂCHE RIEN</Text>
-      ) : warning ? (
-        <Text style={styles.warningBanner}>Le chrono se resserre</Text>
+      {duel ? (
+        <View style={{ paddingHorizontal: 12, paddingTop: 8 }}>{hud}</View>
       ) : (
-        <Text style={styles.liveHint}>Pas de retour en arrière</Text>
+        <View style={styles.playTop}>
+          <Spira scene={critical ? "mode.blitz.panic" : "mode.blitz.play"} size={48} />
+          <Animated.View style={pulseStyle}>
+            <BlitzRing
+              value={timeLeft}
+              progress={ringProgress}
+              size={118}
+              unit="sec"
+              tone={ringTone(timeLeft)}
+            />
+          </Animated.View>
+          <Text style={styles.scoreLive}>
+            {score} pts{"\n"}Q{answered + 1}
+          </Text>
+        </View>
+      )}
+      {duel ? (
+        <View style={{ alignItems: "center", paddingTop: 4 }}>
+          <Animated.View style={pulseStyle}>
+            <BlitzRing
+              value={timeLeft}
+              progress={ringProgress}
+              size={118}
+              unit="sec"
+              tone={ringTone(timeLeft)}
+            />
+          </Animated.View>
+        </View>
+      ) : null}
+      {critical ? (
+        <Text style={styles.criticalBanner}>{duel ? "ARÈNE COMMUNE — NE LÂCHE RIEN" : "DERNIÈRES SECONDES — NE LÂCHE RIEN"}</Text>
+      ) : warning ? (
+        <Text style={styles.warningBanner}>{duel ? "Le chrono se resserre pour vous deux" : "Le chrono se resserre"}</Text>
+      ) : (
+        <Text style={styles.liveHint}>{duel ? "Même arène. Même chrono." : "Pas de retour en arrière"}</Text>
       )}
 
       <View style={styles.playBody}>
         <Text style={styles.subject}>
           {(q.matiere ?? "MIX").toUpperCase()} · {deck.difficulte.toUpperCase()}
+          {duel ? " · DUEL" : ""}
         </Text>
         <Text style={styles.q}>{q.enonceQuestion}</Text>
         {q.optionsProposees.map((opt, i) => {
@@ -482,6 +716,9 @@ const styles = StyleSheet.create({
   },
   readyTitle: { fontSize: 28, fontWeight: "900", color: colors.white, letterSpacing: -0.4, textAlign: "center" },
   readySub: { color: "rgba(254,202,202,0.72)", textAlign: "center", fontWeight: "600", lineHeight: 20, maxWidth: 320 },
+  lobbyKicker: { color: "#FDE68A", fontWeight: "900", fontSize: 11, letterSpacing: 2.2 },
+  countHuge: { color: "#FBBF24", fontWeight: "900", fontSize: 72, marginTop: 8 },
+  waitHint: { color: "rgba(254,202,202,0.7)", fontWeight: "700", fontSize: 13 },
   warnRow: { flexDirection: "row", flexWrap: "wrap", justifyContent: "center", gap: 8, marginTop: 4 },
   warnChip: {
     flexDirection: "row",

@@ -15,7 +15,7 @@ export type RootStackParamList = {
   AssimilationQuiz: { chapterId: string; loopErrors?: boolean };
   GrandQuizz: { chapterId: string };
   Flashcards: { mode?: string; chapterId?: string } | undefined;
-  Blitz: { challengeCode?: string; difficulte?: "Facile" | "Moyen" | "Difficile" } | undefined;
+  Blitz: { challengeCode?: string; duelCode?: string; difficulte?: "Facile" | "Moyen" | "Difficile" } | undefined;
   Schema2D: { chapterId?: string } | undefined;
   Schema3D: { chapterId?: string } | undefined;
   FillBlanks: { chapterId: string };

@@ -40,7 +40,7 @@ export interface ModeDefinition {
  * libre     : assimilation sereine, sans chrono, fiches + analogies ; schémas 2D/3D en SVT.
  * guide     : Spira pilote l'algo des J (cartes dues aujourd'hui).
  * cramming  : veille de devoir, un chapitre, quizz 10Q + textes à trous.
- * blitz     : arène 60s, mix multi-chapitres + code défi WhatsApp.
+ * blitz     : arène 60s solo, ou Duel Blitz en invitation (arène à deux).
  */
 export const MODE_DEFINITIONS: ModeDefinition[] = [
   {
@@ -87,12 +87,12 @@ export const MODE_DEFINITIONS: ModeDefinition[] = [
     label: "Blitz 60s",
     sub: "Survive 60s",
     purpose:
-      "60 secondes chrono, mix de chapitres. Envoie un code duel sur WhatsApp : ton ami joue exactement la même série.",
+      "60 secondes chrono, mix de chapitres. Tout seul, ou invite un ami : Duel Blitz, même arène, en même temps.",
     icon: "timer",
     color: "#EF4444",
     bg: "#FEF2F2",
     border: "#FECACA",
-    hint: "Duel · code WhatsApp",
+    hint: "Solo · ou Duel Blitz",
     hintIcon: undefined,
   },
 ];

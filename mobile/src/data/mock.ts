@@ -614,8 +614,8 @@ export const AI_FAQ: AiFaqItem[] = [
   },
   {
     q: "Comment marche le Blitz ?",
-    keywords: ["blitz", "60s", "60 s", "sprint"],
-    a: "Blitz 60s : un sprint chrono, une série de QCM. Idéal pour un rappel rapide — pas pour apprendre une notion neuve.",
+    keywords: ["blitz", "60s", "60 s", "sprint", "duel"],
+    a: "Blitz : un sprint solo de 60 secondes. Duel Blitz : tu invites un ami, vous entrez dans la même arène et vous jouez en même temps.",
   },
   {
     q: "C'est quoi la règle 10/10 ?",
