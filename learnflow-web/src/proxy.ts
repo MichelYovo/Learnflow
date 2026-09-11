@@ -19,6 +19,7 @@ function supabaseEnv() {
 function isPublicPath(pathname: string) {
   if (pathname === "/" || pathname === "/login" || pathname === "/signup") return true;
   if (pathname === "/splash" || pathname === "/onboarding" || pathname === "/otp") return true;
+  if (pathname === "/focus" || pathname === "/success" || pathname === "/profiles") return true;
   if (pathname.startsWith("/auth/")) return true;
   return false;
 }
@@ -34,8 +35,8 @@ function isInternalNextRequest(request: NextRequest) {
   return false;
 }
 
+/** Rafraîchit les cookies auth sans jamais bloquer le HTML. */
 export async function proxy(request: NextRequest) {
-  // Skip RSC / prefetch: a broad matcher + getUser() was returning 422 on /app.
   if (isPublicPath(request.nextUrl.pathname) || isInternalNextRequest(request)) {
     return NextResponse.next();
   }
@@ -60,7 +61,7 @@ export async function proxy(request: NextRequest) {
     await Promise.race([
       supabase.auth.getUser(),
       new Promise((_, reject) => {
-        setTimeout(() => reject(new Error("auth-timeout")), 2500);
+        setTimeout(() => reject(new Error("auth-timeout")), 1500);
       }),
     ]);
     return response;
