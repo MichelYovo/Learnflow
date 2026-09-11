@@ -112,7 +112,7 @@ export default function ApprendreScreen() {
             <Icon name="arrow-left" size={18} color={colors.textDark} />
           </Pressable>
         ) : (
-          <Spira scene="tab.cours" size={56} message="" />
+          <Spira scene="tab.cours" size={56} message="" animated={false} />
         )}
         <View style={styles.headerText}>
           {level === 0 && (

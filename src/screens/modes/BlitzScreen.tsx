@@ -356,7 +356,7 @@ export default function BlitzScreen({ navigation, route }: Props) {
   return shell(
     <>
       <View style={styles.playTop}>
-        <Spira scene={critical ? "mode.blitz.panic" : "mode.blitz.play"} size={48} />
+        <Spira scene={critical ? "mode.blitz.panic" : "mode.blitz.play"} size={48} animated={false} />
         <Animated.View style={pulseStyle}>
           <BlitzRing
             value={timeLeft}

@@ -166,7 +166,7 @@ export default function HomeScreen() {
             </View>
           </Pressable>
           <View style={styles.heroSide}>
-            <Spira scene="tab.home" size={72} message="" />
+            <Spira scene="tab.home" size={72} message="" animated={false} />
             <Pressable
               onPress={() => nav.navigate("Course", { chapterId: continueLesson.chapterId })}
               accessibilityRole="button"

@@ -120,7 +120,7 @@ export default function AccueilPage() {
               </div>
             </Link>
             <div className="flex shrink-0 items-center justify-between gap-3 sm:flex-col sm:justify-center">
-              <Spira scene="tab.home" size={72} message="" />
+              <Spira scene="tab.home" size={72} message="" animated={false} />
               <Link
                 href={`/app/cours/${continueLesson.chapterId}`}
                 className="w-full rounded-2xl bg-white px-4 py-3 text-center text-[15px] font-extrabold text-[#1677FF] sm:w-auto sm:py-3.5 sm:text-[16px]"

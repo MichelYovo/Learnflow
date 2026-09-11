@@ -104,7 +104,7 @@ export default function GrandQuizzScreen({ navigation, route }: Props) {
         <Text style={styles.progress}>
           Grand Quizz · {current + 1}/{questions.length}
         </Text>
-        <Spira scene="quiz.play" size={36} />
+        <Spira scene="quiz.play" size={36} animated={false} />
       </View>
       <View style={styles.body}>
         <Text style={styles.q}>{q.enonceQuestion}</Text>

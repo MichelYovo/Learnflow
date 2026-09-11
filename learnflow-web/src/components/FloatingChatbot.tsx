@@ -41,7 +41,7 @@ export default function FloatingChatbot() {
           }}
         >
           <div className="flex items-center gap-3 border-b px-4 py-3" style={{ borderColor: colors.border }}>
-            <Spira scene="tutor.ready" size={44} message="" />
+            <Spira scene="tutor.ready" size={44} message="" animated={false} />
             <div>
               <p className="text-sm font-extrabold">Tuteur local</p>
               <p className="text-xs font-semibold" style={{ color: colors.textMuted }}>

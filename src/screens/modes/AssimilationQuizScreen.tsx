@@ -147,7 +147,7 @@ export default function AssimilationQuizScreen({ navigation, route }: Props) {
                 navigation.popToTop();
               }}
             >
-              <Spira scene="quiz.rest" size={44} message="" />
+              <Spira scene="quiz.rest" size={44} message="" animated={false} />
               <View style={{ flex: 1 }}>
                 <Text style={[styles.choiceTitle, { color: colors.accent }]}>Option Repos</Text>
                 <Text style={styles.muted}>Verrouille 1h + rappel local (démo)</Text>
@@ -196,7 +196,7 @@ export default function AssimilationQuizScreen({ navigation, route }: Props) {
         <Text style={styles.progress}>
           {current + 1}/{questions.length}
         </Text>
-        <Spira scene="quiz.play" size={36} />
+        <Spira scene="quiz.play" size={36} animated={false} />
       </View>
       <View style={styles.track}>
         <View style={[styles.fill, { width: `${((current + 1) / questions.length) * 100}%` }]} />

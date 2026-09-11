@@ -143,7 +143,7 @@ function QuizInner() {
               className="flex w-full items-center gap-3 rounded-[18px] border-2 px-3 py-3 text-left sm:p-4"
               style={{ background: colors.white, borderColor: colors.border }}
             >
-              <Spira scene="quiz.rest" size={36} message="" />
+              <Spira scene="quiz.rest" size={36} message="" animated={false} />
               <span className="min-w-0 flex-1">
                 <span className="block text-[14px] font-extrabold sm:text-[15px]" style={{ color: colors.accent }}>
                   Option Repos
@@ -201,7 +201,7 @@ function QuizInner() {
       explanation={q.explicationPedagogique}
       reviewLabel="Revoir le cours"
       onReview={() => router.push(`/app/cours/${chapterId}`)}
-      headerRight={<Spira scene="quiz.play" size={36} message="" />}
+      headerRight={<Spira scene="quiz.play" size={36} message="" animated={false} />}
     />
   );
 }

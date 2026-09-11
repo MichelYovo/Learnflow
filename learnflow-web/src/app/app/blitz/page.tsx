@@ -609,7 +609,7 @@ function BlitzInner() {
         ) : (
           <div className="flex shrink-0 items-center gap-2 sm:gap-3">
             <div className="lf-blitz-mascot hidden shrink-0 min-[380px]:block">
-              <Spira scene={critical ? "mode.blitz.panic" : "mode.blitz.play"} size={40} message="" />
+              <Spira scene={critical ? "mode.blitz.panic" : "mode.blitz.play"} size={40} message="" animated={false} />
             </div>
             <BlitzRing
               variant="play"

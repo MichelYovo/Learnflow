@@ -101,7 +101,7 @@ export default function GrandQuizzPage() {
       onBack={() => router.back()}
       onContinue={continueQuiz}
       explanation={q.explicationPedagogique}
-      headerRight={<Spira scene="quiz.play" size={36} message="" />}
+      headerRight={<Spira scene="quiz.play" size={36} message="" animated={false} />}
     />
   );
 }

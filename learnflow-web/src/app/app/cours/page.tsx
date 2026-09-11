@@ -72,7 +72,7 @@ function CoursInner() {
             <Icon name="arrow-left" size={18} color={colors.textDark} />
           </button>
         ) : (
-          <Spira scene="tab.cours" size={56} message="" />
+          <Spira scene="tab.cours" size={56} message="" animated={false} />
         )}
         <div className="min-w-0 flex-1">
           {level === 0 ? <h1 className="text-xl font-extrabold sm:text-[22px]">Mes cours</h1> : null}

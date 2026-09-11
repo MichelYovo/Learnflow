@@ -211,7 +211,7 @@ function ModeCard({ definition: def, status, reason, disabled, selected, onPress
         {/* Curseur not-allowed n'existe pas en RN natif ; on signale via opacity + badge + a11y */}
         <View style={styles.cardTop}>
           <View style={styles.iconBox}>
-            <Spira mood={spiraMoodForMode(def.id)} size={40} animated interactive={false} />
+            <Spira mood={spiraMoodForMode(def.id)} size={40} animated={false} interactive={false} />
           </View>
           {disabled ? (
             <Icon name={status === "locked" ? "lock" : "alert-circle"} size={16} color="#94A3B8" />
