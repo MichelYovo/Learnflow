@@ -118,7 +118,7 @@ export function withDay(raw?: Partial<RewardsState> | null): RewardsState {
     ...emptyRewards(),
     day,
     easeBoostUntil: base.easeBoostUntil,
-    awardedDuels: (base.awardedDuels ?? []).slice(0, 40),
+    awardedDuels: (Array.isArray(base.awardedDuels) ? base.awardedDuels : []).slice(0, 40),
     lifetimeCompleted: base.lifetimeCompleted ?? 0,
     lastStreakDay: base.lastStreakDay ?? "",
     lastUnlock: base.lastUnlock ?? null,

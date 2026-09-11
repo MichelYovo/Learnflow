@@ -274,7 +274,21 @@ export const useLearnFlowStore = create<LearnFlowState>()(
 
       getActiveProfile: () => {
         const s = get();
-        return s.profiles.find((p) => p.id === s.activeProfileId) ?? s.profiles[0] ?? FALLBACK_PROFILE;
+        const raw = s.profiles.find((p) => p.id === s.activeProfileId) ?? s.profiles[0] ?? FALLBACK_PROFILE;
+        return {
+          ...FALLBACK_PROFILE,
+          ...raw,
+          id: String(raw.id ?? ""),
+          compteId: String(raw.compteId ?? LOCAL_PARENT_ID),
+          nom: (raw.nom || FALLBACK_PROFILE.nom).trim(),
+          firstName: (raw.firstName || raw.nom || FALLBACK_PROFILE.firstName).trim(),
+          classe: raw.classe || FALLBACK_PROFILE.classe,
+          xpTotale: Number(raw.xpTotale) || 0,
+          streak: Number(raw.streak) || 0,
+          rang: Number(raw.rang) || 1,
+          lessonsDone: Number(raw.lessonsDone) || 0,
+          badgesDebloques: Array.isArray(raw.badgesDebloques) ? raw.badgesDebloques : [],
+        };
       },
 
       login: () => set({ isAuthenticated: true }),
@@ -890,9 +904,18 @@ export const useLearnFlowStore = create<LearnFlowState>()(
           const rawProfiles = Array.isArray(p.profiles) ? p.profiles : current.profiles;
           const mapped = keepLocalTestProfiles(rawProfiles).map((pr) => {
             return {
+              ...FALLBACK_PROFILE,
               ...pr,
               id: String(pr.id),
               compteId: String(pr.compteId ?? LOCAL_PARENT_ID),
+              nom: (pr.nom || FALLBACK_PROFILE.nom).trim(),
+              firstName: (pr.firstName || pr.nom || FALLBACK_PROFILE.firstName).trim(),
+              classe: pr.classe || FALLBACK_PROFILE.classe,
+              xpTotale: Number(pr.xpTotale) || 0,
+              streak: Number(pr.streak) || 0,
+              rang: Number(pr.rang) || 1,
+              lessonsDone: Number(pr.lessonsDone) || 0,
+              badgesDebloques: Array.isArray(pr.badgesDebloques) ? pr.badgesDebloques : [],
               avatarId: resolveAvatarId(pr.avatarId),
               hasPin: pr.hasPin ?? false,
             };
@@ -920,7 +943,7 @@ export const useLearnFlowStore = create<LearnFlowState>()(
             appTourCompleted: Boolean(p.appTourCompleted),
             profiles,
             activeProfileId: resolveLocalTestActiveId(profiles, p.activeProfileId ?? current.activeProfileId),
-            ligue: p.ligue ?? current.ligue,
+            ligue: { ...BEGINNER_LIGUE, ...(p.ligue && typeof p.ligue === "object" ? p.ligue : current.ligue) },
             suiviParental: p.suiviParental ?? current.suiviParental,
             flashcards: extraCards.length ? [...baseCards, ...extraCards] : baseCards,
             chapterProgress: p.chapterProgress ?? current.chapterProgress,
