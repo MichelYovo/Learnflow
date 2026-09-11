@@ -76,7 +76,7 @@ function sameBox(a: DOMRect | null, b: DOMRect) {
 }
 
 export default function AppTour() {
-  const pathname = usePathname();
+  const pathname = usePathname() ?? "";
   const { colors } = useAppTheme();
   const done = useLearnFlowStore((s) => s.appTourCompleted);
   const authenticated = useLearnFlowStore((s) => s.isAuthenticated);
@@ -114,7 +114,7 @@ export default function AppTour() {
     const t = window.setTimeout(measure, 80);
     const skip = window.setTimeout(() => {
       if (!visibleTarget(current.targets)) {
-        if (step + 1 >= STEPS.length) complete();
+        if (step + 1 >= STEPS.length) complete?.();
         else setStep((s) => s + 1);
       }
     }, 700);

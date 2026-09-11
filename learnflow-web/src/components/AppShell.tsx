@@ -10,6 +10,7 @@ import ParentConfirmModal from "./ParentConfirmModal";
 import AvatarGate from "./AvatarGate";
 import RewardToast from "./RewardToast";
 import AppTour from "./AppTour";
+import WidgetErrorBoundary from "./WidgetErrorBoundary";
 
 const NAV: { href: string; label: string; icon: IconName; fill: string; outline: string }[] = [
   { href: "/app", label: "Accueil", icon: "home", fill: "/icons/home-fill.png", outline: "/icons/home.png" },
@@ -62,7 +63,7 @@ function TabLink({
 }
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname();
+  const pathname = usePathname() ?? "";
   const router = useRouter();
   const { colors, darkMode } = useAppTheme();
   const fullscreen =
@@ -158,11 +159,21 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         </Link>
       </nav>
 
-      <FloatingChatbot />
-      <ParentConfirmModal />
-      <RewardToast />
-      <AvatarGate />
-      <AppTour />
+      <WidgetErrorBoundary>
+        <FloatingChatbot />
+      </WidgetErrorBoundary>
+      <WidgetErrorBoundary>
+        <ParentConfirmModal />
+      </WidgetErrorBoundary>
+      <WidgetErrorBoundary>
+        <RewardToast />
+      </WidgetErrorBoundary>
+      <WidgetErrorBoundary>
+        <AvatarGate />
+      </WidgetErrorBoundary>
+      <WidgetErrorBoundary>
+        <AppTour />
+      </WidgetErrorBoundary>
     </div>
   );
 }

@@ -11,7 +11,7 @@ import { useAppTheme } from "@/theme/useAppTheme";
 
 export default function ParentConfirmModal() {
   const { colors } = useAppTheme();
-  const pathname = usePathname();
+  const pathname = usePathname() ?? "";
   const router = useRouter();
   const profile = useLearnFlowStore((s) => s.getActiveProfile());
   const authenticated = useLearnFlowStore((s) => s.isAuthenticated);

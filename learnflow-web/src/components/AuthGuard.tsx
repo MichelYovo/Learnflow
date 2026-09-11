@@ -20,7 +20,7 @@ const AUTH_PATHS = [
 export default function AuthGuard({ children }: { children: React.ReactNode }) {
   const ready = useHydrated();
   const router = useRouter();
-  const pathname = usePathname();
+  const pathname = usePathname() ?? "";
   const onboardingCompleted = useLearnFlowStore((s) => s.onboardingCompleted);
   const isAuthenticated = useLearnFlowStore((s) => s.isAuthenticated);
   const focusPromptPending = useLearnFlowStore((s) => s.focusPromptPending);
@@ -39,20 +39,24 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!ready || !bootDone) return;
 
+    const go = (href: string) => {
+      if (pathname !== href) router.replace(href);
+    };
+
     if (!onboardingCompleted && pathname !== "/onboarding") {
-      router.replace("/onboarding");
+      go("/onboarding");
       return;
     }
     if (onboardingCompleted && !isAuthenticated && (isApp || pathname === "/profiles")) {
-      router.replace("/splash");
+      go("/splash");
       return;
     }
     if (isAuthenticated && focusPromptPending && isApp) {
-      router.replace("/focus");
+      go("/focus");
       return;
     }
     if (isAuthenticated && !focusPromptPending && !isComplete && (isAuthRoute || isFocus || pathname === "/")) {
-      router.replace("/app");
+      go("/app");
     }
   }, [
     ready,

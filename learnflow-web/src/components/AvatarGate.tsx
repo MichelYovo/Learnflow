@@ -8,7 +8,7 @@ import { useAppTheme } from "@/theme/useAppTheme";
 
 export default function AvatarGate() {
   const { colors } = useAppTheme();
-  const pathname = usePathname();
+  const pathname = usePathname() ?? "";
   const isAuthenticated = useLearnFlowStore((s) => s.isAuthenticated);
   const avatarId = useLearnFlowStore((s) => s.getActiveProfile()?.avatarId);
   const updateProfileAvatar = useLearnFlowStore((s) => s.updateProfileAvatar);
