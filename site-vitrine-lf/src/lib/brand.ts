@@ -1,5 +1,8 @@
-export const PLAY_URL = process.env.NEXT_PUBLIC_PLAY_URL ?? "";
-export const APP_STORE_URL = process.env.NEXT_PUBLIC_APP_STORE_URL ?? "";
+export const WEB_URL =
+  (process.env.NEXT_PUBLIC_WEB_URL ?? process.env.NEXT_PUBLIC_LEARNFLOW_WEB_URL ?? "https://learnflow-web.vercel.app").replace(
+    /\/$/,
+    "",
+  );
 
 export const SUBJECTS = [
   { id: "maths", label: "Maths", color: "#1677FF", bg: "#E6F4FF" },

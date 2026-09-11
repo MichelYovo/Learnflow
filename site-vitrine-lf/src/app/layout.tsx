@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Fraunces, Poppins } from "next/font/google";
+import { Poppins } from "next/font/google";
 import SupportProvider from "../components/site/SupportProvider";
 import "./globals.css";
 
@@ -10,13 +10,6 @@ const poppins = Poppins({
   display: "swap",
 });
 
-const fraunces = Fraunces({
-  variable: "--font-fraunces",
-  subsets: ["latin"],
-  weight: ["500", "600", "700"],
-  display: "swap",
-});
-
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
   title: {
@@ -24,14 +17,13 @@ export const metadata: Metadata = {
     template: "%s · LearnFlow",
   },
   description:
-    "L’app de révision pour collégiens et lycéens du Togo. Cours, quiz, règle du 10/10, quatre modes et Spira. Ça marche même sans internet.",
+    "L’app de révision pour collégiens et lycéens du Togo. Cours, quiz, règle du 10/10, quatre modes et Spira.",
   applicationName: "LearnFlow",
-  keywords: ["LearnFlow", "Togo", "APC", "révisions", "collège", "lycée", "offline", "quiz"],
+  keywords: ["LearnFlow", "Togo", "APC", "révisions", "collège", "lycée", "quiz", "ligues"],
   authors: [{ name: "LearnFlow Togo" }],
   openGraph: {
     title: "LearnFlow — Tes cours, compris pour de vrai",
-    description:
-      "Révisions collège et lycée au Togo. Un chapitre n’est validé qu’à 10/10. Même sans internet.",
+    description: "Révisions collège et lycée au Togo. Un chapitre n’est validé qu’à 10/10.",
     locale: "fr_TG",
     type: "website",
     siteName: "LearnFlow",
@@ -47,7 +39,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "LearnFlow — Tes cours, compris pour de vrai",
-    description: "App collège-lycée au Togo. Un chapitre validé seulement à 10/10. Même sans internet.",
+    description: "App collège-lycée au Togo. Un chapitre validé seulement à 10/10.",
     images: ["/brand/logo-lockup-light.png"],
   },
   icons: {
@@ -64,12 +56,12 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
-  themeColor: "#F6F3EE",
+  themeColor: "#0B1B3A",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="fr" className={`${poppins.variable} ${fraunces.variable} h-full antialiased`}>
+    <html lang="fr" className={`${poppins.variable} h-full antialiased`}>
       <body className="flex min-h-dvh w-full max-w-[100vw] flex-col overflow-x-hidden font-sans">
         <SupportProvider>{children}</SupportProvider>
       </body>

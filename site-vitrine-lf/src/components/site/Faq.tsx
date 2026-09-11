@@ -1,78 +1,77 @@
 "use client";
 
+import { WEB_URL } from "../../lib/brand";
 import SupportButton from "./SupportButton";
 
 const ITEMS = [
   {
     q: "C’est quoi LearnFlow ?",
-    a: "C’est une app pour collégiens et lycéens. Tu y trouves tes cours, des quiz et des jeux de révision. L’idée est simple : tu ne « valides » un chapitre que quand tu l’as vraiment compris — c’est-à-dire 10/10 au quiz.",
+    a: "C’est une app pour collégiens et lycéens. Tu y trouves tes cours, des quiz et un cahier de jeu : XP, ligues, badges. Un chapitre n’est validé que quand tu as 10/10.",
   },
   {
     q: "C’est pour quelle classe ?",
-    a: "De la 6e jusqu’à la Terminale (2nde A/S, 1ère A/C/D, Tle A/C/D). Au collège : Maths, SVT, PCT, Histoire-Géo, Français, Anglais, ECM. Au lycée : les mêmes, avec PC (Physique-Chimie) à la place de PCT, plus la Philosophie.",
+    a: "De la 6e jusqu’à la Terminale (2nde A/S, 1ère A/C/D, Tle A/C/D). Au collège : Maths, SVT, PCT, Histoire-Géo, Français, Anglais, ECM. Au lycée : les mêmes, avec PC à la place de PCT, plus la Philosophie.",
   },
   {
     q: "Comment je commence ?",
-    a: "Tu télécharges l’app, tu crées ton profil (ton prénom, ta classe, tes matières), et tu choisis un mode. Ensuite tu lis le cours, tu t’entraînes, puis tu fais le quiz. Pas besoin de tout comprendre d’un coup : l’app te guide.",
+    a: "Tu ouvres LearnFlow sur le web, tu crées ton profil (prénom, classe, matières), et tu choisis un mode. Ensuite tu lis le cours, tu t’entraînes, puis tu fais le quiz.",
   },
   {
     q: "Pourquoi il faut 10/10 ?",
-    a: "Parce que « presque » ne suffit pas le jour du devoir. 9/10, ce n’est pas encore validé. Si tu te trompes, tu ne recommences pas tout : tu revois seulement les questions ratées, jusqu’à tout bon.",
-  },
-  {
-    q: "Et si je rate le quiz ?",
-    a: "Ce n’est pas grave. Spira est un peu triste, tu relis le cours, et tu réessaies les questions que tu as manquées. Quand tu as 10/10, le chapitre est validé — et tu peux passer à la suite.",
+    a: "Parce que « presque » ne suffit pas le jour du devoir. 9/10, ce n’est pas encore validé. Si tu te trompes, tu revois seulement les questions ratées, jusqu’à tout bon.",
   },
   {
     q: "Je ne sais pas quel mode choisir.",
-    a: "Libre si tu as le temps et que tu veux lire tranquillement. Guidé si tu ne sais pas par où commencer : l’app te propose ce qu’il faut réviser aujourd’hui. Cramming si tu as un devoir demain. Blitz si tu veux un défi de 60 secondes tout seul — Duel Blitz si tu invites un ami dans la même arène.",
+    a: "Libre si tu as le temps. Guidé si tu ne sais pas par où commencer. Cramming si tu as un devoir demain. Blitz pour un défi de 60 secondes — Duel Blitz si tu invites un ami.",
   },
   {
     q: "Spira, c’est qui ?",
-    a: "C’est le petit personnage dans l’app. Il t’accompagne pendant que tu révises. Il ne fait pas tes devoirs : il est là pour t’encourager quand tu lis, quand tu réussis, ou quand tu rates une question.",
+    a: "C’est le petit personnage dans l’app. Il t’accompagne pendant que tu révises. Il ne fait pas tes devoirs : il est là pour t’encourager.",
   },
   {
     q: "Ça marche sans internet ?",
-    a: "Oui. Une fois l’app installée, tu peux lire tes cours et faire tes quiz dans le bus, à la maison ou à l’école, même s’il n’y a pas de réseau.",
+    a: "Oui. Une fois l’app ouverte, tu peux lire tes cours et faire tes quiz dans le bus, à la maison ou à l’école, même s’il n’y a pas de réseau.",
   },
   {
     q: "Mes parents voient tout ce que je fais ?",
-    a: "Non. Ils ne voient pas tes écrans, ni tes notes en direct. Si tu (ou tes parents) activez l’option, ils reçoivent seulement un SMS de félicitations quand tu valides un chapitre à 10/10. Tu peux couper ça quand tu veux.",
-  },
-  {
-    q: "On peut être plusieurs sur le même téléphone ?",
-    a: "Oui. Chaque élève a son propre profil, avec sa classe et sa progression. Tu déverrouilles le tien avec un code à 4 chiffres, pour que personne ne mélange vos révisions.",
+    a: "Non. Ils ne voient pas tes écrans. S’ils activent l’option, ils reçoivent seulement un SMS de félicitations quand tu valides un chapitre à 10/10.",
   },
   {
     q: "Je suis obligé de faire les ligues ?",
-    a: "Non. Les ligues, c’est pour s’amuser : tu gagnes des points, tu montes de palier (Bronze, Argent, Or…), tu vois tes camarades. Si tu n’aimes pas le classement, tu n’es pas obligé d’y aller, et tu peux cacher ton prénom.",
+    a: "Non. Les ligues, c’est le cahier de jeu : XP, paliers Bronze à Diamant, badges. Si tu n’aimes pas le classement, tu n’es pas obligé d’y aller, et tu peux cacher ton prénom.",
   },
   {
     q: "LearnFlow est disponible maintenant ?",
-    a: "L’app arrive sur Google Play et l’App Store. En attendant, clique sur « Préviens-moi » ou écris-nous — on te dira dès que c’est en ligne.",
+    a: "Oui, sur le web. L’app téléphone arrive plus tard sur Google Play et l’App Store.",
   },
 ] as const;
 
 export default function Faq() {
   return (
-    <div className="mx-auto max-w-3xl divide-y divide-[#1C1917]/10 border-y border-[#1C1917]/10">
+    <div className="mx-auto max-w-3xl space-y-3">
       {ITEMS.map((item) => (
-        <details key={item.q} className="group py-5">
-          <summary className="cursor-pointer list-none marker:content-none">
-            <span className="flex items-start justify-between gap-4">
-              <span className="min-w-0 text-lg font-semibold text-[#1C1917]">{item.q}</span>
-              <span className="mt-0.5 shrink-0 text-xl font-medium text-[#5F5A55] group-open:hidden">+</span>
-              <span className="mt-0.5 hidden shrink-0 text-xl font-medium text-[#5F5A55] group-open:inline">−</span>
+        <details
+          key={item.q}
+          className="group rounded-[20px] border-2 border-[#F0EFEE] bg-white px-5 py-4 open:border-[#BAE0FF]"
+        >
+          <summary className="cursor-pointer list-none text-base font-extrabold text-[#1C1917] marker:content-none">
+            <span className="flex items-start justify-between gap-3 sm:gap-4">
+              <span className="min-w-0">{item.q}</span>
+              <span className="shrink-0 text-[#1677FF] group-open:hidden">+</span>
+              <span className="hidden shrink-0 text-[#1677FF] group-open:inline">−</span>
             </span>
           </summary>
-          <p className="mt-3 max-w-2xl text-sm font-medium leading-relaxed text-[#5F5A55]">{item.a}</p>
+          <p className="mt-3 text-sm font-medium leading-relaxed text-[#64748B]">{item.a}</p>
         </details>
       ))}
-      <p className="py-5 text-sm font-medium text-[#5F5A55]">
+      <p className="px-1 pt-2 text-sm font-medium text-[#64748B]">
         Tu ne trouves pas ta réponse ?{" "}
         <SupportButton className="font-extrabold text-[#1677FF] hover:underline">Écris-nous</SupportButton>
-        {" — "}
-        on t’explique comme en classe.
+        {" — ou "}
+        <a href={WEB_URL} className="font-extrabold text-[#1677FF] hover:underline">
+          ouvre LearnFlow
+        </a>
+        .
       </p>
     </div>
   );

@@ -15,7 +15,7 @@ export default function LegalPage() {
       <Header />
       <article className="mx-auto w-full max-w-3xl flex-1 px-[clamp(1.15rem,4.5vw,2.25rem)] py-12 sm:py-16">
         <p className="text-xs font-extrabold uppercase tracking-widest text-[#1677FF]">Légal</p>
-        <h1 className="lf-h1 mt-2 text-[#1C1917]">Mentions légales</h1>
+        <h1 className="lf-h1 mt-2 font-black text-[#1C1917]">Mentions légales</h1>
         <div className="mt-8 space-y-6 text-base font-medium leading-relaxed text-[#475569]">
           <p>
             <strong className="text-[#1C1917]">LearnFlow</strong> est une application mobile d’apprentissage pour
@@ -27,8 +27,7 @@ export default function LegalPage() {
             .
           </p>
           <p>
-            Ce site présente le produit. Il ne collecte pas de comptes élèves. Les boutons de téléchargement stores
-            s’activent uniquement lorsque les URLs publiques sont configurées.
+            Ce site présente le produit. Il ne collecte pas de comptes élèves. Le bouton d’accès ouvre l’application web LearnFlow.
           </p>
           <p>
             Marque, logo, mascotte Spira et captures d’interface : LearnFlow. Icônes de navigation et de matières : Icons8.

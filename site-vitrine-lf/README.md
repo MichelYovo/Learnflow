@@ -19,19 +19,18 @@ npm run build
 npm start
 ```
 
-## Stores
+## Accès web
 
-Par défaut les boutons Android / iPhone sont en « bientôt ». Pour les activer, crée un `.env.local` :
+Le bouton **Ouvrir LearnFlow** pointe vers l’app web. Par défaut : `https://learnflow-web.vercel.app`. Pour changer :
 
 ```
-NEXT_PUBLIC_PLAY_URL=https://play.google.com/store/apps/details?id=tg.learnflow.app
-NEXT_PUBLIC_APP_STORE_URL=https://apps.apple.com/app/idXXXXXXXX
+NEXT_PUBLIC_WEB_URL=https://learnflow-web.vercel.app
 ```
 
-Contact : bouton **Contact** (formulaire) — les messages arrivent dans l’admin, page Messages.
+Contact : bouton **Nous contacter** (formulaire) — les messages arrivent dans l’admin, page Messages.
 
 ## Stack
 
-Next.js (App Router) · TypeScript · Tailwind CSS 4 · Fraunces (titres) + Poppins (texte) · assets copiés depuis `LearnFlow/mobile/assets` (logo, Spira, badges, avatars, schémas).
+Next.js (App Router) · TypeScript · Tailwind CSS 4 · Poppins · assets copiés depuis `LearnFlow/mobile/assets` (logo, Spira, badges, avatars, schémas).
 
-Les téléphones du hero sont des cadres HTML/CSS (Dynamic Island, boutons volume/power) + UI fidèle à l’app. Pas d’animation de page, sauf le petit salut de Spira en bas.
+Les téléphones du hero sont des cadres HTML/CSS + UI fidèle à l’app. Pas d’animation de page, sauf le petit salut de Spira en bas.

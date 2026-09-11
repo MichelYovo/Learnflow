@@ -52,7 +52,7 @@ export default function ContactForm({ topic = "support", onSuccess, embedded = f
     return (
       <div className={embedded ? "rounded-[24px] border-2 border-[#BAE0FF] bg-[#E6F4FF] p-6 text-center" : "text-center"}>
         <p className="text-xs font-extrabold uppercase tracking-widest text-[#1677FF]">C’est parti</p>
-        <h3 className="mt-2 font-[family-name:var(--font-fraunces)] text-2xl font-semibold tracking-tight text-[#1C1917]">Message envoyé</h3>
+        <h3 className="mt-2 text-2xl font-black text-[#1C1917]">Message envoyé</h3>
         <p className="mt-3 text-sm font-medium leading-relaxed text-[#64748B]">
           {topic === "waitlist"
             ? "On te préviendra dès que l’app est sur les stores."

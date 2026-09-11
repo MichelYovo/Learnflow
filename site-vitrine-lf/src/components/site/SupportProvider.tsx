@@ -42,7 +42,7 @@ export default function SupportProvider({ children }: { children: ReactNode }) {
             <p className="text-xs font-extrabold uppercase tracking-widest text-[#1677FF]">
               {waitlist ? "Liste d’attente" : "Nous contacter"}
             </p>
-            <h2 id="support-title" className="mt-1 font-[family-name:var(--font-fraunces)] text-2xl font-semibold tracking-tight text-[#1C1917]">
+            <h2 id="support-title" className="mt-1 text-2xl font-black text-[#1C1917]">
               {waitlist ? "Préviens-moi" : "Écris-nous"}
             </h2>
             <p className="mt-2 mb-4 text-sm font-medium text-[#64748B]">
