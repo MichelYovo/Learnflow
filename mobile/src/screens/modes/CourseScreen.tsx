@@ -3,10 +3,12 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import AnalogieSpira from "../../components/AnalogieSpira";
+import CourseDetailBlocks from "../../components/course/CourseDetailBlocks";
 import Icon from "../../components/Icon";
 import InteractiveLessonText from "../../components/InteractiveLessonText";
 import { ficheForChapter } from "../../data/fiches";
-import { countWords, isDetailHeading, normalizeKeyword, toLessonContent } from "../../data/lessonContent";
+import { normalizeKeyword, toDetailBlocks, toLessonContent } from "../../data/lessonContent";
+import { questionsForChapter } from "../../data/modeContent";
 import { usePublishedCatalog } from "../../data/publishedCache";
 import { chapterHas3dImage } from "../../data/schemas3d";
 import { useAppTheme } from "../../theme/useAppTheme";
@@ -25,17 +27,18 @@ export default function CourseScreen({ navigation, route }: Props) {
   const catalogEpoch = usePublishedCatalog();
   const fiche = useMemo(() => ficheForChapter(chapterId), [chapterId, catalogEpoch]);
   const lesson = useMemo(() => toLessonContent(fiche), [fiche]);
+  const classe = useLearnFlowStore((s) => s.getActiveProfile()?.classe);
+  const quizFallback = useMemo(
+    () => questionsForChapter(chapterId, classe),
+    [chapterId, classe, catalogEpoch],
+  );
+  const detailBlocks = useMemo(() => toDetailBlocks(fiche, quizFallback), [fiche, quizFallback]);
   const [activeTab, setActiveTab] = useState<ActiveTab>("essentiel");
   const [masked, setMasked] = useState(false);
   const [revealed, setRevealed] = useState<Set<string>>(new Set());
 
-  const wordCount = useMemo(() => countWords(lesson.essentialText), [lesson.essentialText]);
   const show2d = fiche.schema === "2d" || fiche.schema === "both";
   const show3d = fiche.schema === "3d" || fiche.schema === "both" || chapterHas3dImage(chapterId);
-  const detailParas = useMemo(
-    () => lesson.detailedText.split(/\n\n+/).map((p) => p.trim()).filter(Boolean),
-    [lesson.detailedText],
-  );
 
   useEffect(() => {
     void import("../../lib/cloud").then((m) => m.trackActivity("chapter_open", { chapterId }));
@@ -92,7 +95,7 @@ export default function CourseScreen({ navigation, route }: Props) {
               L'Essentiel
             </Text>
             <Text style={[styles.speedHint, { color: activeTab === "essentiel" ? colors.primary : colors.textMuted }]}>
-              Synthèse · {wordCount} mots
+              Fiche réflexe · ~5 min
             </Text>
           </Pressable>
           <Pressable onPress={() => selectTab("details")} style={[styles.speed, tabStyle("details")]}>
@@ -146,19 +149,7 @@ export default function CourseScreen({ navigation, route }: Props) {
             {analogieBox}
           </>
         ) : (
-          <View style={[styles.card, { backgroundColor: colors.white, gap: 16 }]}>
-            {detailParas.map((para, i) => (
-              <Text
-                key={i}
-                style={[
-                  isDetailHeading(para) ? styles.detailHeading : styles.detailed,
-                  { color: colors.textDark },
-                ]}
-              >
-                {para}
-              </Text>
-            ))}
-          </View>
+          <CourseDetailBlocks blocks={detailBlocks} />
         )}
 
         {show2d || show3d ? (
@@ -235,19 +226,6 @@ const styles = StyleSheet.create({
   maskBadge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 999 },
   maskBadgeText: { fontFamily: appFont, fontSize: 11, fontWeight: "800" },
   card: { borderRadius: 24, paddingHorizontal: 20, paddingVertical: 22 },
-  detailed: {
-    fontFamily: appFont,
-    fontSize: 17,
-    lineHeight: 28,
-    fontWeight: "500",
-  },
-  detailHeading: {
-    fontFamily: appFont,
-    fontSize: 16,
-    lineHeight: 24,
-    fontWeight: "800",
-    color: "#1677FF",
-  },
   schemaBox: { borderRadius: 24, padding: 16 },
   schemaRow: { flexDirection: "row", gap: 8 },
   schemaBtn: {
