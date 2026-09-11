@@ -11,7 +11,12 @@ export async function GET() {
 export async function POST(request: Request) {
   const gate = await requireAdmin();
   if (gate.error) return gate.error;
-  const body = (await request.json()) as { cadenceDays?: number };
+  let body: { cadenceDays?: number } = {};
+  try {
+    body = (await request.json()) as { cadenceDays?: number };
+  } catch {
+    body = {};
+  }
   const cadenceDays: ParentCadenceDays = body.cadenceDays === 7 ? 7 : 14;
   return NextResponse.json(saveParentSettings(cadenceDays));
 }

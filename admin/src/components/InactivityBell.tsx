@@ -9,6 +9,16 @@ type InactiveRow = {
   absenceLabel: string;
 };
 
+async function readJson<T>(res: Response): Promise<T | null> {
+  const text = await res.text();
+  if (!res.ok || !text.trim()) return null;
+  try {
+    return JSON.parse(text) as T;
+  } catch {
+    return null;
+  }
+}
+
 export default function InactivityBell() {
   const [open, setOpen] = useState(false);
   const [inactive, setInactive] = useState(0);
@@ -17,23 +27,29 @@ export default function InactivityBell() {
   const [recapDue, setRecapDue] = useState(0);
 
   useEffect(() => {
-    let cancelled = false;
+    const ac = new AbortController();
+    const timer = window.setTimeout(() => ac.abort(), 20_000);
     (async () => {
-      const [inact, parents] = await Promise.all([fetch("/api/inactivity"), fetch("/api/parents")]);
-      if (cancelled) return;
-      if (inact.ok) {
-        const json = (await inact.json()) as { count?: number; students?: InactiveRow[] };
-        setInactive(json.count ?? 0);
-        setRows(json.students?.slice(0, 5) ?? []);
-      }
-      if (parents.ok) {
-        const json = (await parents.json()) as { welcomeDue?: number; recapDue?: number };
+      try {
+        const res = await fetch("/api/alerts", { signal: ac.signal, cache: "no-store" });
+        const json = await readJson<{
+          inactive?: number;
+          welcomeDue?: number;
+          recapDue?: number;
+          students?: InactiveRow[];
+        }>(res);
+        if (ac.signal.aborted || !json) return;
+        setInactive(json.inactive ?? 0);
         setWelcomeDue(json.welcomeDue ?? 0);
         setRecapDue(json.recapDue ?? 0);
+        setRows(json.students?.slice(0, 5) ?? []);
+      } catch {
+        /* keep zeros — don't crash the page */
       }
     })();
     return () => {
-      cancelled = true;
+      window.clearTimeout(timer);
+      ac.abort();
     };
   }, []);
 
@@ -82,6 +98,9 @@ export default function InactivityBell() {
                 WhatsApp parents : {welcomeDue} accueil{welcomeDue > 1 ? "s" : ""} et {recapDue} point
                 {recapDue > 1 ? "s" : ""} à envoyer.
               </li>
+            ) : null}
+            {!count ? (
+              <li className="rounded-xl px-3 py-2 text-sm font-semibold text-[#64748B]">Rien à traiter pour le moment.</li>
             ) : null}
           </ul>
           <div className="flex border-t border-[#F0EFEE]">

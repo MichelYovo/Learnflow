@@ -205,30 +205,55 @@ function mapStudent(row: CloudStudent, i: number, weeklyXp: number, leagueTier: 
   };
 }
 
-export async function loadDashboardData(): Promise<DashboardData> {
+const DASHBOARD_CACHE_MS = 10_000;
+let dashboardCache: { at: number; data: Promise<DashboardData> } | null = null;
+
+export function invalidateDashboardCache() {
+  dashboardCache = null;
+}
+
+async function loadDashboardDataUncached(): Promise<DashboardData> {
   if (!isSupabaseConfigured) {
     return emptyDashboard("local", "Ajoute NEXT_PUBLIC_SUPABASE_URL et SUPABASE_SECRET_KEY.");
   }
-  const [studentsRes, leaguesRes, eventsRes] = await Promise.all([
-    fetchCloudStudents(),
-    fetchCloudLeagues(),
-    fetchCloudEvents(),
-  ]);
-  const cloudError = studentsRes.error || leaguesRes.error || eventsRes.error;
-  const cloudStudents = studentsRes.data;
-  const cloudLeagues = leaguesRes.data;
-  const cloudEvents = eventsRes.data;
-  if (!cloudStudents) {
-    return emptyDashboard("local", cloudError);
+  try {
+    const [studentsRes, leaguesRes, eventsRes] = await Promise.all([
+      fetchCloudStudents(),
+      fetchCloudLeagues(),
+      fetchCloudEvents(),
+    ]);
+    const cloudError = studentsRes.error || leaguesRes.error || eventsRes.error;
+    const cloudStudents = studentsRes.data;
+    const cloudLeagues = leaguesRes.data;
+    const cloudEvents = eventsRes.data;
+    if (!cloudStudents) {
+      return emptyDashboard("local", cloudError);
+    }
+    const mapped: AdminStudent[] = cloudStudents.map((row, i) => {
+      const league = cloudLeagues?.find((l) => l.student_id === row.id);
+      return mapStudent(row, i, league?.weekly_xp ?? 0, league?.league_tier ?? "Bronze");
+    });
+    const leagues = toLeagueRows(mapped, cloudLeagues ?? undefined);
+    const events = mapEvents(cloudEvents ?? [], mapped);
+    const students = withLastSeen(mapped, events);
+    return { source: "cloud", cloudError, students, leagues, events, stats: buildStats(students, leagues, events) };
+  } catch (err) {
+    return emptyDashboard("local", err instanceof Error ? err.message : "Erreur cloud");
   }
-  const mapped: AdminStudent[] = cloudStudents.map((row, i) => {
-    const league = cloudLeagues?.find((l) => l.student_id === row.id);
-    return mapStudent(row, i, league?.weekly_xp ?? 0, league?.league_tier ?? "Bronze");
-  });
-  const leagues = toLeagueRows(mapped, cloudLeagues ?? undefined);
-  const events = mapEvents(cloudEvents ?? [], mapped);
-  const students = withLastSeen(mapped, events);
-  return { source: "cloud", cloudError, students, leagues, events, stats: buildStats(students, leagues, events) };
+}
+
+export async function loadDashboardData(): Promise<DashboardData> {
+  if (dashboardCache && Date.now() - dashboardCache.at < DASHBOARD_CACHE_MS) {
+    return dashboardCache.data;
+  }
+  const data = loadDashboardDataUncached();
+  dashboardCache = { at: Date.now(), data };
+  try {
+    return await data;
+  } catch (err) {
+    dashboardCache = null;
+    return emptyDashboard("local", err instanceof Error ? err.message : "Erreur cloud");
+  }
 }
 
 export async function loadStudentDetail(id: string) {

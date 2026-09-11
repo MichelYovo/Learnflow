@@ -30,17 +30,23 @@ export default function SuperProfChat() {
     setFlash("");
     setMsgs((m) => [...m, { role: "user", text: q }]);
     setBusy(true);
-    const res = await fetch("/api/super-prof", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message: q, path: pathname }),
-    });
-    const json = (await res.json()) as { text?: string; error?: string; email?: SuperProfEmail };
-    setBusy(false);
-    setMsgs((m) => [
-      ...m,
-      { role: "prof", text: json.text || json.error || "Super Prof n’a pas répondu.", email: json.email },
-    ]);
+    try {
+      const res = await fetch("/api/super-prof", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: q, path: pathname }),
+      });
+      const raw = await res.text();
+      const json = (raw.trim() ? JSON.parse(raw) : {}) as { text?: string; error?: string; email?: SuperProfEmail };
+      setBusy(false);
+      setMsgs((m) => [
+        ...m,
+        { role: "prof", text: json.text || json.error || "Super Prof n’a pas répondu.", email: json.email },
+      ]);
+    } catch {
+      setBusy(false);
+      setMsgs((m) => [...m, { role: "prof", text: "Super Prof n’a pas répondu. Réessaie." }]);
+    }
   };
 
   const sendMail = async (email: SuperProfEmail) => {

@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { ADMIN_LINKS } from "@/lib/nav";
 
 const ICONS: Record<string, typeof OverviewIcon> = {
@@ -21,12 +21,10 @@ const ICONS: Record<string, typeof OverviewIcon> = {
 
 export default function Sidebar() {
   const pathname = usePathname();
-  const router = useRouter();
 
   async function logout() {
     await fetch("/api/auth/logout", { method: "POST" });
-    router.push("/login");
-    router.refresh();
+    window.location.assign("/login");
   }
 
   return (

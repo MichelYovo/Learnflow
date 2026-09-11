@@ -18,7 +18,12 @@ export async function GET() {
     cache: "no-store",
   });
   if (!res.ok) return NextResponse.json({ models: [], error: await res.text() });
-  return NextResponse.json({ models: await res.json() });
+  const raw = await res.text();
+  try {
+    return NextResponse.json({ models: raw.trim() ? JSON.parse(raw) : [] });
+  } catch {
+    return NextResponse.json({ models: [] });
+  }
 }
 
 export async function POST(request: Request) {

@@ -31,40 +31,65 @@ function restHeaders(extra?: Record<string, string>) {
   };
 }
 
+const FETCH_MS = 12_000;
+
+function fetchErrorMessage(err: unknown) {
+  if (err instanceof Error && (err.name === "TimeoutError" || err.name === "AbortError")) {
+    return "Supabase trop lent. Réessaie dans un instant.";
+  }
+  return err instanceof Error ? err.message : "Réseau";
+}
+
+async function parseJsonBody<T>(res: Response): Promise<T | null> {
+  const text = await res.text();
+  if (!text.trim()) return null;
+  try {
+    return JSON.parse(text) as T;
+  } catch {
+    return null;
+  }
+}
+
 async function restGet<T>(pathAndQuery: string): Promise<{ data: T[] | null; error?: string }> {
   if (!isSupabaseConfigured) return { data: null, error: "Supabase non configuré." };
   try {
     const res = await fetch(`${supabaseUrl}/rest/v1/${pathAndQuery}`, {
       headers: restHeaders(),
       cache: "no-store",
+      signal: AbortSignal.timeout(FETCH_MS),
     });
     if (!res.ok) {
       const body = await res.text();
       return { data: null, error: body.slice(0, 280) || `HTTP ${res.status}` };
     }
-    return { data: (await res.json()) as T[] };
+    const data = await parseJsonBody<T[]>(res);
+    return { data: Array.isArray(data) ? data : [] };
   } catch (err) {
-    return { data: null, error: err instanceof Error ? err.message : "Réseau" };
+    return { data: null, error: fetchErrorMessage(err) };
   }
 }
 
 async function restSend(method: string, pathAndQuery: string, body?: unknown, prefer?: string) {
   if (!isAdminCloudReady) return { ok: false, error: "Clé secrète Supabase manquante (SUPABASE_SECRET_KEY)." };
-  const res = await fetch(`${supabaseUrl}/rest/v1/${pathAndQuery}`, {
-    method,
-    headers: restHeaders({
-      "Content-Type": "application/json",
-      Prefer: prefer ?? "return=representation",
-    }),
-    body: body === undefined ? undefined : JSON.stringify(body),
-    cache: "no-store",
-  });
-  if (!res.ok) {
-    const text = await res.text();
-    return { ok: false, error: text.slice(0, 400) || `HTTP ${res.status}` };
+  try {
+    const res = await fetch(`${supabaseUrl}/rest/v1/${pathAndQuery}`, {
+      method,
+      headers: restHeaders({
+        "Content-Type": "application/json",
+        Prefer: prefer ?? "return=representation",
+      }),
+      body: body === undefined ? undefined : JSON.stringify(body),
+      cache: "no-store",
+      signal: AbortSignal.timeout(FETCH_MS),
+    });
+    if (!res.ok) {
+      const text = await res.text();
+      return { ok: false, error: text.slice(0, 400) || `HTTP ${res.status}` };
+    }
+    return { ok: true, data: await parseJsonBody(res) };
+  } catch (err) {
+    return { ok: false, error: fetchErrorMessage(err) };
   }
-  const text = await res.text();
-  return { ok: true, data: text ? JSON.parse(text) : null };
 }
 
 export type CloudStudent = {
@@ -127,7 +152,7 @@ export async function fetchCloudLeagues() {
 
 export async function fetchCloudEvents(studentId?: string) {
   const filter = studentId ? `&student_id=eq.${encodeURIComponent(studentId)}` : "";
-  return restGet<CloudEvent>(`activity_events?select=*&order=created_at.desc&limit=2000${filter}`);
+  return restGet<CloudEvent>(`activity_events?select=*&order=created_at.desc&limit=400${filter}`);
 }
 
 export async function fetchSupportMessages() {

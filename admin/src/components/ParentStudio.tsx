@@ -79,31 +79,44 @@ export default function ParentStudio({
     setBusy(true);
     setError("");
     setFlash("");
-    const res = await fetch("/api/parents/dispatch", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ kind }),
-    });
-    const json = (await res.json()) as {
-      sent?: { name: string }[];
-      skipped?: { name: string; reason: string }[];
-      drafts?: Draft[];
-      error?: string;
-    };
-    setBusy(false);
-    if (!res.ok) {
-      setError(json.error || "Préparation impossible.");
-      return;
+    try {
+      const res = await fetch("/api/parents/dispatch", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ kind }),
+      });
+      const raw = await res.text();
+      let json: {
+        sent?: { name: string }[];
+        skipped?: { name: string; reason: string }[];
+        drafts?: Draft[];
+        error?: string;
+      } = {};
+      try {
+        json = raw ? (JSON.parse(raw) as typeof json) : {};
+      } catch {
+        setBusy(false);
+        setError("Réponse invalide. Réessaie.");
+        return;
+      }
+      setBusy(false);
+      if (!res.ok) {
+        setError(json.error || "Préparation impossible.");
+        return;
+      }
+      const sent = json.sent?.length ?? 0;
+      setDrafts(json.drafts ?? []);
+      setFlash(
+        sent
+          ? `${sent} message${sent > 1 ? "s" : ""} envoyé${sent > 1 ? "s" : ""} par API.`
+          : (json.drafts?.length ?? 0)
+            ? `${json.drafts?.length} message${(json.drafts?.length ?? 0) > 1 ? "s" : ""} prêt${(json.drafts?.length ?? 0) > 1 ? "s" : ""} : ouvre WhatsApp sur ton téléphone, c’est gratuit.`
+            : json.skipped?.[0]?.reason || "Rien à envoyer pour le moment.",
+      );
+    } catch {
+      setBusy(false);
+      setError("Préparation impossible. Réessaie.");
     }
-    const sent = json.sent?.length ?? 0;
-    setDrafts(json.drafts ?? []);
-    setFlash(
-      sent
-        ? `${sent} message${sent > 1 ? "s" : ""} envoyé${sent > 1 ? "s" : ""} par API.`
-        : (json.drafts?.length ?? 0)
-          ? `${json.drafts?.length} message${(json.drafts?.length ?? 0) > 1 ? "s" : ""} prêt${(json.drafts?.length ?? 0) > 1 ? "s" : ""} : ouvre WhatsApp sur ton téléphone, c’est gratuit.`
-          : json.skipped?.[0]?.reason || "Rien à envoyer pour le moment.",
-    );
   };
 
   const openWhatsApp = async (draft: Draft) => {

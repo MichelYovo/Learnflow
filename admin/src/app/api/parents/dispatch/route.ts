@@ -13,10 +13,12 @@ import { fetchLoginNotices } from "@/lib/supabase";
 export async function POST(request: Request) {
   const gate = await requireAdmin();
   if (gate.error) return gate.error;
-  const body = (await request.json()) as {
-    kind?: "due" | "welcome" | "recap";
-    studentIds?: string[];
-  };
+  let body: { kind?: "due" | "welcome" | "recap"; studentIds?: string[] } = {};
+  try {
+    body = (await request.json()) as typeof body;
+  } catch {
+    body = {};
+  }
   const kind = body.kind === "welcome" || body.kind === "recap" ? body.kind : "due";
   const data = await loadDashboardData();
   const notices = (await fetchLoginNotices()).data ?? [];

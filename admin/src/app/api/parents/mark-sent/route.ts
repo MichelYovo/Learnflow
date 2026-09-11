@@ -7,12 +7,17 @@ import { insertLoginNotice } from "@/lib/supabase";
 export async function POST(request: Request) {
   const gate = await requireAdmin();
   if (gate.error) return gate.error;
-  const body = (await request.json()) as {
+  let body: {
     studentId?: string;
     name?: string;
     phone?: string;
     event?: "parent_welcome" | "weekly_recap";
-  };
+  } = {};
+  try {
+    body = (await request.json()) as typeof body;
+  } catch {
+    return NextResponse.json({ error: "Données manquantes." }, { status: 400 });
+  }
   if (!body.studentId || !body.event) {
     return NextResponse.json({ error: "Données manquantes." }, { status: 400 });
   }
