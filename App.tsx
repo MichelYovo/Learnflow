@@ -15,7 +15,6 @@ import { useAppTheme } from "./src/theme/useAppTheme";
 export default function App() {
   const { darkMode, colors } = useAppTheme();
   const { setColorScheme } = useColorScheme();
-  const onboardingCompleted = useLearnFlowStore((s) => s.onboardingCompleted);
   const persistApi = useLearnFlowStore.persist;
   const [hydrated, setHydrated] = useState(() => {
     try {
@@ -53,9 +52,7 @@ export default function App() {
         <StatusBar style={darkMode ? "light" : "dark"} />
         <OfflineBootstrap>
           <RootNavigator />
-          {!splashDone ? (
-            <AnimatedSplash ready={hydrated} cinematic={!onboardingCompleted} onFinish={onSplashFinish} />
-          ) : null}
+          {!splashDone ? <AnimatedSplash ready={hydrated} onFinish={onSplashFinish} /> : null}
         </OfflineBootstrap>
       </SafeAreaProvider>
     </GestureHandlerRootView>
