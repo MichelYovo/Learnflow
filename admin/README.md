@@ -9,12 +9,9 @@ Ce n’est pas un espace élèves : pas d’inscription, un seul identifiant.
 
 | | |
 |---|---|
-| Email | `admin@learnflow.tg` |
-| Mot de passe | `Spira#Admin-Togo26` |
+Les identifiants sont uniquement dans `admin/.env.local` (et les variables d’environnement Vercel en production) : `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `ADMIN_SESSION_SECRET`. Ne jamais les committer.
 
-Dans `.env.local`, le mot de passe est entre guillemets (`ADMIN_PASSWORD="..."`) : le caractère `#` serait sinon lu comme un commentaire.
-
-À changer en production dans `.env.local` (`ADMIN_EMAIL`, `ADMIN_PASSWORD`, `ADMIN_SESSION_SECRET`).
+Dans `.env.local`, mets le mot de passe entre guillemets si tu utilises `#` : sinon il est lu comme un commentaire.
 
 ## Lancer
 
@@ -25,6 +22,10 @@ npm run dev
 ```
 
 Ouvre [http://localhost:3001](http://localhost:3001).
+
+## Vercel
+
+Si tu déploies l’admin : **Root Directory** = `admin`. Variables : `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `ADMIN_SESSION_SECRET`, plus les clés Supabase.
 
 ```bash
 npm run build
