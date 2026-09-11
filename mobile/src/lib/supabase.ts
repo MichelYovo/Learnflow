@@ -1,6 +1,6 @@
 import "react-native-url-polyfill/auto";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { createClient } from "@supabase/supabase-js";
+import { getSecureStorage } from "./secureStorage";
 
 const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL?.trim() ?? "";
 const supabaseAnonKey = (
@@ -21,7 +21,7 @@ function createSupabaseClient() {
 
   return createClient(url, key, {
     auth: {
-      storage: AsyncStorage,
+      storage: getSecureStorage(),
       autoRefreshToken: true,
       persistSession: true,
       detectSessionInUrl: false,
@@ -30,7 +30,7 @@ function createSupabaseClient() {
 }
 
 /**
- * Shared Supabase client. Auth session is persisted in AsyncStorage so
- * SyncManager can restore it silently when the device comes back online.
+ * Shared Supabase client. Auth session is persisted in the device secure store
+ * so SyncManager can restore it silently when the device comes back online.
  */
 export const supabase = createSupabaseClient();

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { corsHeaders } from "@/lib/cors";
 import {
   handleLoginNotice,
   handleSendOtp,
@@ -10,17 +11,12 @@ import {
 
 export const runtime = "nodejs";
 
-const cors = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-  "Access-Control-Allow-Headers": "Authorization, Content-Type",
-};
-
-export async function OPTIONS() {
-  return new NextResponse(null, { status: 204, headers: cors });
+export async function OPTIONS(request: Request) {
+  return new NextResponse(null, { status: 204, headers: corsHeaders(request) });
 }
 
 export async function POST(request: Request) {
+  const cors = corsHeaders(request);
   const user = await userFromBearer(request.headers.get("authorization"));
   if (!user) {
     return NextResponse.json({ error: "Session expirée. Reconnecte-toi." }, { status: 401, headers: cors });

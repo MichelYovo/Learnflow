@@ -170,6 +170,80 @@ begin
   end if;
 end $$;
 
+-- Compte suspendu : lecture du profil (pour afficher l’erreur), écriture bloquée.
+create or replace function public.student_is_active()
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select coalesce(
+    (select sp.status = 'actif' from public.student_profiles sp where sp.id = auth.uid()),
+    true
+  );
+$$;
+
+revoke all on function public.student_is_active() from public;
+grant execute on function public.student_is_active() to authenticated;
+
+drop policy if exists student_profiles_update_own on public.student_profiles;
+create policy student_profiles_update_own
+  on public.student_profiles for update
+  using (id::text = auth.uid()::text and status is distinct from 'suspendu')
+  with check (id::text = auth.uid()::text and status is distinct from 'suspendu');
+
+drop policy if exists activity_events_insert_own on public.activity_events;
+create policy activity_events_insert_own
+  on public.activity_events for insert
+  with check (student_id::text = auth.uid()::text and public.student_is_active());
+
+drop policy if exists league_scores_upsert_own on public.league_scores;
+create policy league_scores_upsert_own
+  on public.league_scores for insert
+  with check (student_id::text = auth.uid()::text and public.student_is_active());
+
+drop policy if exists league_scores_update_own on public.league_scores;
+create policy league_scores_update_own
+  on public.league_scores for update
+  using (student_id::text = auth.uid()::text and public.student_is_active())
+  with check (student_id::text = auth.uid()::text and public.student_is_active());
+
+create or replace function public.league_leaderboard_for_tier(p_tier text)
+returns table (
+  id uuid,
+  student_id uuid,
+  league_tier text,
+  weekly_xp integer,
+  last_sync timestamptz,
+  display_name text,
+  avatar_id text,
+  streak integer
+)
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select
+    ls.id,
+    ls.student_id,
+    ls.league_tier,
+    ls.weekly_xp,
+    ls.last_sync,
+    coalesce(nullif(trim(sp.name), ''), 'Élève') as display_name,
+    sp.avatar_id,
+    coalesce(sp.streak, 0) as streak
+  from public.league_scores ls
+  left join public.student_profiles sp on sp.id = ls.student_id
+  where ls.league_tier = p_tier
+    and coalesce(sp.status, 'actif') is distinct from 'suspendu'
+  order by ls.weekly_xp desc, ls.last_sync asc nulls last, ls.student_id asc;
+$$;
+
+revoke all on function public.league_leaderboard_for_tier(text) from public;
+grant execute on function public.league_leaderboard_for_tier(text) to authenticated;
+
 -- Studio Prof : brouillons (service_role seulement)
 create table if not exists public.course_drafts (
   id uuid primary key default gen_random_uuid(),

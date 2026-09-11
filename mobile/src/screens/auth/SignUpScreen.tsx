@@ -132,7 +132,6 @@ export default function SignUpScreen({ navigation }: Props) {
       lastName: lastName.trim(),
       classe: chosenClasse,
       parentPhone: toTogoE164(parentLocal),
-      password,
       emailOtpVerified: false,
     });
     const { data: signUpData, error: signUpError } = await supabase.auth.signUp({

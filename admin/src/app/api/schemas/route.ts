@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { chatJson } from "@/lib/ai";
 import { requireAdmin } from "@/lib/requireAdmin";
 import { insertRow } from "@/lib/supabase";
+import { validateUploadBuffer } from "@/lib/files";
 
 const SYSTEM = `Tu analyses un schéma pédagogique (SVT/PCT/maths). Réponds en JSON :
 {"title":string,"subtitle":string,"parts":[{"id":string,"label":string,"role":string,"x":number,"y":number}]}
@@ -41,7 +42,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Pour un schéma, dépose une image (PNG, JPG, WebP)." }, { status: 400 });
   }
   const buf = Buffer.from(await file.arrayBuffer());
-  const mime = file.type || "image/jpeg";
+  const sniffed = validateUploadBuffer(buf, ["image"]);
+  if (sniffed.error) return NextResponse.json({ error: sniffed.error }, { status: 400 });
+  const mime = file.type.startsWith("image/") ? file.type : "image/jpeg";
   const dataUrl = `data:${mime};base64,${buf.toString("base64")}`;
   const ai = await chatJson(SYSTEM, `Classe ${classLevel}, chapitre ${chapterId}. Propose les pastilles du schéma.`, dataUrl, {
     imageDirect: true,

@@ -48,9 +48,6 @@ export async function settleVerifiedUser(): Promise<
 
   if (!profile && pending?.flow === "signup" && pending.classe && pending.parentPhone) {
     const nom = `${pending.firstName ?? ""} ${pending.lastName ?? ""}`.trim() || metaName || email.split("@")[0] || "Élève";
-    if (pending.password) {
-      await supabase.auth.updateUser({ password: pending.password });
-    }
     const result = await upsertStudentProfile({
       id: user.id,
       parent_id: user.id,

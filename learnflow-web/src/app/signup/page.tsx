@@ -85,7 +85,6 @@ export default function SignUpPage() {
       lastName: lastName.trim(),
       classe: chosenClasse,
       parentPhone: phone,
-      password,
       emailOtpVerified: false,
     });
     const supabase = getBrowserSupabase();

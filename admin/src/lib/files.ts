@@ -91,6 +91,41 @@ export function pickIncomingFile(files: File[], accept: string): { file?: File; 
   return { file: match };
 }
 
+export type SniffedKind = "image" | "pdf" | "text";
+
+export function sniffBuffer(buf: Buffer): SniffedKind | null {
+  if (buf.length < 4) return null;
+  if (buf[0] === 0x25 && buf[1] === 0x50 && buf[2] === 0x44 && buf[3] === 0x46) return "pdf";
+  if (buf[0] === 0x89 && buf[1] === 0x50 && buf[2] === 0x4e && buf[3] === 0x47) return "image";
+  if (buf[0] === 0xff && buf[1] === 0xd8 && buf[2] === 0xff) return "image";
+  if (buf.length >= 12 && buf.toString("ascii", 0, 4) === "RIFF" && buf.toString("ascii", 8, 12) === "WEBP") {
+    return "image";
+  }
+  if (buf[0] === 0x47 && buf[1] === 0x49 && buf[2] === 0x46) return "image";
+  const sample = buf.subarray(0, Math.min(512, buf.length));
+  if (sample.includes(0)) return null;
+  const text = sample.toString("utf8");
+  if (/^[\t\n\r\x20-\x7E\u00A0-\uFFFF]+$/.test(text)) return "text";
+  return null;
+}
+
+export function validateUploadBuffer(
+  buf: Buffer,
+  allowed: SniffedKind[],
+): { kind: SniffedKind; error?: undefined } | { kind?: undefined; error: string } {
+  if (buf.length > MAX_UPLOAD_BYTES) {
+    return { error: `Fichier trop lourd (max ${formatBytes(MAX_UPLOAD_BYTES)}).` };
+  }
+  if (buf.length === 0) {
+    return { error: "Fichier vide." };
+  }
+  const kind = sniffBuffer(buf);
+  if (!kind || !allowed.includes(kind)) {
+    return { error: "Type de fichier refusé." };
+  }
+  return { kind };
+}
+
 export function isImageFile(file: File) {
   return (file.type || "").startsWith("image/") || /\.(png|jpe?g|webp|gif|bmp)$/i.test(file.name);
 }

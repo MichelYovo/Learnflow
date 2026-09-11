@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { chatJson, extractPdfText } from "@/lib/ai";
-import { isImageFile, isPdfFile } from "@/lib/files";
+import { validateUploadBuffer } from "@/lib/files";
 import { normalizePayload, PROF_SYSTEM } from "@/lib/prof";
 import { requireAdmin } from "@/lib/requireAdmin";
 import { insertRow } from "@/lib/supabase";
@@ -20,10 +20,12 @@ export async function POST(request: Request) {
   if (file instanceof File && file.size > 0) {
     sourceName = file.name || "fichier";
     const buf = Buffer.from(await file.arrayBuffer());
-    if (isPdfFile(file)) {
+    const sniffed = validateUploadBuffer(buf, ["pdf", "image", "text"]);
+    if (sniffed.error) return NextResponse.json({ error: sniffed.error }, { status: 400 });
+    if (sniffed.kind === "pdf") {
       sourceText = extractPdfText(buf) || sourceText;
-    } else if (isImageFile(file)) {
-      const mime = file.type || "image/jpeg";
+    } else if (sniffed.kind === "image") {
+      const mime = file.type.startsWith("image/") ? file.type : "image/jpeg";
       imageDataUrl = `data:${mime};base64,${buf.toString("base64")}`;
     } else {
       sourceText = buf.toString("utf8");

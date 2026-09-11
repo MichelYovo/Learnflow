@@ -268,6 +268,10 @@ Le mail part de ton Gmail vers n’importe quel élève. Plus tard tu pourras pa
 
 `SUPABASE_SECRET_KEY` reste obligatoire (hash du code). Relance `schema.sql` si `email_challenges` n’existe pas.
 
+Optionnel : `OTP_PEPPER` (secret long). S’il est vide, LearnFlow hash avec `SUPABASE_SECRET_KEY`. Ne jamais laisser un pepper par défaut dans le code.
+
+Les comptes **suspendus** ne peuvent plus écrire leur progression ni apparaître au classement : relance `schema.sql` pour appliquer `student_is_active()`.
+
 Dans Supabase : **Authentication → Providers → Email** → **Confirm email : désactivé**.
 
 En bas de l’écran OTP : minuteur **1:00** avant « Renvoyer le code ». **10 essais** par code.

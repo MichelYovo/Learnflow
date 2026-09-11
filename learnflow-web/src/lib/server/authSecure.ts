@@ -52,11 +52,24 @@ export async function userFromBearer(authorization: string | null) {
 }
 
 function otpPepper() {
-  return (process.env.OTP_PEPPER || secretKey() || "learnflow-otp").slice(0, 64);
+  return (process.env.OTP_PEPPER || secretKey()).trim().slice(0, 64);
 }
 
 function hashOtp(userId: string, code: string) {
-  return createHash("sha256").update(`${otpPepper()}:${userId}:${code}`).digest("hex");
+  const pepper = otpPepper();
+  if (pepper.length < 16) {
+    throw new Error("OTP_PEPPER ou SUPABASE_SECRET_KEY manquant (16 caractères min).");
+  }
+  return createHash("sha256").update(`${pepper}:${userId}:${code}`).digest("hex");
+}
+
+function escapeHtml(value: string) {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
 }
 
 function codesEqual(a: string, b: string) {
@@ -108,6 +121,7 @@ function appLabel(platform: AuthPlatform) {
 }
 
 function wrapEmail(title: string, inner: string) {
+  const safeTitle = escapeHtml(title);
   return `<!DOCTYPE html>
 <html lang="fr">
 <body style="margin:0;padding:0;background:#F5F5F4;font-family:Arial,Helvetica,sans-serif;color:#1C1917;">
@@ -116,7 +130,7 @@ function wrapEmail(title: string, inner: string) {
 <table role="presentation" width="560" cellspacing="0" cellpadding="0" style="max-width:560px;background:#FFFFFF;border-radius:20px;overflow:hidden;border:1px solid #E7E5E4;">
 <tr><td style="background:#1677FF;padding:22px 28px;">
 <p style="margin:0;font-size:13px;font-weight:700;letter-spacing:0.08em;color:#E6F4FF;text-transform:uppercase;">LearnFlow</p>
-<h1 style="margin:8px 0 0;font-size:22px;line-height:1.3;color:#FFFFFF;">${title}</h1>
+<h1 style="margin:8px 0 0;font-size:22px;line-height:1.3;color:#FFFFFF;">${safeTitle}</h1>
 </td></tr>
 <tr><td style="padding:28px;">${inner}</td></tr>
 <tr><td style="padding:16px 28px 24px;border-top:1px solid #F0EFEE;">
@@ -376,6 +390,9 @@ export async function handleSendOtp(
   if (!email.includes("@")) return { error: "Email du compte introuvable.", status: 400 };
   const admin = adminClient();
   if (!admin) return { error: "La vérification n’est pas configurée (clé secrète Supabase).", status: 500 };
+  if (otpPepper().length < 16) {
+    return { error: "La vérification n’est pas configurée (OTP_PEPPER ou clé secrète Supabase).", status: 500 };
+  }
 
   const { data: last } = await admin
     .from("email_challenges")
@@ -477,6 +494,7 @@ export async function handleVerifyOtp(user: { id: string; email?: string | null 
   if (code.length !== 6) return { error: "Entre les 6 chiffres reçus par email.", status: 400 };
   const admin = adminClient();
   if (!admin) return { fallback: "supabase_otp" as const };
+  if (otpPepper().length < 16) return { fallback: "supabase_otp" as const };
 
   const { data: row } = await admin
     .from("email_challenges")
@@ -552,10 +570,10 @@ export async function handleLoginNotice(
   if (email.includes("@")) {
     const html = wrapEmail(
       "Connexion à LearnFlow",
-      `<p style="margin:0 0 12px;font-size:15px;line-height:1.5;">Bonjour ${name},</p>
+      `<p style="margin:0 0 12px;font-size:15px;line-height:1.5;">Bonjour ${escapeHtml(name)},</p>
 <p style="margin:0 0 18px;font-size:15px;line-height:1.5;">Une connexion à <strong>LearnFlow</strong> vient d’être confirmée.</p>
-<p style="margin:0 0 8px;font-size:14px;line-height:1.6;"><strong>Compte :</strong> ${email}<br/>
-<strong>Quand :</strong> ${when} (heure du Togo)<br/>
+<p style="margin:0 0 8px;font-size:14px;line-height:1.6;"><strong>Compte :</strong> ${escapeHtml(email)}<br/>
+<strong>Quand :</strong> ${escapeHtml(when)} (heure du Togo)<br/>
 <strong>Où :</strong> ${appLabel(platform)}</p>
 <p style="margin:18px 0 0;font-size:13px;line-height:1.5;color:#78716C;">Si ce n’est pas toi, change ton mot de passe et contacte le support LearnFlow.</p>`,
     );
