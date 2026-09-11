@@ -1,5 +1,5 @@
-import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { createServerClient } from "@supabase/ssr";
 
 function supabaseEnv() {
   const url = (process.env.NEXT_PUBLIC_SUPABASE_URL ?? "").trim();
@@ -16,26 +16,45 @@ function supabaseEnv() {
   return ok ? { url, anon } : null;
 }
 
+function isPublicPath(pathname: string) {
+  if (pathname === "/" || pathname === "/login" || pathname === "/signup") return true;
+  if (pathname === "/splash" || pathname === "/onboarding" || pathname === "/otp") return true;
+  if (pathname.startsWith("/auth/")) return true;
+  return false;
+}
+
 export async function proxy(request: NextRequest) {
-  let response = NextResponse.next({ request });
+  if (isPublicPath(request.nextUrl.pathname)) {
+    return NextResponse.next();
+  }
+
   const env = supabaseEnv();
-  if (!env) return response;
+  if (!env) return NextResponse.next();
 
-  const supabase = createServerClient(env.url, env.anon, {
-    cookies: {
-      getAll() {
-        return request.cookies.getAll();
+  try {
+    let response = NextResponse.next({ request });
+    const supabase = createServerClient(env.url, env.anon, {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll();
+        },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
+          response = NextResponse.next({ request });
+          cookiesToSet.forEach(({ name, value, options }) => response.cookies.set(name, value, options));
+        },
       },
-      setAll(cookiesToSet) {
-        cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
-        response = NextResponse.next({ request });
-        cookiesToSet.forEach(({ name, value, options }) => response.cookies.set(name, value, options));
-      },
-    },
-  });
-
-  await supabase.auth.getUser();
-  return response;
+    });
+    await Promise.race([
+      supabase.auth.getUser(),
+      new Promise((_, reject) => {
+        setTimeout(() => reject(new Error("auth-timeout")), 2500);
+      }),
+    ]);
+    return response;
+  } catch {
+    return NextResponse.next();
+  }
 }
 
 export const config = {

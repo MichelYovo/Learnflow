@@ -13,8 +13,18 @@ const poppins = Poppins({
   display: "swap",
 });
 
+function siteUrl() {
+  const raw = (process.env.NEXT_PUBLIC_SITE_URL ?? "").trim();
+  try {
+    if (raw) return new URL(raw).origin;
+  } catch {
+    /* ignore invalid env */
+  }
+  return "http://localhost:3002";
+}
+
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3002"),
+  metadataBase: new URL(siteUrl()),
   title: {
     default: "LearnFlow — Un chapitre n’est validé qu’à 10/10",
     template: "%s · LearnFlow",

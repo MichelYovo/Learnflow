@@ -16,7 +16,7 @@ const securityHeaders = [
       "base-uri 'self'",
       "form-action 'self'",
       "object-src 'none'",
-      ...(isProd ? ["frame-ancestors 'none'", "upgrade-insecure-requests"] : []),
+      ...(isProd ? ["upgrade-insecure-requests"] : []),
     ].join("; "),
   },
   { key: "X-Content-Type-Options", value: "nosniff" },
@@ -25,11 +25,7 @@ const securityHeaders = [
   { key: "X-DNS-Prefetch-Control", value: "on" },
   { key: "X-Permitted-Cross-Domain-Policies", value: "none" },
   ...(isProd
-    ? [
-        { key: "X-Frame-Options", value: "DENY" },
-        { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
-        { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains; preload" },
-      ]
+    ? [{ key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains; preload" }]
     : []),
 ];
 

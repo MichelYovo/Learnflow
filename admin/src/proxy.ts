@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { parseSessionToken, SESSION_COOKIE } from "@/lib/auth";
+
+const SESSION_COOKIE = "lf_admin_session";
 
 function isPublicPath(pathname: string) {
   if (pathname === "/login") return true;
@@ -7,6 +8,50 @@ function isPublicPath(pathname: string) {
   if (pathname === "/api/auth/logout") return true;
   if (pathname.startsWith("/api/public/")) return true;
   return false;
+}
+
+function encoder() {
+  return new TextEncoder();
+}
+
+function toBase64Url(bytes: ArrayBuffer) {
+  const bin = String.fromCharCode(...new Uint8Array(bytes));
+  return btoa(bin).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+
+function fromBase64Url(value: string) {
+  const padded = value.replace(/-/g, "+").replace(/_/g, "/") + "=".repeat((4 - (value.length % 4)) % 4);
+  return atob(padded);
+}
+
+function timingEqual(a: string, b: string) {
+  if (a.length !== b.length) return false;
+  let mismatch = 0;
+  for (let i = 0; i < a.length; i += 1) {
+    mismatch |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  }
+  return mismatch === 0;
+}
+
+async function validAdminCookie(token: string | undefined, secret: string) {
+  if (!token || secret.length < 16) return false;
+  const [payloadB64, signature] = token.split(".");
+  if (!payloadB64 || !signature) return false;
+  const key = await crypto.subtle.importKey(
+    "raw",
+    encoder().encode(secret),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"],
+  );
+  const expected = toBase64Url(await crypto.subtle.sign("HMAC", key, encoder().encode(payloadB64)));
+  if (!timingEqual(signature, expected)) return false;
+  try {
+    const session = JSON.parse(fromBase64Url(payloadB64)) as { exp?: number };
+    return typeof session.exp === "number" && session.exp * 1000 > Date.now();
+  } catch {
+    return false;
+  }
 }
 
 export async function proxy(request: NextRequest) {
@@ -18,7 +63,8 @@ export async function proxy(request: NextRequest) {
 
   let ok = false;
   try {
-    ok = Boolean(parseSessionToken(request.cookies.get(SESSION_COOKIE)?.value));
+    const secret = (process.env.ADMIN_SESSION_SECRET ?? "").trim();
+    ok = await validAdminCookie(request.cookies.get(SESSION_COOKIE)?.value, secret);
   } catch {
     ok = false;
   }
