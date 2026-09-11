@@ -7,7 +7,6 @@ type Props = {
   /** Dark screen (Blitz) — home indicator becomes light. */
   dark?: boolean;
   tilt?: Tilt;
-  float?: boolean;
   glow?: "blue" | "green" | "amber" | "red" | "none";
   className?: string;
   label?: string;
@@ -31,14 +30,13 @@ export default function Phone({
   children,
   dark = false,
   tilt = "none",
-  float = false,
   glow = "blue",
   className = "",
   label,
 }: Props) {
   return (
     <figure
-      className={`lf-phone ${TILT[tilt]} ${GLOW[glow]} ${float ? "lf-phone-float" : ""} ${className}`}
+      className={`lf-phone ${TILT[tilt]} ${GLOW[glow]} ${className}`}
       aria-label={label ?? "Aperçu de l'application LearnFlow"}
     >
       <span className="lf-phone-btn lf-phone-btn-silent" aria-hidden />

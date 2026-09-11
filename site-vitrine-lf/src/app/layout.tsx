@@ -1,13 +1,19 @@
 import type { Metadata, Viewport } from "next";
-import { Poppins } from "next/font/google";
+import { Fraunces, Poppins } from "next/font/google";
 import SupportProvider from "../components/site/SupportProvider";
-import SpiraFloaters from "../components/site/SpiraFloaters";
 import "./globals.css";
 
 const poppins = Poppins({
   variable: "--font-poppins",
   subsets: ["latin"],
   weight: ["400", "500", "600", "700", "800", "900"],
+  display: "swap",
+});
+
+const fraunces = Fraunces({
+  variable: "--font-fraunces",
+  subsets: ["latin"],
+  weight: ["500", "600", "700"],
   display: "swap",
 });
 
@@ -58,17 +64,14 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
-  themeColor: "#0B1B3A",
+  themeColor: "#F6F3EE",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="fr" className={`${poppins.variable} h-full antialiased`}>
+    <html lang="fr" className={`${poppins.variable} ${fraunces.variable} h-full antialiased`}>
       <body className="flex min-h-dvh w-full max-w-[100vw] flex-col overflow-x-hidden font-sans">
-        <SupportProvider>
-          <SpiraFloaters />
-          {children}
-        </SupportProvider>
+        <SupportProvider>{children}</SupportProvider>
       </body>
     </html>
   );

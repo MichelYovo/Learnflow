@@ -1,6 +1,6 @@
 # Site vitrine LearnFlow
 
-Landing de présentation de l’app **LearnFlow** (collège / lycée, programme APC Togo), avec mockups téléphone custom.
+Landing de présentation de l’app **LearnFlow** (collège / lycée, programme APC Togo).
 
 Dossier : `LearnFlow/site-vitrine-lf` (package npm : `site-vitrine-lf`).
 
@@ -28,10 +28,10 @@ NEXT_PUBLIC_PLAY_URL=https://play.google.com/store/apps/details?id=tg.learnflow.
 NEXT_PUBLIC_APP_STORE_URL=https://apps.apple.com/app/idXXXXXXXX
 ```
 
-Contact : bouton **Support** (formulaire) — les messages arrivent dans l’admin, page Messages.
+Contact : bouton **Contact** (formulaire) — les messages arrivent dans l’admin, page Messages.
 
 ## Stack
 
-Next.js (App Router) · TypeScript · Tailwind CSS 4 · police Poppins · assets copiés depuis `LearnFlow/mobile/assets` (logo, Spira, badges, avatars, schémas).
+Next.js (App Router) · TypeScript · Tailwind CSS 4 · Fraunces (titres) + Poppins (texte) · assets copiés depuis `LearnFlow/mobile/assets` (logo, Spira, badges, avatars, schémas).
 
-Les téléphones sont des cadres HTML/CSS (Dynamic Island, boutons volume/power, glare) + UI fidèle à l’app (accueil, quiz 10/10, ligues, Blitz, fiche SVT, sas parent).
+Les téléphones du hero sont des cadres HTML/CSS (Dynamic Island, boutons volume/power) + UI fidèle à l’app. Pas d’animation de page, sauf le petit salut de Spira en bas.

@@ -47,38 +47,33 @@ const ITEMS = [
     q: "Je suis obligé de faire les ligues ?",
     a: "Non. Les ligues, c’est pour s’amuser : tu gagnes des points, tu montes de palier (Bronze, Argent, Or…), tu vois tes camarades. Si tu n’aimes pas le classement, tu n’es pas obligé d’y aller, et tu peux cacher ton prénom.",
   },
+  {
+    q: "LearnFlow est disponible maintenant ?",
+    a: "L’app arrive sur Google Play et l’App Store. En attendant, clique sur « Préviens-moi » ou écris-nous — on te dira dès que c’est en ligne.",
+  },
 ] as const;
 
 export default function Faq() {
   return (
-    <div className="mx-auto max-w-3xl space-y-3">
+    <div className="mx-auto max-w-3xl divide-y divide-[#1C1917]/10 border-y border-[#1C1917]/10">
       {ITEMS.map((item) => (
-        <details
-          key={item.q}
-          className="group rounded-[20px] border-2 border-[#F0EFEE] bg-white px-5 py-4 open:border-[#BAE0FF]"
-        >
-          <summary className="cursor-pointer list-none text-base font-extrabold text-[#1C1917] marker:content-none">
-            <span className="flex items-start justify-between gap-3 sm:gap-4">
-              <span className="min-w-0">{item.q}</span>
-              <span className="shrink-0 text-[#1677FF] transition group-open:rotate-45">+</span>
+        <details key={item.q} className="group py-5">
+          <summary className="cursor-pointer list-none marker:content-none">
+            <span className="flex items-start justify-between gap-4">
+              <span className="min-w-0 text-lg font-semibold text-[#1C1917]">{item.q}</span>
+              <span className="mt-0.5 shrink-0 text-xl font-medium text-[#5F5A55] group-open:hidden">+</span>
+              <span className="mt-0.5 hidden shrink-0 text-xl font-medium text-[#5F5A55] group-open:inline">−</span>
             </span>
           </summary>
-          <p className="mt-3 text-sm font-medium leading-relaxed text-[#64748B]">{item.a}</p>
+          <p className="mt-3 max-w-2xl text-sm font-medium leading-relaxed text-[#5F5A55]">{item.a}</p>
         </details>
       ))}
-      <details className="group rounded-[20px] border-2 border-[#F0EFEE] bg-white px-5 py-4 open:border-[#BAE0FF]">
-        <summary className="cursor-pointer list-none text-base font-extrabold text-[#1C1917] marker:content-none">
-          <span className="flex items-start justify-between gap-3 sm:gap-4">
-            Comment je télécharge l’app ?
-            <span className="shrink-0 text-[#1677FF] transition group-open:rotate-45">+</span>
-          </span>
-        </summary>
-        <p className="mt-3 text-sm font-medium leading-relaxed text-[#64748B]">
-          Bientôt sur Android et iPhone. En attendant, clique sur « Préviens-moi » en haut de la page, ou{" "}
-          <SupportButton className="font-extrabold text-[#1677FF] hover:underline">écris au support</SupportButton>{" "}
-          — on te dira dès que c’est en ligne.
-        </p>
-      </details>
+      <p className="py-5 text-sm font-medium text-[#5F5A55]">
+        Tu ne trouves pas ta réponse ?{" "}
+        <SupportButton className="font-extrabold text-[#1677FF] hover:underline">Écris-nous</SupportButton>
+        {" — "}
+        on t’explique comme en classe.
+      </p>
     </div>
   );
 }

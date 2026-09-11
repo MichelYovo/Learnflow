@@ -13,9 +13,9 @@ export default function LegalPage() {
   return (
     <>
       <Header />
-      <article className="mx-auto w-full max-w-3xl flex-1 px-[clamp(1rem,4vw,2rem)] py-10 sm:py-14">
+      <article className="mx-auto w-full max-w-3xl flex-1 px-[clamp(1.15rem,4.5vw,2.25rem)] py-12 sm:py-16">
         <p className="text-xs font-extrabold uppercase tracking-widest text-[#1677FF]">Légal</p>
-        <h1 className="lf-h1 mt-2 font-black text-[#1C1917]">Mentions légales</h1>
+        <h1 className="lf-h1 mt-2 text-[#1C1917]">Mentions légales</h1>
         <div className="mt-8 space-y-6 text-base font-medium leading-relaxed text-[#475569]">
           <p>
             <strong className="text-[#1C1917]">LearnFlow</strong> est une application mobile d’apprentissage pour
