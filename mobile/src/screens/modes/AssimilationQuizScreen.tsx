@@ -1,13 +1,12 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
 import { SafeAreaView } from "react-native-safe-area-context";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import CorrectBurst from "../../components/CorrectBurst";
 import Icon from "../../components/Icon";
 import QuizPlay from "../../components/quiz/QuizPlay";
+import SessionRecap, { useSessionStats } from "../../components/SessionRecap";
 import Spira from "../../components/Spira";
-import SpiraCelebrate from "../../components/SpiraCelebrate";
 import { questionsForChapter } from "../../data/modeContent";
 import { usePublishedCatalog } from "../../data/publishedCache";
 import { playSfx, preloadSfx } from "../../lib/sfx";
@@ -36,6 +35,7 @@ export default function AssimilationQuizScreen({ navigation, route }: Props) {
   const [done, setDone] = useState(false);
   const [result, setResult] = useState<{ xp: number; unlocked: boolean; challenger: boolean } | null>(null);
   const [burstKey, setBurstKey] = useState(0);
+  const recapStats = useSessionStats({ xp: result?.xp ?? 0, score, total: questions.length });
 
   const q = questions[current];
 
@@ -71,64 +71,45 @@ export default function AssimilationQuizScreen({ navigation, route }: Props) {
 
   if (done && result) {
     const perfect = result.unlocked;
-    if (loopErrors) {
-      const missed = missedRef.current;
-      return (
-        <SafeAreaView style={styles.safe}>
-          <LinearGradient
-            colors={perfect ? ["#10B981", "#059669"] : ["#F59E0B", "#D97706"]}
-            style={styles.resultHero}
-          >
-            {perfect ? <SpiraCelebrate size={220} /> : <Icon name="alert-circle" size={40} color={colors.white} />}
-            <Text style={styles.resultTitle}>{score}/{questions.length}</Text>
-            <Text style={styles.resultSub}>
-              {perfect
-                ? `Chapitre maîtrisé · +${result.xp} XP`
-                : "Sans chrono — on reboucle uniquement sur tes erreurs."}
-            </Text>
-          </LinearGradient>
-          <View style={styles.choices}>
-            {!perfect && missed.length > 0 ? (
-              <Pressable
-                style={styles.primary}
-                onPress={() => {
-                  setQueue(missed);
-                  missedRef.current = [];
-                  setDone(false);
-                  setCurrent(0);
-                  setScore(0);
-                  setSelected(null);
-                  setResult(null);
-                }}
-              >
-                <Text style={styles.primaryText}>Boucler sur les {missed.length} erreurs</Text>
-              </Pressable>
-            ) : (
-              <Pressable style={styles.primary} onPress={() => navigation.goBack()}>
-                <Text style={styles.primaryText}>Retour Cramming</Text>
-              </Pressable>
-            )}
-          </View>
-        </SafeAreaView>
-      );
-    }
+    const missed = missedRef.current;
     return (
-      <SafeAreaView style={styles.safe}>
-        <LinearGradient
-          colors={perfect ? ["#10B981", "#059669"] : ["#EF4444", "#DC2626"]}
-          style={styles.resultHero}
-        >
-          {perfect ? <SpiraCelebrate size={220} /> : <Icon name="alert-circle" size={40} color={colors.white} />}
-          <Text style={styles.resultTitle}>{perfect ? "Parfait !" : `${score}/{questions.length}`}</Text>
-          <Text style={styles.resultSub}>
-            {perfect
+      <SessionRecap
+        success={perfect}
+        title={perfect ? "Parfait !" : `${score}/${questions.length}`}
+        subtitle={
+          loopErrors
+            ? perfect
+              ? `Chapitre maîtrisé · +${result.xp} XP`
+              : "Sans chrono — on reboucle uniquement sur tes erreurs."
+            : perfect
               ? `Règle du 10/10 validée · +${result.xp} XP${result.challenger ? " · Badge CHALLENGER" : ""}`
-              : "Accès au Grand Quizz refusé — revois les points ratés"}
-          </Text>
-        </LinearGradient>
-
-        {perfect ? (
-          <View style={styles.choices}>
+              : "Accès au Grand Quizz refusé — revois les points ratés"
+        }
+        stats={recapStats}
+      >
+        {loopErrors ? (
+          !perfect && missed.length > 0 ? (
+            <Pressable
+              style={styles.primary}
+              onPress={() => {
+                setQueue(missed);
+                missedRef.current = [];
+                setDone(false);
+                setCurrent(0);
+                setScore(0);
+                setSelected(null);
+                setResult(null);
+              }}
+            >
+              <Text style={styles.primaryText}>Boucler sur les {missed.length} erreurs</Text>
+            </Pressable>
+          ) : (
+            <Pressable style={styles.primary} onPress={() => navigation.goBack()}>
+              <Text style={styles.primaryText}>Retour Cramming</Text>
+            </Pressable>
+          )
+        ) : perfect ? (
+          <>
             <Text style={styles.choiceLabel}>Étape 2 — Instant T</Text>
             <Pressable
               style={[styles.choiceCard, { borderColor: colors.mathsBorder, backgroundColor: colors.mathsBg }]}
@@ -153,14 +134,10 @@ export default function AssimilationQuizScreen({ navigation, route }: Props) {
                 <Text style={styles.muted}>Verrouille 1h + rappel local (démo)</Text>
               </View>
             </Pressable>
-          </View>
+          </>
         ) : (
-          <View style={styles.choices}>
-            <Spira scene="quiz.fail" size={88} />
-            <Pressable
-              style={styles.primary}
-              onPress={() => navigation.navigate("Course", { chapterId })}
-            >
+          <>
+            <Pressable style={styles.primary} onPress={() => navigation.navigate("Course", { chapterId })}>
               <Text style={styles.primaryText}>Revoir ce point (deep link cours)</Text>
             </Pressable>
             <Pressable
@@ -175,9 +152,9 @@ export default function AssimilationQuizScreen({ navigation, route }: Props) {
             >
               <Text style={styles.secondaryText}>Réessayer le quizz</Text>
             </Pressable>
-          </View>
+          </>
         )}
-      </SafeAreaView>
+      </SessionRecap>
     );
   }
 

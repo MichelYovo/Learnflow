@@ -112,11 +112,11 @@ export default function LigueScreen() {
           {isCurrent && sorted.length > 0 ? (
             <>
               {first && second && third ? (
-                <LeaguePodium first={first} second={second} third={third} />
+                <LeaguePodium first={first} second={second} third={third} tier={selectedTier} />
               ) : null}
               <Text style={[styles.section, { color: colors.textDark }]}>Classement</Text>
               {(first && second && third ? rest : sorted).map((player) => (
-                <LeagueLeaderboardRow key={`${player.studentId ?? player.name}-${player.rank}`} player={player} />
+                <LeagueLeaderboardRow key={`${player.studentId ?? player.name}-${player.rank}`} player={player} tier={selectedTier} />
               ))}
               <Pressable
                 accessibilityRole="button"

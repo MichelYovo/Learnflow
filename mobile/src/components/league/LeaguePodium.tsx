@@ -2,6 +2,7 @@ import React from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import type { LeaguePlayer } from "../../data/mock";
+import type { LigueNom } from "../../types/learnflow";
 import { useAppTheme } from "../../theme/useAppTheme";
 import Avatar from "../Avatar";
 import Icon from "../Icon";
@@ -10,7 +11,7 @@ type Props = {
   first: LeaguePlayer;
   second: LeaguePlayer;
   third: LeaguePlayer;
-  tier?: import("../../types/learnflow").LigueNom;
+  tier?: LigueNom;
 };
 
 const PLACE = {

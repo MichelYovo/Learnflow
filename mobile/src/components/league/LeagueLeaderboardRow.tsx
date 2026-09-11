@@ -1,6 +1,7 @@
 import React from "react";
 import { Pressable, Text, View } from "react-native";
 import type { LeaguePlayer } from "../../data/mock";
+import type { LigueNom } from "../../types/learnflow";
 import { useAppTheme } from "../../theme/useAppTheme";
 import Avatar from "../Avatar";
 import Icon from "../Icon";
@@ -8,7 +9,7 @@ import Icon from "../Icon";
 type Props = {
   player: LeaguePlayer;
   onPress?: () => void;
-  tier?: import("../../types/learnflow").LigueNom;
+  tier?: LigueNom;
 };
 
 export default function LeagueLeaderboardRow({ player, onPress, tier }: Props) {
