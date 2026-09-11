@@ -12,7 +12,6 @@ import LeagueBadge from "../../components/league/LeagueBadge";
 import MesMatieres from "../../components/MesMatieres";
 import ModeWorkSelector from "../../components/ModeWorkSelector";
 import FloatingChatbot from "../../components/FloatingChatbot";
-import Spira from "../../components/Spira";
 import { HomeSkeleton } from "../../components/ui";
 import { WEEK_BARS, AGENDA_MODE_CONFIG } from "../../data/mock";
 import { continueLessonForClass, programmeForClass, subjectShortcutsForClass } from "../../data/programme";
@@ -166,7 +165,6 @@ export default function HomeScreen() {
             </View>
           </Pressable>
           <View style={styles.heroSide}>
-            <Spira scene="tab.home" size={72} message="" animated={false} />
             <Pressable
               onPress={() => nav.navigate("Course", { chapterId: continueLesson.chapterId })}
               accessibilityRole="button"

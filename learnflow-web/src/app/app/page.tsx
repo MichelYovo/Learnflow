@@ -17,7 +17,6 @@ import { useAppTheme } from "@/theme/useAppTheme";
 import { MODE_DEFAULT_TOOLS, appModeToSessionMode, type AppMode } from "@/types/modes";
 import { AGENDA_MODE_CONFIG } from "@/data/mock";
 import { AppBar, AppMain } from "@/components/ui";
-import Spira from "@/components/Spira";
 
 export default function AccueilPage() {
   const router = useRouter();
@@ -119,15 +118,12 @@ export default function AccueilPage() {
                 <div className="h-full rounded-full bg-white" style={{ width: `${continueLesson.progress}%` }} />
               </div>
             </Link>
-            <div className="flex shrink-0 items-center justify-between gap-3 sm:flex-col sm:justify-center">
-              <Spira scene="tab.home" size={72} message="" animated={false} />
-              <Link
-                href={`/app/cours/${continueLesson.chapterId}`}
-                className="w-full rounded-2xl bg-white px-4 py-3 text-center text-[15px] font-extrabold text-[#1677FF] sm:w-auto sm:py-3.5 sm:text-[16px]"
-              >
-                Continuer
-              </Link>
-            </div>
+            <Link
+              href={`/app/cours/${continueLesson.chapterId}`}
+              className="w-full shrink-0 self-stretch rounded-2xl bg-white px-4 py-3 text-center text-[15px] font-extrabold text-[#1677FF] sm:w-auto sm:self-center sm:py-3.5 sm:text-[16px]"
+            >
+              Continuer
+            </Link>
           </div>
         </div>
 
