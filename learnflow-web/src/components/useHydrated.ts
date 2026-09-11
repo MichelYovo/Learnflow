@@ -22,7 +22,7 @@ export function useHydrated() {
 }
 
 export function ThemeSync() {
-  const darkMode = useLearnFlowStore((s) => s.settings.darkMode);
+  const darkMode = useLearnFlowStore((s) => Boolean(s.settings?.darkMode));
   useEffect(() => {
     document.documentElement.classList.toggle("dark", darkMode);
   }, [darkMode]);

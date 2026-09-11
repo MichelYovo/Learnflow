@@ -27,12 +27,17 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
   const [bootDone, setBootDone] = useState(false);
   const finishBoot = useCallback(() => setBootDone(true), []);
 
+  const isAuthRoute = AUTH_PATHS.some((p) => pathname === p) || pathname.startsWith("/auth/");
+  const isFocus = pathname === "/focus";
+  const isApp = pathname.startsWith("/app");
+  const isComplete = pathname === "/complete-profile";
+  const blockedApp =
+    (!onboardingCompleted && pathname !== "/onboarding") ||
+    (onboardingCompleted && !isAuthenticated && (isApp || pathname === "/profiles")) ||
+    (isAuthenticated && focusPromptPending && isApp);
+
   useEffect(() => {
     if (!ready || !bootDone) return;
-    const isAuthRoute = AUTH_PATHS.some((p) => pathname === p) || pathname.startsWith("/auth/");
-    const isFocus = pathname === "/focus";
-    const isApp = pathname.startsWith("/app");
-    const isComplete = pathname === "/complete-profile";
 
     if (!onboardingCompleted && pathname !== "/onboarding") {
       router.replace("/onboarding");
@@ -49,7 +54,19 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
     if (isAuthenticated && !focusPromptPending && !isComplete && (isAuthRoute || isFocus || pathname === "/")) {
       router.replace("/app");
     }
-  }, [ready, bootDone, pathname, onboardingCompleted, isAuthenticated, focusPromptPending, router]);
+  }, [
+    ready,
+    bootDone,
+    pathname,
+    onboardingCompleted,
+    isAuthenticated,
+    focusPromptPending,
+    router,
+    isApp,
+    isAuthRoute,
+    isFocus,
+    isComplete,
+  ]);
 
   if (!ready) {
     return <AnimatedSplash />;
@@ -57,6 +74,11 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
 
   if (!bootDone) {
     return <AnimatedSplash onFinish={finishBoot} />;
+  }
+
+  // Never mount Accueil / AppShell while redirecting — a throw there used to freeze /app on the splash.
+  if (blockedApp) {
+    return <AnimatedSplash />;
   }
 
   return <>{children}</>;

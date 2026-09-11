@@ -152,7 +152,7 @@ export default function AppTour() {
           color: colors.textDark,
           borderColor: colors.border,
           ...(placeAbove && hole
-            ? { bottom: window.innerHeight - hole.top + 14 }
+            ? { bottom: (typeof window !== "undefined" ? window.innerHeight : 800) - hole.top + 14 }
             : hole
               ? { top: hole.top + hole.height + 14 }
               : { bottom: 24 }),

@@ -87,7 +87,11 @@ export const ACHIEVEMENT_KEYS = [
 ];
 
 export function lomeDay(date = new Date()): string {
-  return date.toLocaleDateString("en-CA", { timeZone: "Africa/Lome" });
+  try {
+    return date.toLocaleDateString("en-CA", { timeZone: "Africa/Lome" });
+  } catch {
+    return date.toISOString().slice(0, 10);
+  }
 }
 
 export function emptyRewards(): RewardsState {
@@ -107,7 +111,9 @@ export function emptyRewards(): RewardsState {
 export function withDay(raw?: Partial<RewardsState> | null): RewardsState {
   const base = { ...emptyRewards(), ...(raw ?? {}) };
   const day = lomeDay();
-  if (base.day === day) return { ...emptyRewards(), ...base, day };
+  const completed = Array.isArray(base.completed) ? base.completed : [];
+  const progress = base.progress && typeof base.progress === "object" ? base.progress : {};
+  if (base.day === day) return { ...emptyRewards(), ...base, completed, progress, day };
   return {
     ...emptyRewards(),
     day,

@@ -7,7 +7,13 @@ import { useAppTheme } from "@/theme/useAppTheme";
 export default function DailyChallenges({ onOpen }: { onOpen: (id: ChallengeId) => void }) {
   const { colors } = useAppTheme();
   const rewards = useLearnFlowStore((s) => withDay(s.rewards));
-  const ease = useLearnFlowStore((s) => s.hasEaseBoost());
+  const ease = useLearnFlowStore((s) => {
+    try {
+      return s.hasEaseBoost();
+    } catch {
+      return false;
+    }
+  });
   const open = CHALLENGES.filter((c) => !rewards.completed.includes(c.id));
 
   return (

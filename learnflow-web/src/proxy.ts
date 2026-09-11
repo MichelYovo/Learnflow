@@ -23,8 +23,20 @@ function isPublicPath(pathname: string) {
   return false;
 }
 
+function isInternalNextRequest(request: NextRequest) {
+  const { pathname, searchParams } = request.nextUrl;
+  if (pathname.startsWith("/_next/")) return true;
+  if (searchParams.has("_rsc")) return true;
+  if (request.headers.get("rsc") === "1") return true;
+  if (request.headers.get("next-router-prefetch")) return true;
+  if (request.headers.get("next-router-segment-prefetch")) return true;
+  if (request.headers.get("next-router-state-tree")) return true;
+  return false;
+}
+
 export async function proxy(request: NextRequest) {
-  if (isPublicPath(request.nextUrl.pathname)) {
+  // Skip RSC / prefetch: a broad matcher + getUser() was returning 422 on /app.
+  if (isPublicPath(request.nextUrl.pathname) || isInternalNextRequest(request)) {
     return NextResponse.next();
   }
 

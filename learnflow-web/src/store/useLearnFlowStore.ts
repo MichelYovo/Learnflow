@@ -900,7 +900,7 @@ export const useLearnFlowStore = create<LearnFlowState>()(
           const profiles = mapped.length > 0 ? mapped : current.profiles;
           const persistedCards = Array.isArray(p.flashcards) ? p.flashcards : current.flashcards;
           const anyDue = persistedCards.some(
-            (c) => c.due || new Date(c.prochaineRevision).getTime() <= Date.now()
+            (c) => c && (c.due || new Date(c.prochaineRevision).getTime() <= Date.now())
           );
           const baseCards = anyDue ? persistedCards : current.flashcards;
           const have = new Set(baseCards.map((c) => c.id));

@@ -17,8 +17,9 @@ export function nextRevisionDate(difficulte: DifficulteFlash, currentInterval = 
 }
 
 export function cardsDueToday(cards: FlashcardData[]): FlashcardData[] {
+  if (!Array.isArray(cards)) return [];
   const now = new Date();
-  return cards.filter((c) => c.due || new Date(c.prochaineRevision) <= now);
+  return cards.filter((c) => c && (c.due || new Date(c.prochaineRevision) <= now));
 }
 
 export function daysUntilNext(difficulte: DifficulteFlash, currentInterval = 0): number {

@@ -87,6 +87,7 @@ export function mergePublishedProgramme(
     themes: s.themes.map((t) => ({ ...t, chapters: t.chapters.map((c) => ({ ...c, lessons: [...c.lessons] })) })),
   }));
   for (const row of mine) {
+    if (!row?.chapter_id || !row.payload || typeof row.payload !== "object") continue;
     const sid = (row.subject_id in SUBJECT_STYLE ? row.subject_id : "svt") as SubjectId;
     const packedLessons: ProgrammeLesson[] = (row.payload.lessons ?? []).map((l, i) =>
       L(l.id || `${row.chapter_id}-${i}`, l.title, l.duration || "12 min", l.xp || 50, i === 0 ? "current" : "locked"),

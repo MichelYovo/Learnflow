@@ -23,25 +23,31 @@ export default function AccueilPage() {
   const router = useRouter();
   const profile = useLearnFlowStore((s) => s.getActiveProfile());
   const ligue = useLearnFlowStore((s) => s.ligue);
-  const chapterProgress = useLearnFlowStore((s) => s.chapterProgress);
+  const chapterProgress = useLearnFlowStore((s) => s.chapterProgress ?? {});
   const setPendingMode = useLearnFlowStore((s) => s.setPendingMode);
   const setCustomTools = useLearnFlowStore((s) => s.setCustomTools);
-  const agendaSessions = useLearnFlowStore((s) => s.agendaSessions);
-  const flashcards = useLearnFlowStore((s) => s.flashcards);
-  const inbox = useLearnFlowStore((s) => s.inbox);
+  const agendaSessions = useLearnFlowStore((s) => (Array.isArray(s.agendaSessions) ? s.agendaSessions : []));
+  const flashcards = useLearnFlowStore((s) => (Array.isArray(s.flashcards) ? s.flashcards : []));
+  const inbox = useLearnFlowStore((s) => (Array.isArray(s.inbox) ? s.inbox : []));
   const ensureDailyChallenges = useLearnFlowStore((s) => s.ensureDailyChallenges);
   const { colors, darkMode } = useAppTheme();
   const catalogEpoch = usePublishedCatalog();
-  const weekXp = ligue.scoreHebdo;
+  const weekXp = ligue?.scoreHebdo ?? 0;
   const weekChart = EMPTY_WEEK_CHART;
-  const continueLesson = useMemo(
-    () => continueLessonForLearner(profile.classe, profile.id, chapterProgress),
-    [profile.classe, profile.id, chapterProgress, catalogEpoch],
-  );
-  const shortcuts = useMemo(
-    () => subjectShortcutsForLearner(profile.classe, profile.id, chapterProgress),
-    [profile.classe, profile.id, chapterProgress, catalogEpoch],
-  );
+  const continueLesson = useMemo(() => {
+    try {
+      return continueLessonForLearner(profile?.classe, profile?.id, chapterProgress);
+    } catch {
+      return continueLessonForLearner("3eme");
+    }
+  }, [profile?.classe, profile?.id, chapterProgress, catalogEpoch]);
+  const shortcuts = useMemo(() => {
+    try {
+      return subjectShortcutsForLearner(profile?.classe, profile?.id, chapterProgress);
+    } catch {
+      return [];
+    }
+  }, [profile?.classe, profile?.id, chapterProgress, catalogEpoch]);
   const [selectedMode, setSelectedMode] = useState<AppMode | null>(null);
   const dueCount = cardsDueToday(flashcards).length;
   const unread = inbox.filter((n) => !n.read).length;
@@ -49,22 +55,24 @@ export default function AccueilPage() {
   const todaySessions = agendaSessions
     .filter((s) => s.day === todayIdx)
     .sort((a, b) => a.hour * 60 + a.minute - (b.hour * 60 + b.minute));
-  const totalDone = useMemo(
-    () =>
-      programmeForLearner(profile.classe, profile.id, chapterProgress).reduce(
+  const totalDone = useMemo(() => {
+    try {
+      return programmeForLearner(profile?.classe, profile?.id, chapterProgress).reduce(
         (a, s) => a + s.themes.reduce((b, t) => b + t.lessonsDone, 0),
         0,
-      ),
-    [profile.classe, profile.id, chapterProgress, catalogEpoch],
-  );
-  const greetingName = (profile.firstName || profile.nom || "").trim() || "toi";
+      );
+    } catch {
+      return 0;
+    }
+  }, [profile?.classe, profile?.id, chapterProgress, catalogEpoch]);
+  const greetingName = (profile?.firstName || profile?.nom || "").trim() || "toi";
   const nextLigue = useMemo(() => {
-    if (ligue.nomLigue === "Bronze") return "Argent";
-    if (ligue.nomLigue === "Argent") return "Or";
-    if (ligue.nomLigue === "Or") return "Platine";
-    if (ligue.nomLigue === "Platine") return "Diamant";
+    if (ligue?.nomLigue === "Bronze") return "Argent";
+    if (ligue?.nomLigue === "Argent") return "Or";
+    if (ligue?.nomLigue === "Or") return "Platine";
+    if (ligue?.nomLigue === "Platine") return "Diamant";
     return null;
-  }, [ligue.nomLigue]);
+  }, [ligue?.nomLigue]);
 
   const openMode = (mode: AppMode) => {
     setSelectedMode(mode);
@@ -77,14 +85,18 @@ export default function AccueilPage() {
   };
 
   useEffect(() => {
-    ensureDailyChallenges();
+    try {
+      ensureDailyChallenges();
+    } catch {
+      /* persisted rewards may be malformed */
+    }
   }, [ensureDailyChallenges]);
 
   return (
     <div>
       <AppBar bordered={false} innerClassName="justify-between gap-2 py-3.5 sm:gap-3">
         <Link href="/app/profil" className="flex min-w-0 items-center gap-2 sm:gap-3">
-          <Avatar avatarId={profile.avatarId} size={40} initials={profile.firstName} fallbackColor={profile.color} tier={ligue.nomLigue} />
+          <Avatar avatarId={profile?.avatarId} size={40} initials={profile?.firstName} fallbackColor={profile?.color} tier={ligue?.nomLigue} />
           <span className="min-w-0">
             <span className="block text-[12px] font-semibold sm:text-[13px]" style={{ color: colors.textSecondary }}>
               Salut
@@ -97,11 +109,11 @@ export default function AccueilPage() {
         <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
           <span className="flex items-center gap-1 rounded-[14px] bg-[#FEF3C7] px-2 py-1.5 text-[13px] font-extrabold text-[#D97706] sm:px-2.5 sm:py-2 sm:text-[14px]">
             <Icon name="flame" size={16} color="#D97706" />
-            {profile.streak}
+            {profile?.streak ?? 0}
           </span>
           <span className="hidden items-center gap-1 rounded-[14px] bg-[#FEF3C7] px-2.5 py-2 text-[14px] font-extrabold text-[#D97706] min-[420px]:flex">
             <Icon name="zap" size={16} color="#D97706" />
-            {profile.xpTotale.toLocaleString("fr-FR")}
+            {Number(profile?.xpTotale ?? 0).toLocaleString("fr-FR")}
           </span>
           <Link href="/app/inbox" className="relative flex h-9 w-9 items-center justify-center rounded-full sm:h-10 sm:w-10" style={{ background: colors.surfaceAlt }}>
             <Icon name="bell" size={18} color={colors.textDark} />
@@ -164,8 +176,8 @@ export default function AccueilPage() {
                   {String(s.hour).padStart(2, "0")}:{String(s.minute).padStart(2, "0")}
                 </span>
                 <span className="flex-1 text-[16px] font-bold">{s.subject}</span>
-                <span className="text-xs font-extrabold" style={{ color: AGENDA_MODE_CONFIG[s.mode].color }}>
-                  {AGENDA_MODE_CONFIG[s.mode].label}
+                <span className="text-xs font-extrabold" style={{ color: AGENDA_MODE_CONFIG[s.mode]?.color ?? colors.primary }}>
+                  {AGENDA_MODE_CONFIG[s.mode]?.label ?? s.mode}
                 </span>
               </div>
             ))}
@@ -212,15 +224,15 @@ export default function AccueilPage() {
             borderColor: darkMode ? "#78350F" : "#FDE68A",
           }}
         >
-          <LeagueBadge nom={ligue.nomLigue} size={56} />
+          <LeagueBadge nom={ligue?.nomLigue ?? "Bronze"} size={56} />
           <div className="min-w-0 flex-1">
             <p className="text-[17px] font-extrabold" style={{ color: darkMode ? "#FDE68A" : "#1C1917" }}>
-              Ligue {ligue.nomLigue}
+              Ligue {ligue?.nomLigue ?? "Bronze"}
             </p>
-            <p className="mt-0.5 text-[15px] font-semibold text-[#D97706]">#{ligue.rangActuel}</p>
+            <p className="mt-0.5 text-[15px] font-semibold text-[#D97706]">#{ligue?.rangActuel ?? 1}</p>
             {nextLigue ? (
               <div className="mt-2.5 h-2 overflow-hidden rounded-full bg-[#FDE68A]">
-                <div className="h-full rounded-full bg-[#F59E0B]" style={{ width: `${Math.min(100, ligue.scoreHebdo)}%` }} />
+                <div className="h-full rounded-full bg-[#F59E0B]" style={{ width: `${Math.min(100, ligue?.scoreHebdo ?? 0)}%` }} />
               </div>
             ) : null}
           </div>
