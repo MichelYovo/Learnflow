@@ -35,6 +35,38 @@ export const FICHES: Record<string, FicheCoursData> = {
       "Le discriminant Δ",
       "Un feu tricolore : vert (2), orange (1), rouge (0).",
     ),
+    situationProbleme: {
+      recit:
+        "Koffi veut clôturer un jardin rectangulaire. La longueur dépasse la largeur de 5 m, et l'aire vaut 6 m². Il cherche les deux dimensions exactes.",
+      question: "Comment trouver deux nombres dont la différence est 5 et le produit 6 ?",
+      competenceVisee:
+        "Résoudre une équation du second degré à coefficients réels et interpréter le nombre de solutions selon le signe de Δ. Utiliser les relations de Viète pour contrôler un résultat.",
+    },
+    exempleResolu: {
+      enonce: "Résoudre dans ℝ : x² − 5x + 6 = 0.",
+      etapes: [
+        { titre: "Identifier a, b, c", texte: "a = 1, b = −5, c = 6 (et a ≠ 0 : c'est bien du 2nd degré)." },
+        { titre: "Calculer Δ", texte: "Δ = b² − 4ac = 25 − 24 = 1. Or 1 > 0 : deux racines réelles distinctes." },
+        { titre: "Les racines", texte: "x = (−b ± √Δ) / 2a = (5 ± 1) / 2. Donc x₁ = 2 et x₂ = 3." },
+      ],
+      reponseFinale: "S = {2 ; 3}. Contrôle Viète : somme 5 = −b/a, produit 6 = c/a.",
+    },
+    miniQuiz: [
+      {
+        id: "eq2-mini-1",
+        enonceQuestion: "Quelle est la formule du discriminant ?",
+        optionsProposees: ["Δ = b² + 4ac", "Δ = b² − 4ac", "Δ = 2b − 4ac", "Δ = b − 4ac"],
+        indexReponseCorrecte: 1,
+        explicationPedagogique: "Le discriminant est Δ = b² − 4ac.",
+      },
+      {
+        id: "eq2-mini-2",
+        enonceQuestion: "Si Δ = 0, combien de solutions l'équation possède-t-elle ?",
+        optionsProposees: ["Aucune", "Une racine double", "Deux distinctes", "Infinité"],
+        indexReponseCorrecte: 1,
+        explicationPedagogique: "Quand Δ = 0, racine double x = −b / 2a.",
+      },
+    ],
     sectionsDetaillees: [
       {
         id: "competence",
@@ -67,14 +99,6 @@ export const FICHES: Record<string, FicheCoursData> = {
         paragraphes: [
           "Si les **racines** existent : x₁ + x₂ = **−b/a** et x₁ · x₂ = **c/a**.",
           "Astuce de contrôle : après calcul, vérifie somme et produit — une erreur de signe se voit tout de suite.",
-        ],
-      },
-      {
-        id: "exemple",
-        titre: "Exemple guidé",
-        paragraphes: [
-          "x² − 5x + 6 = 0 → a = 1, b = −5, c = 6 → Δ = 25 − 24 = **1 > 0**.",
-          "x₁ = (5 − 1)/2 = 2, x₂ = (5 + 1)/2 = 3. Somme 5 = −b/a, produit 6 = c/a. C'est cohérent.",
         ],
       },
     ],
@@ -191,6 +215,48 @@ export const FICHES: Record<string, FicheCoursData> = {
       "Tube digestif",
       "Une usine à la chaîne : broyer, transformer, trier, jeter.",
     ),
+    situationProbleme: {
+      recit:
+        "À la cantine, Ama avale trop vite un foutou. Dix minutes plus tard, elle se demande où est passé le repas et comment son corps va en tirer de l'énergie pour le cours de l'après-midi.",
+      question: "Par où passent les aliments, et où les nutriments rejoignent-ils le sang ?",
+      competenceVisee:
+        "Expliquer le trajet des aliments, distinguer digestion mécanique et chimique, et localiser l'absorption des nutriments.",
+    },
+    exempleResolu: {
+      enonce:
+        "On te donne un schéma de l'appareil digestif. Relie la bouche, l'estomac et l'intestin grêle à leur rôle principal.",
+      etapes: [
+        {
+          titre: "Bouche",
+          texte: "Mastication (mécanique) + amylase salivaire (chimique) : l'amidon commence à être hydrolysé.",
+        },
+        {
+          titre: "Estomac",
+          texte: "Brassage + pepsine et HCl : les protéines sont attaquées ; le chyme se forme.",
+        },
+        {
+          titre: "Intestin grêle",
+          texte: "Sucs pancréatiques, bile, villosités : l'essentiel de l'absorption des nutriments.",
+        },
+      ],
+      reponseFinale: "Bouche = début amidon ; estomac = protéines ; intestin grêle = absorption.",
+    },
+    miniQuiz: [
+      {
+        id: "digest-mini-1",
+        enonceQuestion: "Où commence la digestion chimique de l'amidon ?",
+        optionsProposees: ["Estomac", "Bouche", "Intestin grêle", "Gros intestin"],
+        indexReponseCorrecte: 1,
+        explicationPedagogique: "L'amylase salivaire commence à hydrolyser l'amidon dès la bouche.",
+      },
+      {
+        id: "digest-mini-2",
+        enonceQuestion: "Où se fait l'essentiel de l'absorption des nutriments ?",
+        optionsProposees: ["Estomac", "Gros intestin", "Intestin grêle", "Bouche"],
+        indexReponseCorrecte: 2,
+        explicationPedagogique: "Les villosités de l'intestin grêle maximisent la surface d'échange.",
+      },
+    ],
     sectionsDetaillees: [
       {
         id: "competence",
@@ -649,8 +715,8 @@ function fallbackFiche(chapitreId: string): FicheCoursData {
     : chapitreId === "digest"
       ? "2d"
       : undefined;
-  const essentialText = `« ${titre} » : retiens le fil du chapitre, pas le détail des preuves.\n\n• Les [définitions] et les [propriétés] sont les mots cardinaux à restituer.\n• Relie chaque [notion] à un exemple du programme de ta classe.\n• Vérifie-toi ensuite avec le [quizz] d'assimilation 10/10.\n\nCette synthèse est autonome : elle ne recopie pas En Détails. Passe à l'autre onglet pour le cours APC développé.`;
-  const detailedText = `Compétence visée (APC)\n\nMobiliser les savoirs du chapitre « ${titre} » pour résoudre une situation-problème conforme au programme. Tu dois pouvoir définir les objets, appliquer les méthodes, et justifier chaque étape.\n\nSavoirs\n\nLe cours développé pose d'abord le vocabulaire, puis les propriétés et les relations entre elles. Chaque définition doit pouvoir être reformulée sans recopier. Les cas particuliers et les conditions d'application font partie du savoir, pas d'un à-côté. Les enchaînements du raisonnement (hypothèses, théorème, conclusion) sont aussi importants que le résultat numérique.\n\nSavoir-faire\n\nEn situation, tu identifies la notion utile, tu choisis une méthode, tu mènes le calcul ou le raisonnement, puis tu contrôles le résultat (unité, ordre de grandeur, cohérence avec l'énoncé). Le schéma, s'il existe, sert à ancrer le raisonnement. Le quizz d'assimilation 10/10 vérifie que tu peux restituer sans relire la fiche.`;
+  const essentialText = `« ${titre} » : retiens le fil du chapitre, pas le détail des preuves.\n\n• Les [définitions] et les [propriétés] sont les mots cardinaux à restituer.\n• Relie chaque [notion] à un exemple du programme de ta classe.\n• Vérifie-toi ensuite avec le [quizz] d'assimilation 10/10.\n\nCette fiche réflexe est autonome : elle ne recopie pas En Détails. Passe à l'autre onglet pour la situation-problème, l'exemple résolu et 2 QCM.`;
+  const detailedText = `Savoirs\n\nLe cours développé pose d'abord le vocabulaire, puis les propriétés et les relations entre elles. Chaque définition doit pouvoir être reformulée sans recopier. Les cas particuliers et les conditions d'application font partie du savoir, pas d'un à-côté. Les enchaînements du raisonnement (hypothèses, théorème, conclusion) sont aussi importants que le résultat numérique.\n\nSavoir-faire\n\nEn situation, tu identifies la notion utile, tu choisis une méthode, tu mènes le calcul ou le raisonnement, puis tu contrôles le résultat (unité, ordre de grandeur, cohérence avec l'énoncé). Le schéma, s'il existe, sert à ancrer le raisonnement.`;
   return {
     chapitreId,
     titre,
@@ -669,14 +735,47 @@ function fallbackFiche(chapitreId: string): FicheCoursData {
       titre,
       "Un exemple du quotidien pour ancrer la notion.",
     ),
-    sectionsDetaillees: [
+    situationProbleme: {
+      recit: `Tu retrouves « ${titre} » dans un problème de la vie courante ou d'un devoir : il faut choisir la bonne méthode, pas recopier la leçon.`,
+      question: "Quelle méthode du cours permet de résoudre cette situation ?",
+      competenceVisee: `Mobiliser les savoirs du chapitre « ${titre} » pour résoudre une situation-problème conforme au programme.`,
+    },
+    exempleResolu: {
+      enonce: `Un exercice type du chapitre « ${titre} ».`,
+      etapes: [
+        { titre: "Identifier", texte: "Repère la notion utile et les données de l'énoncé." },
+        { titre: "Appliquer", texte: "Choisis la méthode du cours et mène le raisonnement pas à pas." },
+        { titre: "Contrôler", texte: "Vérifie l'unité, l'ordre de grandeur et la cohérence avec l'énoncé." },
+      ],
+      reponseFinale: "Le résultat est cohérent avec l'énoncé et la fiche réflexe.",
+    },
+    miniQuiz: [
       {
-        id: "competence",
-        titre: "Compétence visée (APC)",
-        paragraphes: [
-          `Mobiliser les savoirs du chapitre « ${titre} » pour résoudre une situation-problème conforme au programme.`,
+        id: `${chapitreId}-mini-1`,
+        enonceQuestion: `À quoi sert la fiche réflexe du chapitre « ${titre} » ?`,
+        optionsProposees: [
+          "Retenir formules et définitions clés",
+          "Remplacer le quiz d'assimilation",
+          "Copier En Détails en plus court",
+          "Sauter les exercices",
         ],
+        indexReponseCorrecte: 0,
+        explicationPedagogique: "L'Essentiel est une fiche réflexe autonome : formules, définitions, mots-clés.",
       },
+      {
+        id: `${chapitreId}-mini-2`,
+        enonceQuestion: "Après ces 2 questions, que dois-tu faire ?",
+        optionsProposees: [
+          "Passer le quizz d'assimilation (10 questions)",
+          "Fermer l'application",
+          "Relire uniquement l'analogie",
+          "Ignorer l'exemple résolu",
+        ],
+        indexReponseCorrecte: 0,
+        explicationPedagogique: "La mini-autoévaluation vérifie la compréhension ; le quiz d'assimilation 10/10 vient ensuite.",
+      },
+    ],
+    sectionsDetaillees: [
       {
         id: "savoirs",
         titre: "Savoirs",

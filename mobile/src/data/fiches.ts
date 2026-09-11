@@ -35,6 +35,38 @@ export const FICHES: Record<string, FicheCoursData> = {
       "Le discriminant Δ",
       "Un feu tricolore : vert (2), orange (1), rouge (0).",
     ),
+    situationProbleme: {
+      recit:
+        "Koffi veut clôturer un jardin rectangulaire. La longueur dépasse la largeur de 5 m, et l'aire vaut 6 m². Il cherche les deux dimensions exactes.",
+      question: "Comment trouver deux nombres dont la différence est 5 et le produit 6 ?",
+      competenceVisee:
+        "Résoudre une équation du second degré à coefficients réels et interpréter le nombre de solutions selon le signe de Δ. Utiliser les relations de Viète pour contrôler un résultat.",
+    },
+    exempleResolu: {
+      enonce: "Résoudre dans ℝ : x² − 5x + 6 = 0.",
+      etapes: [
+        { titre: "Identifier a, b, c", texte: "a = 1, b = −5, c = 6 (et a ≠ 0 : c'est bien du 2nd degré)." },
+        { titre: "Calculer Δ", texte: "Δ = b² − 4ac = 25 − 24 = 1. Or 1 > 0 : deux racines réelles distinctes." },
+        { titre: "Les racines", texte: "x = (−b ± √Δ) / 2a = (5 ± 1) / 2. Donc x₁ = 2 et x₂ = 3." },
+      ],
+      reponseFinale: "S = {2 ; 3}. Contrôle Viète : somme 5 = −b/a, produit 6 = c/a.",
+    },
+    miniQuiz: [
+      {
+        id: "eq2-mini-1",
+        enonceQuestion: "Quelle est la formule du discriminant ?",
+        optionsProposees: ["Δ = b² + 4ac", "Δ = b² − 4ac", "Δ = 2b − 4ac", "Δ = b − 4ac"],
+        indexReponseCorrecte: 1,
+        explicationPedagogique: "Le discriminant est Δ = b² − 4ac.",
+      },
+      {
+        id: "eq2-mini-2",
+        enonceQuestion: "Si Δ = 0, combien de solutions l'équation possède-t-elle ?",
+        optionsProposees: ["Aucune", "Une racine double", "Deux distinctes", "Infinité"],
+        indexReponseCorrecte: 1,
+        explicationPedagogique: "Quand Δ = 0, racine double x = −b / 2a.",
+      },
+    ],
     sectionsDetaillees: [
       {
         id: "competence",
@@ -67,14 +99,6 @@ export const FICHES: Record<string, FicheCoursData> = {
         paragraphes: [
           "Si les **racines** existent : x₁ + x₂ = **−b/a** et x₁ · x₂ = **c/a**.",
           "Astuce de contrôle : après calcul, vérifie somme et produit — une erreur de signe se voit tout de suite.",
-        ],
-      },
-      {
-        id: "exemple",
-        titre: "Exemple guidé",
-        paragraphes: [
-          "x² − 5x + 6 = 0 → a = 1, b = −5, c = 6 → Δ = 25 − 24 = **1 > 0**.",
-          "x₁ = (5 − 1)/2 = 2, x₂ = (5 + 1)/2 = 3. Somme 5 = −b/a, produit 6 = c/a. C'est cohérent.",
         ],
       },
     ],
