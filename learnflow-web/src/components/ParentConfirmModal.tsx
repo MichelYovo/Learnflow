@@ -19,27 +19,27 @@ export default function ParentConfirmModal() {
 
   useEffect(() => {
     if (!authenticated || !isCloudProfileId(profile.id)) {
-      setMode(null);
+      setMode((m) => (m === null ? m : null));
       return;
     }
     if (pathname.startsWith("/app/profil") || pathname.startsWith("/app/settings")) {
-      setMode(null);
+      setMode((m) => (m === null ? m : null));
       return;
     }
     const phone = profile.parentPhone || "";
     if (!phone) {
-      setMode(null);
+      setMode((m) => (m === null ? m : null));
       return;
     }
     if (!isValidTogoLocal(phone)) {
-      setMode("invalid");
+      setMode((m) => (m === "invalid" ? m : "invalid"));
       return;
     }
     if (hasParentConfirmed(profile.id)) {
-      setMode(null);
+      setMode((m) => (m === null ? m : null));
       return;
     }
-    setMode("confirm");
+    setMode((m) => (m === "confirm" ? m : "confirm"));
   }, [authenticated, pathname, profile.id, profile.parentPhone]);
 
   if (!mode || !profile.parentPhone) return null;

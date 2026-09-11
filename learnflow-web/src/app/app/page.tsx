@@ -19,16 +19,19 @@ import { MODE_DEFAULT_TOOLS, appModeToSessionMode, type AppMode } from "@/types/
 import { AGENDA_MODE_CONFIG } from "@/data/mock";
 import { AppBar, AppMain } from "@/components/ui";
 
+const EMPTY_PROGRESS: Record<string, never> = {};
+const EMPTY_LIST: never[] = [];
+
 export default function AccueilPage() {
   const router = useRouter();
   const profile = useLearnFlowStore((s) => s.getActiveProfile());
   const ligue = useLearnFlowStore((s) => s.ligue);
-  const chapterProgress = useLearnFlowStore((s) => s.chapterProgress ?? {});
+  const chapterProgress = useLearnFlowStore((s) => s.chapterProgress || EMPTY_PROGRESS);
   const setPendingMode = useLearnFlowStore((s) => s.setPendingMode);
   const setCustomTools = useLearnFlowStore((s) => s.setCustomTools);
-  const agendaSessions = useLearnFlowStore((s) => (Array.isArray(s.agendaSessions) ? s.agendaSessions : []));
-  const flashcards = useLearnFlowStore((s) => (Array.isArray(s.flashcards) ? s.flashcards : []));
-  const inbox = useLearnFlowStore((s) => (Array.isArray(s.inbox) ? s.inbox : []));
+  const agendaSessions = useLearnFlowStore((s) => (Array.isArray(s.agendaSessions) ? s.agendaSessions : EMPTY_LIST));
+  const flashcards = useLearnFlowStore((s) => (Array.isArray(s.flashcards) ? s.flashcards : EMPTY_LIST));
+  const inbox = useLearnFlowStore((s) => (Array.isArray(s.inbox) ? s.inbox : EMPTY_LIST));
   const ensureDailyChallenges = useLearnFlowStore((s) => s.ensureDailyChallenges);
   const { colors, darkMode } = useAppTheme();
   const catalogEpoch = usePublishedCatalog();

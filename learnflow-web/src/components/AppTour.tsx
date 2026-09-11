@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import Spira from "./Spira";
 import type { SpiraMoodId } from "@/data/spira";
@@ -70,30 +70,47 @@ function visibleTarget(selectors: string[]): HTMLElement | null {
   return null;
 }
 
+function sameBox(a: DOMRect | null, b: DOMRect) {
+  if (!a) return false;
+  return a.top === b.top && a.left === b.left && a.width === b.width && a.height === b.height;
+}
+
 export default function AppTour() {
   const pathname = usePathname();
   const { colors } = useAppTheme();
   const done = useLearnFlowStore((s) => s.appTourCompleted);
+  const authenticated = useLearnFlowStore((s) => s.isAuthenticated);
   const complete = useLearnFlowStore((s) => s.completeAppTour);
   const [step, setStep] = useState(0);
   const [rect, setRect] = useState<DOMRect | null>(null);
+  const [vh, setVh] = useState(800);
+  const measuring = useRef(false);
 
-  const active = !done && pathname === "/app";
+  const active = authenticated && !done && pathname === "/app";
   const current = STEPS[step];
 
   const measure = useCallback(() => {
-    if (!active || !current) return;
+    if (!active || !current || measuring.current) return;
+    measuring.current = true;
     const el = visibleTarget(current.targets);
     if (!el) {
-      setRect(null);
-      return;
+      setRect((prev) => (prev === null ? prev : null));
+    } else {
+      const next = el.getBoundingClientRect();
+      setRect((prev) => (sameBox(prev, next) ? prev : next));
     }
-    el.scrollIntoView({ block: "nearest", inline: "nearest" });
-    setRect(el.getBoundingClientRect());
+    measuring.current = false;
   }, [active, current]);
 
   useEffect(() => {
-    if (!active) return;
+    if (!active || !current) return;
+    setVh(window.innerHeight);
+
+    const el = visibleTarget(current.targets);
+    if (el) {
+      el.scrollIntoView({ block: "nearest", inline: "nearest" });
+    }
+
     const t = window.setTimeout(measure, 80);
     const skip = window.setTimeout(() => {
       if (!visibleTarget(current.targets)) {
@@ -101,15 +118,18 @@ export default function AppTour() {
         else setStep((s) => s + 1);
       }
     }, 700);
-    window.addEventListener("resize", measure);
-    window.addEventListener("scroll", measure, true);
+
+    const onResize = () => {
+      setVh(window.innerHeight);
+      measure();
+    };
+    window.addEventListener("resize", onResize);
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     return () => {
       window.clearTimeout(t);
       window.clearTimeout(skip);
-      window.removeEventListener("resize", measure);
-      window.removeEventListener("scroll", measure, true);
+      window.removeEventListener("resize", onResize);
       document.body.style.overflow = prev;
     };
   }, [active, measure, step, current, complete]);
@@ -152,7 +172,7 @@ export default function AppTour() {
           color: colors.textDark,
           borderColor: colors.border,
           ...(placeAbove && hole
-            ? { bottom: (typeof window !== "undefined" ? window.innerHeight : 800) - hole.top + 14 }
+            ? { bottom: vh - hole.top + 14 }
             : hole
               ? { top: hole.top + hole.height + 14 }
               : { bottom: 24 }),
