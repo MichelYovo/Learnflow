@@ -114,8 +114,9 @@ function stemFromPuce(text: string, titre: string, keywords: string[]): { stem: 
   if (t.length < 18) return null;
   const labeled = t.match(/^(.{10,80}?)\s*[:：]\s+(.{12,})$/);
   if (labeled) {
+    const left = labeled[1].trim().replace(/\?$/, "");
     return {
-      stem: `${labeled[1].trim().replace(/\?$/, "")} ?`,
+      stem: left.length < 28 ? `${left} — que retenir ?` : `${left} ?`,
       correct: clip(labeled[2], 110),
     };
   }
