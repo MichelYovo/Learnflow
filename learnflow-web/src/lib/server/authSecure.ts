@@ -1,6 +1,6 @@
 import { createHash, randomInt, timingSafeEqual } from "crypto";
 import { createClient } from "@supabase/supabase-js";
-import { isLikelyTogoMobile } from "@/lib/phoneTogo";
+import { isValidTogoLocal } from "@/lib/phoneTogo";
 
 const OTP_TTL_MS = 10 * 60 * 1000;
 const OTP_MAX_ATTEMPTS = 10;
@@ -566,7 +566,7 @@ export async function handleLoginNotice(
 
   const parentPhone = student?.parent_phone?.trim() ?? "";
   const welcomeEvents = new Set(["signup", "parent_linked"]);
-  if (parentPhone && welcomeEvents.has(event) && isLikelyTogoMobile(parentPhone)) {
+  if (parentPhone && welcomeEvents.has(event) && isValidTogoLocal(parentPhone)) {
     const text =
       `LearnFlow — suivi parental\n\n` +
       `Bonjour,\n\n` +

@@ -4,7 +4,7 @@ import { useNavigation } from "@react-navigation/native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { isCloudProfileId } from "../data/mock";
 import { hasParentConfirmed, markParentConfirmed } from "../lib/parentConfirm";
-import { isLikelyTogoMobile, maskTogoPhone } from "../lib/phoneTogo";
+import { isValidTogoLocal, maskTogoPhone } from "../lib/phoneTogo";
 import { notifySecureLogin } from "../lib/secureAuth";
 import { useLearnFlowStore } from "../store/useLearnFlowStore";
 import { useAppTheme } from "../theme/useAppTheme";
@@ -27,7 +27,7 @@ export default function ParentConfirmModal() {
       setMode(null);
       return;
     }
-    if (!isLikelyTogoMobile(phone)) {
+    if (!isValidTogoLocal(phone)) {
       setMode("invalid");
       return;
     }
@@ -66,11 +66,10 @@ export default function ParentConfirmModal() {
             <>
               <Text style={styles.kickerInvalid}>Numéro à corriger</Text>
               <Text style={[styles.title, { color: colors.textDark }]}>
-                Ce WhatsApp parent n’est pas un mobile Togo
+                Ce WhatsApp parent n’est pas un numéro Togo
               </Text>
               <Text style={[styles.sub, { color: colors.textMuted }]}>
-                Tu as enregistré {maskTogoPhone(profile.parentPhone)}. Un numéro Togo commence par 7 (Moov) ou 9
-                (Togocel).
+                Tu as enregistré {maskTogoPhone(profile.parentPhone)}. Un numéro Togo fait 8 chiffres après +228.
               </Text>
               <Pressable onPress={goFix} style={styles.primary}>
                 <Text style={styles.primaryText}>Corriger le numéro</Text>

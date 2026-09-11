@@ -1,7 +1,7 @@
 "use client";
 
 import { useAppTheme } from "@/theme/useAppTheme";
-import { isLikelyTogoMobile, normalizeTogoLocal, TOGO_PREFIX } from "@/lib/phoneTogo";
+import { normalizeTogoLocal, TOGO_PREFIX } from "@/lib/phoneTogo";
 
 export const PARENT_PHONE_LABEL = "WhatsApp de ton père, ta mère ou ton tuteur";
 export const PARENT_PHONE_HINT =
@@ -57,11 +57,6 @@ export default function ParentPhoneField({
           />
         </div>
       </label>
-      {value.length === 8 && !isLikelyTogoMobile(value) ? (
-        <p className="mt-1.5 text-[11px] font-bold text-[#EF4444]">
-          Mobile Togo uniquement : commence par 7 (Moov) ou 9 (Togocel).
-        </p>
-      ) : null}
       {value.length > 0 && onConfirmChange ? (
         <label className="mt-2 flex items-start gap-2 rounded-2xl px-3 py-2.5" style={{ background: colors.surfaceAlt }}>
           <input

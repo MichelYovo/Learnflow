@@ -144,7 +144,7 @@ export default function ParentStudio({
       <article className="rounded-[22px] border-2 border-[#F0EFEE] bg-white p-5">
         <h2 className="text-base font-black text-[#1C1917]">Vérification des numéros déjà inscrits</h2>
         <p className="mt-1 text-sm font-medium text-[#64748B]">
-          Mobile Togo uniquement : 8 chiffres après +228, commençant par 7 (Moov) ou 9 (Togocel).
+          Mobile Togo uniquement : 8 chiffres après +228. Tous les numéros Togo sont acceptés.
         </p>
         <div className="mt-4 grid gap-3 sm:grid-cols-3">
           <Stat label="Valides" value={stats.ok} tone="green" />

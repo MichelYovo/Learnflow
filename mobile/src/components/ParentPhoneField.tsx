@@ -1,7 +1,7 @@
 import React from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { useAppTheme } from "../theme/useAppTheme";
-import { isLikelyTogoMobile, normalizeTogoLocal, TOGO_PREFIX } from "../lib/phoneTogo";
+import { normalizeTogoLocal, TOGO_PREFIX } from "../lib/phoneTogo";
 
 export const PARENT_PHONE_LABEL = "WhatsApp de ton père, ta mère ou ton tuteur";
 export const PARENT_PHONE_HINT =
@@ -47,9 +47,6 @@ export default function ParentPhoneField({
           placeholderTextColor="#CBD5E1"
         />
       </View>
-      {value.length === 8 && !isLikelyTogoMobile(value) ? (
-        <Text style={styles.warn}>Mobile Togo uniquement : commence par 7 (Moov) ou 9 (Togocel).</Text>
-      ) : null}
       {value.length > 0 && onConfirmChange ? (
         <Pressable
           onPress={() => onConfirmChange(!confirmed)}
@@ -82,5 +79,4 @@ const styles = StyleSheet.create({
   box: { width: 18, height: 18, borderRadius: 4, borderWidth: 2, alignItems: "center", justifyContent: "center", marginTop: 1 },
   check: { color: "#fff", fontSize: 11, fontWeight: "800" },
   confirmText: { flex: 1, fontSize: 12, fontWeight: "600", lineHeight: 16 },
-  warn: { fontSize: 11, fontWeight: "700", color: "#EF4444" },
 });

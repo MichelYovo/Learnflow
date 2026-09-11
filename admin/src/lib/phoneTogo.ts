@@ -13,19 +13,18 @@ export function maskTogoPhone(e164: string): string {
   return `${TOGO_PREFIX} ${local.slice(0, 2)} ** ** ${local.slice(6)}`;
 }
 
+/** Tout numéro Togo : 8 chiffres après +228. */
 export function isValidTogoLocal(local: string): boolean {
-  return isLikelyTogoMobile(local);
+  return /^\d{8}$/.test(normalizeTogoLocal(local));
 }
 
-/** Mobiles Togo : 7x (Moov) ou 9x (Togocel). */
 export function isLikelyTogoMobile(value?: string): boolean {
-  const local = normalizeTogoLocal(value ?? "");
-  return /^[79]\d{7}$/.test(local);
+  return isValidTogoLocal(value ?? "");
 }
 
 export function parentPhoneStatus(value?: string): "ok" | "invalid" | "missing" {
   if (!value?.trim()) return "missing";
-  return isLikelyTogoMobile(value) ? "ok" : "invalid";
+  return isValidTogoLocal(value) ? "ok" : "invalid";
 }
 
 export function togoWhatsAppDigits(e164: string): string {

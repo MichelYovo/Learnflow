@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { isCloudProfileId } from "@/data/mock";
 import { hasParentConfirmed, markParentConfirmed } from "@/lib/parentConfirm";
-import { isLikelyTogoMobile, maskTogoPhone } from "@/lib/phoneTogo";
+import { isValidTogoLocal, maskTogoPhone } from "@/lib/phoneTogo";
 import { notifySecureLogin } from "@/lib/secureAuth";
 import { useLearnFlowStore } from "@/store/useLearnFlowStore";
 import { useAppTheme } from "@/theme/useAppTheme";
@@ -31,7 +31,7 @@ export default function ParentConfirmModal() {
       setMode(null);
       return;
     }
-    if (!isLikelyTogoMobile(phone)) {
+    if (!isValidTogoLocal(phone)) {
       setMode("invalid");
       return;
     }
@@ -61,10 +61,10 @@ export default function ParentConfirmModal() {
         {mode === "invalid" ? (
           <>
             <p className="text-xs font-extrabold uppercase tracking-wide text-[#EF4444]">Numéro à corriger</p>
-            <h2 className="mt-1 text-lg font-black text-[#1C1917]">Ce WhatsApp parent n’est pas un mobile Togo</h2>
+            <h2 className="mt-1 text-lg font-black text-[#1C1917]">Ce WhatsApp parent n’est pas un numéro Togo</h2>
             <p className="mt-2 text-sm font-medium leading-relaxed" style={{ color: colors.textSecondary }}>
-              Tu as enregistré {maskTogoPhone(profile.parentPhone)}. Un numéro Togo commence par 7 (Moov) ou 9
-              (Togocel). Corrige-le pour que ton parent puisse recevoir les messages.
+              Tu as enregistré {maskTogoPhone(profile.parentPhone)}. Un numéro Togo fait 8 chiffres après +228.
+              Corrige-le pour que ton parent puisse recevoir les messages.
             </p>
             <button
               type="button"

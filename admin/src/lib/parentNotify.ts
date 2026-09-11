@@ -5,7 +5,7 @@ import { classLabel } from "./brand";
 import type { AdminStudent } from "@/data/seed";
 import { recapParentText, sendWhatsApp, waMeLink, welcomeParentText } from "./whatsapp";
 import { insertLoginNotice } from "./supabase";
-import { isLikelyTogoMobile, parentPhoneStatus } from "./phoneTogo";
+import { isValidTogoLocal, parentPhoneStatus } from "./phoneTogo";
 
 const DIR = join(process.cwd(), ".data");
 const SETTINGS_FILE = join(DIR, "parent-settings.json");
@@ -97,11 +97,11 @@ export function lastRecapAt(studentId: string, notices: LoginNotice[]) {
 }
 
 export function needsWelcome(student: AdminStudent, notices: LoginNotice[]) {
-  return isLikelyTogoMobile(student.parentPhone) && !lastWelcomeAt(student.id, notices);
+  return isValidTogoLocal(student.parentPhone ?? "") && !lastWelcomeAt(student.id, notices);
 }
 
 export function needsRecap(student: AdminStudent, notices: LoginNotice[], cadenceDays: number) {
-  if (!isLikelyTogoMobile(student.parentPhone)) return false;
+  if (!isValidTogoLocal(student.parentPhone ?? "")) return false;
   const lastRecap = lastRecapAt(student.id, notices);
   const lastWelcome = lastWelcomeAt(student.id, notices);
   const last = lastRecap || lastWelcome;
@@ -129,7 +129,7 @@ export function parentDraft(student: AdminStudent, kind: "parent_welcome" | "wee
     phone,
     event: kind,
     text,
-    waLink: phone && isLikelyTogoMobile(phone) ? waMeLink(phone, text) : "",
+    waLink: phone && isValidTogoLocal(phone) ? waMeLink(phone, text) : "",
     phoneStatus: parentPhoneStatus(phone),
   };
 }
