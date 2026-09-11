@@ -5,6 +5,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import FlipCard from "../../components/FlipCard";
 import Icon from "../../components/Icon";
+import SessionRecap, { useSessionStats } from "../../components/SessionRecap";
 import Spira from "../../components/Spira";
 import { SlideIn } from "../../components/ui";
 import { spiraForFlashRating, type SpiraMoodId } from "../../data/spira";
@@ -38,6 +39,7 @@ export default function ModeGuideScreen({ navigation }: Props) {
       ? `${liveDue.length} carte${liveDue.length > 1 ? "s" : ""} due${liveDue.length > 1 ? "s" : ""} aujourd'hui.`
       : "Rien à réviser aujourd'hui."
   );
+  const recapStats = useSessionStats({ cards: deck.length });
 
   const card = deck[Math.min(idx, Math.max(deck.length - 1, 0))];
 
@@ -118,19 +120,13 @@ export default function ModeGuideScreen({ navigation }: Props) {
 
   if (done) {
     return (
-      <SafeAreaView style={[styles.safe, { backgroundColor: colors.surface }]}>
-        {header()}
-        <SlideIn id="done">
-          <View style={styles.center}>
-            <Spira scene="mode.guide.done" size={104} />
-            <Pressable style={styles.btnWrap} onPress={() => navigation.goBack()}>
-              <LinearGradient colors={[colors.primary, colors.primaryDark]} style={styles.primary}>
-                <Text style={styles.primaryText}>Terminer</Text>
-              </LinearGradient>
-            </Pressable>
-          </View>
-        </SlideIn>
-      </SafeAreaView>
+      <SessionRecap success title="Entretien terminé" subtitle="Tes cartes du jour sont faites." stats={recapStats}>
+        <Pressable style={styles.btnWrap} onPress={() => navigation.goBack()}>
+          <LinearGradient colors={[colors.primary, colors.primaryDark]} style={styles.primary}>
+            <Text style={styles.primaryText}>Terminer</Text>
+          </LinearGradient>
+        </Pressable>
+      </SessionRecap>
     );
   }
 

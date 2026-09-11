@@ -1,6 +1,6 @@
 "use client";
 
-type IconName =
+export type IconName =
   | "star"
   | "layers"
   | "trophy"

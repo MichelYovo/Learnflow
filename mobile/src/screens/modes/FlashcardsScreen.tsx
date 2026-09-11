@@ -3,6 +3,7 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import Icon from "../../components/Icon";
+import SessionRecap, { useSessionStats } from "../../components/SessionRecap";
 import Spira from "../../components/Spira";
 import { spiraMoodForSession } from "../../data/spira";
 import { cardsDueToday } from "../../engine/spacedRepetition";
@@ -30,6 +31,7 @@ export default function FlashcardsScreen({ navigation, route }: Props) {
   const [idx, setIdx] = useState(0);
   const [flipped, setFlipped] = useState(false);
   const [done, setDone] = useState(false);
+  const recapStats = useSessionStats({ cards: deck.length });
 
   if (deck.length === 0) {
     return (
@@ -58,15 +60,11 @@ export default function FlashcardsScreen({ navigation, route }: Props) {
 
   if (done) {
     return (
-      <SafeAreaView style={styles.safe}>
-        <View style={styles.center}>
-          <Spira scene="flash.done" size={88} />
-          <Text style={styles.title}>Session flashcards terminée</Text>
-          <Pressable style={styles.primary} onPress={() => navigation.goBack()}>
-            <Text style={styles.primaryText}>OK</Text>
-          </Pressable>
-        </View>
-      </SafeAreaView>
+      <SessionRecap success title="Session terminée" subtitle="Tes cartes sont à jour." stats={recapStats}>
+        <Pressable style={styles.primary} onPress={() => navigation.goBack()}>
+          <Text style={styles.primaryText}>OK</Text>
+        </Pressable>
+      </SessionRecap>
     );
   }
 
