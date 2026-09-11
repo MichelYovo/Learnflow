@@ -44,7 +44,6 @@ export default function QuizPlay({
   onBack,
   onContinue,
   explanation,
-  optionNotes,
   reviewLabel,
   onReview,
   headerRight,
@@ -90,9 +89,6 @@ export default function QuizPlay({
             const border = kind === "correct" ? colors.secondary : kind === "wrong" ? colors.danger : colors.borderStrong;
             const badgeBg = kind === "correct" ? colors.secondary : kind === "wrong" ? colors.danger : colors.surfaceAlt;
             const badgeFg = kind === "correct" || kind === "wrong" ? "#fff" : colors.textSecondary;
-            const note = answered ? optionNotes?.[i] : undefined;
-            const tag =
-              kind === "correct" ? "Bonne réponse" : kind === "wrong" ? "Ton choix" : answered ? "Faux" : null;
             return (
               <Pressable
                 key={`${i}-${opt}`}
@@ -105,12 +101,11 @@ export default function QuizPlay({
                   {
                     backgroundColor: bg,
                     borderColor: border,
-                    opacity: kind === "dim" ? 0.88 : 1,
-                    alignItems: "flex-start",
+                    opacity: kind === "dim" ? 0.55 : 1,
                   },
                 ]}
               >
-                <View style={[styles.badge, { backgroundColor: badgeBg, marginTop: 2 }]}>
+                <View style={[styles.badge, { backgroundColor: badgeBg }]}>
                   {kind === "correct" ? (
                     <Icon name="check" size={16} color="#fff" />
                   ) : kind === "wrong" ? (
@@ -119,13 +114,7 @@ export default function QuizPlay({
                     <Text style={[styles.badgeLetter, { color: badgeFg }]}>{letter}</Text>
                   )}
                 </View>
-                <View style={{ flex: 1, minWidth: 0 }}>
-                  {tag ? (
-                    <Text style={[styles.optTag, { color: kind === "correct" ? colors.secondary : kind === "wrong" ? colors.danger : colors.textMuted }]}>{tag}</Text>
-                  ) : null}
-                  <Text style={[styles.optText, { color: colors.textDark }]}>{opt}</Text>
-                  {note ? <Text style={[styles.optNote, { color: colors.textSecondary }]}>{note}</Text> : null}
-                </View>
+                <Text style={[styles.optText, { color: colors.textDark, flex: 1 }]}>{opt}</Text>
               </Pressable>
             );
           })}
@@ -149,9 +138,10 @@ export default function QuizPlay({
               {ok ? "C’est ça !" : "Pas tout à fait"}
             </Text>
           </View>
-          {explanation ? <Text style={[styles.explain, { color: colors.textSecondary }]}>{explanation}</Text> : null}
-          {!ok ? (
-            <Text style={[styles.correctReveal, { color: colors.textDark }]}>La bonne réponse était : {options[correctIndex]}</Text>
+          {explanation ? (
+            <Text style={[styles.explain, { color: colors.textSecondary }]}>
+              {explanation.length > 110 ? `${explanation.slice(0, 109).trim()}…` : explanation}
+            </Text>
           ) : null}
           {onReview && reviewLabel && !ok ? (
             <Pressable onPress={onReview} style={styles.linkBtn}>

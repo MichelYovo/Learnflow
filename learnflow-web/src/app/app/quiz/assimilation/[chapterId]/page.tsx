@@ -7,7 +7,6 @@ import QuizPlay from "@/components/quiz/QuizPlay";
 import SessionRecap, { useSessionStats } from "@/components/SessionRecap";
 import Spira from "@/components/Spira";
 import { questionsForChapter } from "@/data/modeContent";
-import { findChapterMeta } from "@/data/programme";
 import { usePublishedCatalog } from "@/data/publishedCache";
 import { playSfx, preloadSfx } from "@/lib/sfx";
 import { useLearnFlowStore } from "@/store/useLearnFlowStore";
@@ -21,7 +20,6 @@ function QuizInner() {
   const { colors } = useAppTheme();
   const catalogEpoch = usePublishedCatalog();
   const classe = useLearnFlowStore((s) => s.getActiveProfile()?.classe);
-  const chapterTitle = findChapterMeta(chapterId)?.chapter.title;
   const bank = useMemo(() => questionsForChapter(chapterId, classe), [chapterId, classe, catalogEpoch]);
   const [queue, setQueue] = useState(bank);
   const recordAssimilation = useLearnFlowStore((s) => s.recordAssimilation);
@@ -190,7 +188,7 @@ function QuizInner() {
 
   return (
     <QuizPlay
-      kicker={`Assimilation${q.matiere ? ` · ${q.matiere}` : ""}${chapterTitle ? ` · ${chapterTitle}` : ""}`}
+      kicker={`Assimilation${q.matiere ? ` · ${q.matiere}` : ""}`}
       current={current}
       total={queue.length}
       question={q.enonceQuestion}
@@ -201,8 +199,7 @@ function QuizInner() {
       onBack={() => router.back()}
       onContinue={advance}
       explanation={q.explicationPedagogique}
-      optionNotes={q.optionNotes}
-      reviewLabel={q.ancreCours ? `Revoir ce point → ${q.ancreCours}` : "Revoir ce point → cours"}
+      reviewLabel="Revoir le cours"
       onReview={() => router.push(`/app/cours/${chapterId}`)}
       headerRight={<Spira scene="quiz.play" size={36} message="" />}
     />

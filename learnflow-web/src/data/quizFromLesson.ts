@@ -47,6 +47,23 @@ function clip(s: string, n = 100) {
   return `${t.slice(0, n - 1).trim()}…`;
 }
 
+/** One-line choice: keyword, part after « : », or first sentence. */
+function shortChoice(raw: string, n = 54) {
+  const t = stripCardinalMarkup(raw)
+    .replace(/^[•\-]\s+/, "")
+    .replace(/\s+/g, " ")
+    .trim();
+  const labeled = t.match(/^(.{6,44}?)\s*[:：]\s+(.{6,})$/);
+  if (labeled) {
+    const rightFirst = (labeled[2].split(/(?<=[.!?])\s+/)[0] ?? labeled[2]).replace(/[.]$/, "").trim();
+    if (rightFirst.length >= 6 && rightFirst.length <= n) return rightFirst;
+    return clip(labeled[1], n);
+  }
+  const first = (t.split(/(?<=[.!?])\s+/)[0] ?? t).trim();
+  if (first.length >= 6 && first.length <= n) return first;
+  return clip(t, n);
+}
+
 function sameChoice(a: string, b: string) {
   const fa = fold(a);
   const fb = fold(b);
@@ -58,9 +75,9 @@ function pickWrongs(correct: string, pool: string[]): string[] {
   const out: string[] = [];
   const seen = new Set([fold(correct)]);
   for (const raw of pool) {
-    const w = clip(raw, 110);
+    const w = shortChoice(raw);
     const key = fold(w);
-    if (!w || w.length < 8 || seen.has(key) || sameChoice(w, correct)) continue;
+    if (!w || w.length < 3 || seen.has(key) || sameChoice(w, correct)) continue;
     seen.add(key);
     out.push(w);
     if (out.length === 3) break;
@@ -69,14 +86,10 @@ function pickWrongs(correct: string, pool: string[]): string[] {
 }
 
 function notesFor(options: string[], correct: string, explain: string): string[] {
-  const why = clip(explain.replace(/\s+/g, " ").trim(), 180);
-  return options.map((opt) => {
-    if (fold(opt) === fold(correct)) return `Bonne réponse. ${why}`;
-    if (opt.length < 52) {
-      return `Faux. « ${opt} » n'est pas la bonne réponse. ${why}`;
-    }
-    return `Faux. « ${clip(opt, 88)} » est une autre idée du même cours, pas la réponse à cette question. Ici : ${clip(correct, 90)}.`;
-  });
+  const why = clip(explain.replace(/\s+/g, " ").trim(), 90);
+  return options.map((opt) =>
+    fold(opt) === fold(correct) ? why : `Pas ça. ${why}`,
+  );
 }
 
 export function withOptionNotes(q: QCMData): QCMData {
@@ -89,7 +102,7 @@ function mcq(id: string, enonce: string, correct: string, wrongs: string[], mati
   const pool = pickWrongs(correct, wrongs);
   if (pool.length < 3) return null;
   const options = seededShuffle([correct, ...pool.slice(0, 3)], id);
-  const why = (explain || correct).trim();
+  const why = clip((explain || correct).trim(), 90);
   return {
     id,
     enonceQuestion: enonce,
@@ -109,34 +122,34 @@ function cleanLine(s: string) {
     .trim();
 }
 
-function stemFromPuce(text: string, titre: string, keywords: string[]): { stem: string; correct: string } | null {
+function stemFromPuce(text: string, keywords: string[]): { stem: string; correct: string } | null {
   const t = text.replace(/\s+/g, " ").trim();
   if (t.length < 18) return null;
   const labeled = t.match(/^(.{10,80}?)\s*[:：]\s+(.{12,})$/);
   if (labeled) {
     const left = labeled[1].trim().replace(/\?$/, "");
     return {
-      stem: left.length < 28 ? `${left} — que retenir ?` : `${left} ?`,
-      correct: clip(labeled[2], 110),
+      stem: left.length < 22 ? `${left} ?` : `${clip(left, 70)} ?`,
+      correct: shortChoice(labeled[2]),
     };
   }
-  const iff = t.match(/^(.{16,100}?)\s+(si et seulement si|lorsque|quand|ssi)\s+(.{12,})$/i);
+  const iff = t.match(/^(.{12,72}?)\s+(si et seulement si|lorsque|quand|ssi)\s+(.{8,})$/i);
   if (iff) {
     return {
-      stem: `${iff[1].trim()} ${iff[2].toLowerCase()}…`,
-      correct: clip(iff[3], 110),
+      stem: `${clip(iff[1].trim(), 56)} ${iff[2].toLowerCase()}…`,
+      correct: shortChoice(iff[3]),
     };
   }
   const kw = keywords.find((k) => t.toLowerCase().includes(k.toLowerCase()));
   if (kw) {
     return {
-      stem: `Que retenir sur « ${kw} » dans le chapitre « ${titre} » ?`,
-      correct: clip(t, 110),
+      stem: `Que retenir sur « ${kw} » ?`,
+      correct: shortChoice(t),
     };
   }
   return {
-    stem: `Parmi ces points du cours « ${titre} », lequel est exact ?`,
-    correct: clip(t, 110),
+    stem: "Lequel est exact ?",
+    correct: shortChoice(t),
   };
 }
 
@@ -156,7 +169,6 @@ export function quizFromLesson(chapterId: string, classe?: string): QCMData[] {
   const lesson = toLessonContent(fiche);
   const meta = findChapterMeta(chapterId);
   const matiere = meta?.subject.name ?? "Cours";
-  const titre = lesson.title;
   const puces = (fiche.pucesEssentiel?.length ? fiche.pucesEssentiel : essentialTextToPuces(lesson.essentialText))
     .map(cleanLine)
     .filter((p) => p.length > 16);
@@ -165,16 +177,16 @@ export function quizFromLesson(chapterId: string, classe?: string): QCMData[] {
 
   puces.forEach((puce, i) => {
     if (out.length >= 10) return;
-    const parsed = stemFromPuce(puce, titre, keywords);
+    const parsed = stemFromPuce(puce, keywords);
     if (!parsed) return;
-    const wrongs = puces.filter((p) => p !== puce).map((p) => clip(p, 110));
+    const wrongs = puces.filter((p) => p !== puce).map((p) => shortChoice(p));
     const q = mcq(
       `${chapterId}-p${i}`,
       parsed.stem,
       parsed.correct,
       wrongs,
       matiere,
-      `${parsed.correct} C’est un point du cours « ${titre} ».`
+      parsed.correct,
     );
     if (q) out.push(q);
   });
@@ -186,11 +198,11 @@ export function quizFromLesson(chapterId: string, classe?: string): QCMData[] {
     const wrongs = keywords.filter((k) => k !== kw);
     const q = mcq(
       `${chapterId}-k${i}`,
-      `Dans « ${titre} », quel mot complète : « ${line.prompt} » ?`,
+      `Quel mot manque : « ${clip(line.prompt, 48)} » ?`,
       kw,
       wrongs,
       matiere,
-      `Le mot exact du cours est « ${kw} ». Les autres mots sont d'autres notions du même chapitre.`,
+      `C’est « ${kw} ».`,
     );
     if (q) out.push(q);
   });
@@ -203,8 +215,8 @@ export function quizFromLesson(chapterId: string, classe?: string): QCMData[] {
     ];
     const q = mcq(
       `${chapterId}-ex`,
-      `Exercice type de « ${titre} ». ${clip(ex.enonce, 140)} — quelle conclusion ?`,
-      clip(ex.reponseFinale, 110),
+      `Quelle conclusion ? ${clip(ex.enonce, 48)}`,
+      shortChoice(ex.reponseFinale),
       wrongs,
       matiere,
       ex.reponseFinale,
@@ -216,8 +228,8 @@ export function quizFromLesson(chapterId: string, classe?: string): QCMData[] {
   if (out.length < 10 && sit?.question?.trim() && puces[0]) {
     const q = mcq(
       `${chapterId}-sit`,
-      sit.question,
-      clip(puces[0], 110),
+      clip(sit.question, 88),
+      shortChoice(puces[0]),
       puces.slice(1),
       matiere,
       sit.competenceVisee || puces[0],
@@ -240,7 +252,7 @@ export function quizFromLesson(chapterId: string, classe?: string): QCMData[] {
     .filter((p) => p.length > 24);
   extraParas.forEach((para, i) => {
     if (unique.length >= 10) return;
-    const parsed = stemFromPuce(para, titre, keywords);
+    const parsed = stemFromPuce(para, keywords);
     if (!parsed) return;
     if (seen.has(`${fold(parsed.stem)}|${fold(parsed.correct)}`)) return;
     const q = mcq(
@@ -249,7 +261,7 @@ export function quizFromLesson(chapterId: string, classe?: string): QCMData[] {
       parsed.correct,
       extraParas.filter((p) => p !== para).concat(puces),
       matiere,
-      `${parsed.correct} (cours « ${titre} »)`,
+      parsed.correct,
     );
     if (!q) return;
     seen.add(`${fold(q.enonceQuestion)}|${fold(q.optionsProposees[q.indexReponseCorrecte] ?? "")}`);

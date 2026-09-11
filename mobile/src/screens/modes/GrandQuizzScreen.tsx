@@ -7,7 +7,6 @@ import QuizPlay from "../../components/quiz/QuizPlay";
 import SessionRecap, { useSessionStats } from "../../components/SessionRecap";
 import Spira from "../../components/Spira";
 import { questionsForGrandQuiz } from "../../data/modeContent";
-import { findChapterMeta } from "../../data/programme";
 import { usePublishedCatalog } from "../../data/publishedCache";
 import { playSfx, preloadSfx } from "../../lib/sfx";
 import { useLearnFlowStore } from "../../store/useLearnFlowStore";
@@ -23,7 +22,6 @@ export default function GrandQuizzScreen({ navigation, route }: Props) {
   const accumulerXP = useLearnFlowStore((s) => s.accumulerXP);
   usePublishedCatalog();
   const questions = questionsForGrandQuiz(route.params.chapterId, profile?.classe);
-  const chapterTitle = findChapterMeta(route.params.chapterId)?.chapter.title;
   const [current, setCurrent] = useState(0);
   const [selected, setSelected] = useState<number | null>(null);
   const [score, setScore] = useState(0);
@@ -99,7 +97,7 @@ export default function GrandQuizzScreen({ navigation, route }: Props) {
   return (
     <SafeAreaView style={styles.safe} edges={["top"]}>
       <QuizPlay
-        kicker={`Grand Quizz${q.matiere ? ` · ${q.matiere}` : ""}${chapterTitle ? ` · ${chapterTitle}` : ""}`}
+        kicker={`Grand Quizz${q.matiere ? ` · ${q.matiere}` : ""}`}
         current={current}
         total={questions.length}
         question={q.enonceQuestion}
@@ -110,7 +108,6 @@ export default function GrandQuizzScreen({ navigation, route }: Props) {
         onBack={() => navigation.goBack()}
         onContinue={continueQuiz}
         explanation={q.explicationPedagogique}
-        optionNotes={q.optionNotes}
         headerRight={<Spira scene="quiz.play" size={36} />}
       />
       <CorrectBurst trigger={burstKey} />
