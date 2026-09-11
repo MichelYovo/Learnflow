@@ -7,8 +7,6 @@ Ce n’est pas un espace élèves : pas d’inscription, un seul identifiant.
 
 ## Identifiants
 
-| | |
-|---|---|
 Les identifiants sont uniquement dans `admin/.env.local` (et les variables d’environnement Vercel en production) : `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `ADMIN_SESSION_SECRET`. Ne jamais les committer.
 
 Dans `.env.local`, mets le mot de passe entre guillemets si tu utilises `#` : sinon il est lu comme un commentaire.
@@ -23,14 +21,14 @@ npm run dev
 
 Ouvre [http://localhost:3001](http://localhost:3001).
 
-## Vercel
-
-Si tu déploies l’admin : **Root Directory** = `admin`. Variables : `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `ADMIN_SESSION_SECRET`, plus les clés Supabase.
-
 ```bash
 npm run build
 npm start
 ```
+
+## Vercel
+
+Si tu déploies l’admin : **Root Directory** = `admin`. Variables : `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `ADMIN_SESSION_SECRET`, plus les clés Supabase.
 
 ## Stack
 

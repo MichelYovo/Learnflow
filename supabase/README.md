@@ -229,8 +229,8 @@ Redémarre `npm run dev` dans `admin` (port 3001).
 
 ### D. Production web (Vercel)
 
-1. [Vercel](https://vercel.com) → projet **learnflow-web** → **Settings** → **Environment Variables**.
-2. Ajoute les variables du web (URL, clé publique, `SUPABASE_SECRET_KEY`, Resend), avec  
+1. [Vercel](https://vercel.com) → projet **learnflow-web** → **Settings → General → Root Directory** = `learnflow-web` (pas la racine Git, sinon Expo est pris à la place).
+2. **Settings → Environment Variables** : URL, clé publique, `SUPABASE_SECRET_KEY`, Resend, avec
    `NEXT_PUBLIC_SITE_URL=https://learnflow-web.vercel.app`
 3. **Redeploy**.
 

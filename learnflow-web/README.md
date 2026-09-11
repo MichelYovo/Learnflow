@@ -22,6 +22,12 @@ npm run build
 npm start
 ```
 
+## Vercel
+
+Projet Vercel **learnflow-web** : **Settings → General → Root Directory** = `learnflow-web` (pas la racine du repo, sinon Vercel prend l’app Expo).
+
+Variables : `NEXT_PUBLIC_SITE_URL=https://learnflow-web.vercel.app`, plus les clés Supabase / mail (voir `supabase/README.md`).
+
 ## Connexion
 
 Inscription ou connexion **Google** (ou email). Après le choix du compte, un **code à 6 chiffres** part sur l’email. Si le profil existe déjà, l’élève entre sans redonner son numéro. Premier compte : classe (numéro parent facultatif). Le compte est enregistré dans Supabase (`student_profiles`, `league_scores`, activité).
