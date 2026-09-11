@@ -38,54 +38,46 @@ export default function CloudSyncBootstrap() {
 
     const restore = async () => {
       try {
-        useLearnFlowStore.getState().pushInbox({
-          id: "editor-notice-2026-09-11",
-          kind: "system",
-          title: "Message de l’éditeur",
-          body: "L’accueil et les cours sont de nouveau disponibles. Bonne révision — l’équipe LearnFlow.",
-        });
+        const supabase = getBrowserSupabase();
+        const sessionUser = supabase ? (await supabase.auth.getSession()).data.session?.user : null;
+        if (cancelled) return;
+
+        if (sessionUser && supabase) {
+          await refreshPublishedCatalog("web");
+          if (cancelled) return;
+          const profile = await fetchOwnStudentProfile();
+          if (cancelled) return;
+          if (profile?.status === "suspendu") {
+            useLearnFlowStore.getState().logout();
+            return;
+          }
+          if (profile) {
+            useLearnFlowStore.getState().applyCloudUser({
+              id: sessionUser.id,
+              email: sessionUser.email ?? profile.email ?? "",
+              nom: profile.name ?? String(sessionUser.user_metadata?.full_name ?? "Élève"),
+              classe: profile.class_level ?? "3eme",
+              parentPhone: profile.parent_phone ?? "",
+              xpTotale: profile.total_xp ?? 0,
+              streak: profile.streak ?? 0,
+              lessonsDone: profile.lessons_done ?? 0,
+              avatarId: profile.avatar_id ?? undefined,
+            });
+            if (typeof sessionStorage !== "undefined" && !sessionStorage.getItem("lf-login-logged")) {
+              sessionStorage.setItem("lf-login-logged", "1");
+              void trackActivity("login", { source: "restore", xp: profile.total_xp ?? 0 });
+            }
+            void trackActivity("heartbeat", { xp: profile.total_xp ?? 0, source: "restore" });
+          } else if (!isProfileComplete(profile)) {
+            return;
+          }
+        }
+
         useLearnFlowStore.getState().ensureDailyChallenges();
         useLearnFlowStore.getState().ensureWeeklyReviews();
-        await pullEditorNotices();
-
-        const supabase = getBrowserSupabase();
-        if (!supabase) return;
-        const { data } = await supabase.auth.getSession();
-        const user = data.session?.user;
-        if (!user || cancelled) return;
-
-        await refreshPublishedCatalog("web");
-        if (cancelled) return;
-
-        const profile = await fetchOwnStudentProfile();
-        if (cancelled) return;
-        if (profile?.status === "suspendu") {
-          useLearnFlowStore.getState().logout();
-          return;
-        }
-
-        if (profile) {
-          useLearnFlowStore.getState().applyCloudUser({
-            id: user.id,
-            email: user.email ?? profile.email ?? "",
-            nom: profile.name ?? String(user.user_metadata?.full_name ?? "Élève"),
-            classe: profile.class_level ?? "3eme",
-            parentPhone: profile.parent_phone ?? "",
-            xpTotale: profile.total_xp ?? 0,
-            streak: profile.streak ?? 0,
-            lessonsDone: profile.lessons_done ?? 0,
-            avatarId: profile.avatar_id ?? undefined,
-          });
-          if (typeof sessionStorage !== "undefined" && !sessionStorage.getItem("lf-login-logged")) {
-            sessionStorage.setItem("lf-login-logged", "1");
-            void trackActivity("login", { source: "restore", xp: profile.total_xp ?? 0 });
-          }
-          void trackActivity("heartbeat", { xp: profile.total_xp ?? 0, source: "restore" });
-        } else if (!isProfileComplete(profile)) {
-          return;
-        }
-        if (!cancelled) await syncProgress();
-        if (!cancelled) await refreshLeaderboard();
+        if (sessionUser) await pullEditorNotices();
+        if (sessionUser && !cancelled) await syncProgress();
+        if (sessionUser && !cancelled) await refreshLeaderboard();
       } catch {
         /* offline / malformed cloud payload */
       }

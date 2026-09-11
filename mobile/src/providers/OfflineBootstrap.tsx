@@ -11,6 +11,7 @@ import {
 } from "../db";
 import { startSyncManager } from "../lib/SyncManager";
 import { fetchOwnStudentProfile, isProfileComplete, trackActivity } from "../lib/cloud";
+import { pullEditorNotices } from "../lib/editorNotices";
 import { syncProgress } from "../lib/progressSync";
 import { isSupabaseConfigured, supabase } from "../lib/supabase";
 import { keepLocalTestProfiles } from "../data/mock";
@@ -71,6 +72,7 @@ async function restoreCloudSession(): Promise<void> {
       avatarId: profile.avatar_id ?? undefined,
     });
     void trackActivity("heartbeat", { xp: profile.total_xp ?? 0, source: "restore" });
+    await pullEditorNotices();
   } else if (!isProfileComplete(profile)) {
     return;
   }

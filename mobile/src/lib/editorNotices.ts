@@ -1,5 +1,5 @@
-import { getBrowserSupabase } from "./supabase";
-import { useLearnFlowStore } from "@/store/useLearnFlowStore";
+import { supabase } from "./supabase";
+import { useLearnFlowStore } from "../store/useLearnFlowStore";
 
 export type EditorNotice = {
   id: string;
@@ -10,8 +10,6 @@ export type EditorNotice = {
 
 export async function pullEditorNotices(): Promise<void> {
   try {
-    const supabase = getBrowserSupabase();
-    if (!supabase) return;
     const { data, error } = await supabase
       .from("editor_notices")
       .select("id, title, body, created_at")

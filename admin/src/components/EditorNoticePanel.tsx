@@ -47,7 +47,7 @@ export default function EditorNoticePanel() {
     <article className="rounded-[22px] border-2 border-[#E6F4FF] bg-white p-5">
       <h2 className="text-base font-black text-[#1C1917]">Notification dans l’app</h2>
       <p className="mt-1 text-sm font-medium text-[#64748B]">
-        Message de l’éditeur : il apparaît dans la cloche des élèves (accueil).
+        Message de l’éditeur : chaque élève le reçoit dans sa propre cloche, pas dans une liste partagée.
       </p>
       <label className="mt-4 block text-sm font-bold text-[#1C1917]">
         Titre

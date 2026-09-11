@@ -21,7 +21,6 @@ import {
   classLabel,
   FLASHCARDS,
   INITIAL_AGENDA,
-  INITIAL_INBOX,
   INITIAL_TIMETABLE,
   LEAGUE_PLAYERS,
   PROFILE_COLORS,
@@ -63,6 +62,7 @@ interface LearnFlowState {
   agendaSessions: AgendaSession[];
   timetable: SchoolClass[];
   inbox: InboxNotification[];
+  inboxesByProfile: Record<string, InboxNotification[]>;
 
   getActiveProfile: () => ProfileEleve;
   login: () => void;
@@ -107,7 +107,7 @@ interface LearnFlowState {
   gelerLigue: (jours: number) => void;
   envoyerSMSFelicitation: (msg: string) => Promise<boolean>;
   settings: AppSettings;
-  pushInbox: (item: { kind: InboxKind; title: string; body: string }) => void;
+  pushInbox: (item: { kind: InboxKind; title: string; body: string; id?: string }) => void;
   markInboxRead: (id: string) => void;
   markAllInboxRead: () => void;
   updateNotificationPrefs: (patch: Partial<AppSettings["notifications"]>) => void;
@@ -148,6 +148,42 @@ const FALLBACK_PROFILE: ProfileEleve = {
   badgesDebloques: [],
   hasPin: true,
 };
+
+type InboxBoxes = Record<string, InboxNotification[]>;
+
+function asInbox(list: unknown): InboxNotification[] {
+  return Array.isArray(list) ? (list as InboxNotification[]) : [];
+}
+
+function boxesOf(state: {
+  inboxesByProfile?: InboxBoxes;
+  inbox?: InboxNotification[];
+  activeProfileId?: string;
+}): InboxBoxes {
+  if (state.inboxesByProfile && typeof state.inboxesByProfile === "object" && !Array.isArray(state.inboxesByProfile)) {
+    return { ...state.inboxesByProfile };
+  }
+  const id = String(state.activeProfileId || "");
+  if (id && Array.isArray(state.inbox)) return { [id]: state.inbox };
+  return {};
+}
+
+function stashAndLoadInbox(
+  state: {
+    inboxesByProfile?: InboxBoxes;
+    inbox?: InboxNotification[];
+    activeProfileId?: string;
+  },
+  nextProfileId: string,
+  empty = false,
+): { inboxesByProfile: InboxBoxes; inbox: InboxNotification[] } {
+  const prev = String(state.activeProfileId || "");
+  const boxes = boxesOf(state);
+  if (prev) boxes[prev] = asInbox(state.inbox);
+  const inbox = empty ? [] : asInbox(boxes[nextProfileId]);
+  boxes[String(nextProfileId)] = inbox;
+  return { inboxesByProfile: boxes, inbox };
+}
 
 const DEFAULT_SETTINGS: AppSettings = {
   notifications: {
@@ -213,7 +249,8 @@ export const useLearnFlowStore = create<LearnFlowState>()(
       customTools: ["fiche", "flashcards", "schema"],
       agendaSessions: INITIAL_AGENDA,
       timetable: INITIAL_TIMETABLE,
-      inbox: INITIAL_INBOX,
+      inbox: [],
+      inboxesByProfile: {},
       settings: DEFAULT_SETTINGS,
 
       getActiveProfile: () => {
@@ -222,12 +259,21 @@ export const useLearnFlowStore = create<LearnFlowState>()(
       },
 
       login: () => set({ isAuthenticated: true, focusPromptPending: true }),
-      logout: () => set({ isAuthenticated: false, focusPromptPending: true }),
+      logout: () => {
+        const saved = stashAndLoadInbox(get(), String(get().activeProfileId || ""));
+        set({ isAuthenticated: false, focusPromptPending: true, ...saved });
+      },
 
-      selectProfile: (id) => set({ activeProfileId: id, isAuthenticated: true, focusPromptPending: true }),
+      selectProfile: (id) => {
+        const inboxState = stashAndLoadInbox(get(), id);
+        set({ activeProfileId: id, isAuthenticated: true, focusPromptPending: true, ...inboxState });
+      },
       dismissFocusPrompt: () => set({ focusPromptPending: false }),
 
-      hydrateFromLocal: ({ profiles, activeProfileId }) => set({ profiles, activeProfileId }),
+      hydrateFromLocal: ({ profiles, activeProfileId }) => {
+        const inboxState = stashAndLoadInbox(get(), activeProfileId);
+        set({ profiles, activeProfileId, ...inboxState });
+      },
 
       setLeagueBoard: (players) => set({ leagueBoard: players }),
 
@@ -264,9 +310,11 @@ export const useLearnFlowStore = create<LearnFlowState>()(
           avatarId,
           hasPin,
         };
+        const inboxState = stashAndLoadInbox(get(), id, true);
         set({
           profiles: [...get().profiles, profile],
           activeProfileId: id,
+          ...inboxState,
           settings: data.multiProfile
             ? { ...get().settings, multiProfileEnabled: true }
             : get().settings,
@@ -292,22 +340,14 @@ export const useLearnFlowStore = create<LearnFlowState>()(
         const next = [...get().agendaSessions, { ...session, id }];
         const studyOn = get().settings.notifications.studyReminders;
         const time = `${String(session.hour).padStart(2, "0")}:${String(session.minute).padStart(2, "0")}`;
-        set({
-          agendaSessions: next,
-          inbox: studyOn
-            ? [
-                {
-                  id: createId(),
-                  kind: "study" as const,
-                  title: "Séance planifiée",
-                  body: `${session.subject} à ${time} · ${session.duration} min. Le rappel restera ici.`,
-                  createdAt: nowIso(),
-                  read: false,
-                },
-                ...get().inbox,
-              ].slice(0, 50)
-            : get().inbox,
-        });
+        set({ agendaSessions: next });
+        if (studyOn) {
+          get().pushInbox({
+            kind: "study",
+            title: "Séance planifiée",
+            body: `${session.subject} à ${time} · ${session.duration} min. Le rappel restera ici.`,
+          });
+        }
       },
       deleteAgendaSession: (id) => {
         set({ agendaSessions: get().agendaSessions.filter((s) => s.id !== id) });
@@ -470,22 +510,14 @@ export const useLearnFlowStore = create<LearnFlowState>()(
 
       gelerLigue: (jours) => {
         const leagueOn = get().settings.notifications.leagueUpdates;
-        set({
-          ligue: { ...get().ligue, estGelee: true },
-          inbox: leagueOn
-            ? [
-                {
-                  id: createId(),
-                  kind: "league" as const,
-                  title: "Ligue gelée",
-                  body: `Ton rang est protégé pendant ${jours} jour${jours > 1 ? "s" : ""}.`,
-                  createdAt: nowIso(),
-                  read: false,
-                },
-                ...get().inbox,
-              ].slice(0, 50)
-            : get().inbox,
-        });
+        set({ ligue: { ...get().ligue, estGelee: true } });
+        if (leagueOn) {
+          get().pushInbox({
+            kind: "league",
+            title: "Ligue gelée",
+            body: `Ton rang est protégé pendant ${jours} jour${jours > 1 ? "s" : ""}.`,
+          });
+        }
       },
 
       envoyerSMSFelicitation: async (msg) => {
@@ -502,30 +534,49 @@ export const useLearnFlowStore = create<LearnFlowState>()(
         return true;
       },
 
-      pushInbox: ({ kind, title, body }) => {
+      pushInbox: ({ kind, title, body, id }) => {
+        const profileId = String(get().activeProfileId || "");
+        if (!profileId) return;
+        const boxes = boxesOf(get());
+        const inbox = asInbox(boxes[profileId] ?? get().inbox);
+        if (id && inbox.some((n) => n.id === id)) return;
+        const next = [
+          {
+            id: id || createId(),
+            kind,
+            title,
+            body,
+            createdAt: nowIso(),
+            read: false,
+          },
+          ...inbox,
+        ].slice(0, 50);
         set({
-          inbox: [
-            {
-              id: createId(),
-              kind,
-              title,
-              body,
-              createdAt: nowIso(),
-              read: false,
-            },
-            ...get().inbox,
-          ].slice(0, 50),
+          inbox: next,
+          inboxesByProfile: { ...boxes, [profileId]: next },
         });
       },
 
       markInboxRead: (id) => {
+        const profileId = String(get().activeProfileId || "");
+        if (!profileId) return;
+        const boxes = boxesOf(get());
+        const next = asInbox(boxes[profileId] ?? get().inbox).map((n) => (n.id === id ? { ...n, read: true } : n));
         set({
-          inbox: get().inbox.map((n) => (n.id === id ? { ...n, read: true } : n)),
+          inbox: next,
+          inboxesByProfile: { ...boxes, [profileId]: next },
         });
       },
 
       markAllInboxRead: () => {
-        set({ inbox: get().inbox.map((n) => ({ ...n, read: true })) });
+        const profileId = String(get().activeProfileId || "");
+        if (!profileId) return;
+        const boxes = boxesOf(get());
+        const next = asInbox(boxes[profileId] ?? get().inbox).map((n) => ({ ...n, read: true }));
+        set({
+          inbox: next,
+          inboxesByProfile: { ...boxes, [profileId]: next },
+        });
       },
 
       updateNotificationPrefs: (patch) => {
@@ -630,6 +681,13 @@ export const useLearnFlowStore = create<LearnFlowState>()(
             };
           });
           const persistedCards = Array.isArray(p.flashcards) ? p.flashcards : current.flashcards;
+          const activeProfileId = String(p.activeProfileId ?? current.activeProfileId);
+          const inboxesByProfile = boxesOf({
+            inboxesByProfile: p.inboxesByProfile,
+            inbox: p.inbox,
+            activeProfileId,
+          });
+          const inbox = asInbox(inboxesByProfile[String(activeProfileId)]);
           const anyDue = persistedCards.some(
             (c) => c.due || new Date(c.prochaineRevision).getTime() <= Date.now()
           );
@@ -643,7 +701,7 @@ export const useLearnFlowStore = create<LearnFlowState>()(
             isAuthenticated: Boolean(p.isAuthenticated ?? current.isAuthenticated),
             onboardingCompleted: Boolean(p.onboardingCompleted ?? current.onboardingCompleted),
             profiles,
-            activeProfileId: String(p.activeProfileId ?? current.activeProfileId),
+            activeProfileId,
             ligue: p.ligue ?? current.ligue,
             suiviParental: p.suiviParental ?? current.suiviParental,
             flashcards: extraCards.length ? [...baseCards, ...extraCards] : baseCards,
@@ -653,7 +711,8 @@ export const useLearnFlowStore = create<LearnFlowState>()(
             customTools: p.customTools ?? current.customTools,
             agendaSessions: Array.isArray(p.agendaSessions) ? p.agendaSessions : current.agendaSessions,
             timetable: Array.isArray(p.timetable) ? p.timetable : current.timetable,
-            inbox: Array.isArray(p.inbox) ? p.inbox : current.inbox,
+            inbox,
+            inboxesByProfile,
             settings: {
               ...DEFAULT_SETTINGS,
               ...settingsPatch,
@@ -687,6 +746,7 @@ export const useLearnFlowStore = create<LearnFlowState>()(
         agendaSessions: s.agendaSessions,
         timetable: s.timetable,
         inbox: s.inbox,
+        inboxesByProfile: s.inboxesByProfile,
         settings: s.settings,
       }),
     }
