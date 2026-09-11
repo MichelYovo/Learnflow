@@ -1,4 +1,5 @@
 import RelanceStudio from "@/components/RelanceStudio";
+import EditorNoticePanel from "@/components/EditorNoticePanel";
 import TopBar from "@/components/TopBar";
 import { getAdminSession } from "@/lib/auth";
 import { loadDashboardData } from "@/lib/catalog";
@@ -21,6 +22,7 @@ export default async function RelancesPage() {
           {inactifs.length} élève{inactifs.length > 1 ? "s" : ""} sans activité depuis {INACTIVITY_DAYS} jours · Super
           Prof peut rédiger le mail, tu valides l’envoi.
         </p>
+        <EditorNoticePanel />
         <RelanceStudio students={inactifs} template={template} sends={sends} mailReady={isMailConfigured()} />
       </main>
     </>

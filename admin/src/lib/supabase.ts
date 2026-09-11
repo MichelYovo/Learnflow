@@ -230,4 +230,24 @@ export async function insertLoginNotice(row: Omit<LoginNotice, "id" | "created_a
   });
 }
 
+export type EditorNotice = {
+  id: string;
+  title: string;
+  body: string;
+  active?: boolean;
+  created_at: string;
+};
+
+export async function fetchEditorNotices() {
+  return restGet<EditorNotice>("editor_notices?select=*&order=created_at.desc&limit=40");
+}
+
+export async function insertEditorNotice(row: { title: string; body: string; active?: boolean }) {
+  return insertRow("editor_notices", {
+    title: row.title,
+    body: row.body,
+    active: row.active ?? true,
+  });
+}
+
 export { supabaseUrl };

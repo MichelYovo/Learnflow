@@ -384,3 +384,26 @@ create policy support_messages_insert_public
 
 grant insert on public.support_messages to anon, authenticated;
 revoke select, update, delete on public.support_messages from anon, authenticated, public;
+
+-- ─────────────────────────────────────────────────────────────
+-- Messages de l’éditeur (inbox élève)
+-- ─────────────────────────────────────────────────────────────
+
+create table if not exists public.editor_notices (
+  id uuid primary key default gen_random_uuid(),
+  title text not null,
+  body text not null,
+  active boolean not null default true,
+  created_at timestamptz not null default now()
+);
+
+alter table public.editor_notices enable row level security;
+
+drop policy if exists editor_notices_select_public on public.editor_notices;
+create policy editor_notices_select_public
+  on public.editor_notices for select
+  using (active = true);
+
+grant select on public.editor_notices to anon, authenticated;
+revoke insert, update, delete on public.editor_notices from anon, authenticated, public;
+
