@@ -131,6 +131,7 @@ export default function HomeScreen() {
               radius={24}
               initials={(profile.firstName || "?")[0]}
               fallbackColor={profile.color ?? colors.primary}
+              tier={ligue.nomLigue}
             />
           </Pressable>
           <View style={styles.greeting}>

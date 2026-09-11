@@ -1,16 +1,33 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
 import { AvatarChoiceGrid } from "@/components/AvatarPicker";
 import { useLearnFlowStore } from "@/store/useLearnFlowStore";
 import { useAppTheme } from "@/theme/useAppTheme";
 
 export default function AvatarGate() {
   const { colors } = useAppTheme();
+  const pathname = usePathname();
   const isAuthenticated = useLearnFlowStore((s) => s.isAuthenticated);
   const avatarId = useLearnFlowStore((s) => s.getActiveProfile()?.avatarId);
   const updateProfileAvatar = useLearnFlowStore((s) => s.updateProfileAvatar);
+  const wasProfil = useRef(false);
+  const [open, setOpen] = useState(false);
 
-  if (!isAuthenticated || avatarId) return null;
+  useEffect(() => {
+    const onProfil = pathname === "/app/profil" || pathname.startsWith("/app/profil/");
+    if (onProfil) {
+      wasProfil.current = true;
+      return;
+    }
+    if (wasProfil.current && isAuthenticated && !avatarId) {
+      setOpen(true);
+    }
+    wasProfil.current = false;
+  }, [pathname, isAuthenticated, avatarId]);
+
+  if (!open || !isAuthenticated || avatarId) return null;
 
   return (
     <div className="fixed inset-0 z-[80] flex items-end justify-center bg-slate-900/45 md:items-center">
@@ -19,16 +36,22 @@ export default function AvatarGate() {
         style={{ background: colors.white, paddingBottom: "max(1.25rem, env(safe-area-inset-bottom))" }}
       >
         <p className="text-[22px] font-extrabold" style={{ color: colors.textDark }}>
-          Choisis ton avatar
+          Choisis ta personnalité
         </p>
         <p className="mt-2 text-[13px] font-medium leading-[18px]" style={{ color: colors.textMuted }}>
-          Une seule fois : il t’identifie dans les ligues et sur ton profil. Personne ne te l’attribue à ta place.
+          Elle te suit dans les ligues et sur ton profil. Son look évolue avec ton rang — pas à chaque connexion.
         </p>
         <div className="mt-3">
-          <AvatarChoiceGrid selectedId={avatarId} onSelect={updateProfileAvatar} />
+          <AvatarChoiceGrid
+            selectedId={avatarId}
+            onSelect={(id) => {
+              updateProfileAvatar(id);
+              setOpen(false);
+            }}
+          />
         </div>
         <p className="mt-3 text-center text-xs font-bold" style={{ color: colors.textMuted }}>
-          Touche un visage pour continuer.
+          Touche une mascotte pour continuer.
         </p>
       </div>
     </div>

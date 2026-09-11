@@ -1,5 +1,6 @@
 import { createHash, randomInt, timingSafeEqual } from "crypto";
 import { createClient } from "@supabase/supabase-js";
+import { isLikelyTogoMobile } from "@/lib/phoneTogo";
 
 const OTP_TTL_MS = 10 * 60 * 1000;
 const OTP_MAX_ATTEMPTS = 10;
@@ -564,20 +565,20 @@ export async function handleLoginNotice(
   }
 
   const parentPhone = student?.parent_phone?.trim() ?? "";
-  if (parentPhone) {
+  const welcomeEvents = new Set(["signup", "parent_linked"]);
+  if (parentPhone && welcomeEvents.has(event) && isLikelyTogoMobile(parentPhone)) {
     const text =
       `LearnFlow — suivi parental\n\n` +
       `Bonjour,\n\n` +
-      `L’élève ${name} s’est connecté(e) à LearnFlow avec votre numéro ${maskPhone(parentPhone)} pour le suivi parental sur l’application.\n\n` +
-      `Quand : ${when} (heure du Togo)\n` +
-      `Application : ${appLabel(platform)}\n\n` +
-      `Si vous n’êtes pas d’accord, parlez-en à l’élève ou contactez LearnFlow.`;
+      `${name} vient d’ouvrir un compte LearnFlow avec votre numéro WhatsApp ${maskPhone(parentPhone)}.\n\n` +
+      `Vous recevrez ici un petit point sur ses progrès, toutes les une à deux semaines.\n\n` +
+      `Si vous n’êtes pas le parent ou tuteur, dites-le à ${name}.`;
     const wa = await sendWhatsApp(parentPhone, text);
     await logNotice(
       admin,
       user.id,
       "whatsapp",
-      event,
+      event === "signup" ? "signup" : "parent_linked",
       wa.ok ? "sent" : wa.skipped ? "skipped" : "error",
       wa.error,
     );

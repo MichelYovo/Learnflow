@@ -9,7 +9,7 @@ import ParentPhoneField from "@/components/ParentPhoneField";
 import SocialAuth from "@/components/SocialAuth";
 import ClassPicker from "@/components/ClassPicker";
 import { AuthStage, Page, PrimaryButton } from "@/components/ui";
-import { isValidTogoLocal, toTogoE164 } from "@/lib/phoneTogo";
+import { isValidTogoLocal, toTogoE164, TOGO_MOBILE_ERROR } from "@/lib/phoneTogo";
 import { advanceFromSession } from "@/lib/advanceAuth";
 import { savePendingAuth } from "@/lib/pendingAuth";
 import { getBrowserSupabase } from "@/lib/supabase";
@@ -28,6 +28,7 @@ export default function SignUpPage() {
   const [confirm, setConfirm] = useState("");
   const [classe, setClasse] = useState<ClasseAPC | "">("");
   const [parentLocal, setParentLocal] = useState("");
+  const [parentConfirmed, setParentConfirmed] = useState(false);
   const [showPw, setShowPw] = useState(false);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
@@ -58,7 +59,11 @@ export default function SignUpPage() {
       return;
     }
     if (!isValidTogoLocal(parentLocal)) {
-      setError("Indique le numéro parent togolais (8 chiffres après +228).");
+      setError(TOGO_MOBILE_ERROR);
+      return;
+    }
+    if (!parentConfirmed) {
+      setError("Coche la case pour confirmer que ce numéro est celui d’un parent, pas le tien.");
       return;
     }
     setError("");
@@ -195,7 +200,13 @@ export default function SignUpPage() {
           </div>
         </label>
 
-        <ParentPhoneField value={parentLocal} onChange={setParentLocal} className="mt-3" />
+        <ParentPhoneField
+          value={parentLocal}
+          onChange={setParentLocal}
+          confirmed={parentConfirmed}
+          onConfirmChange={setParentConfirmed}
+          className="mt-3"
+        />
 
         {error ? <p className="mt-3 text-xs font-bold text-red-500">{error}</p> : null}
 

@@ -149,7 +149,6 @@ export function overlayFiche(chapterId: string, fallback: FicheCoursData | undef
     schema: fallback?.schema,
     situationProbleme: f.situationProbleme ?? fallback?.situationProbleme,
     exempleResolu: f.exempleResolu ?? fallback?.exempleResolu,
-    miniQuiz: Array.isArray(f.miniQuiz) && f.miniQuiz.length > 0 ? f.miniQuiz : fallback?.miniQuiz,
   };
 }
 

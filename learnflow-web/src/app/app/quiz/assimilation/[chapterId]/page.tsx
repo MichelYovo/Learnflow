@@ -4,8 +4,8 @@ import { useEffect, useMemo, useRef, useState, Suspense } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import Icon from "@/components/Icon";
 import QuizPlay from "@/components/quiz/QuizPlay";
+import SessionRecap, { useSessionStats } from "@/components/SessionRecap";
 import Spira from "@/components/Spira";
-import SpiraCelebrate from "@/components/SpiraCelebrate";
 import { questionsForChapter } from "@/data/modeContent";
 import { usePublishedCatalog } from "@/data/publishedCache";
 import { playSfx, preloadSfx } from "@/lib/sfx";
@@ -32,6 +32,11 @@ function QuizInner() {
   const [done, setDone] = useState(false);
   const [result, setResult] = useState<{ xp: number; unlocked: boolean; challenger: boolean } | null>(null);
   const q = queue[current];
+  const recapStats = useSessionStats({
+    xp: result?.xp ?? 0,
+    score,
+    total: queue.length,
+  });
 
   useEffect(() => {
     preloadSfx();
@@ -64,72 +69,52 @@ function QuizInner() {
 
   if (done && result) {
     const perfect = result.unlocked;
-    if (loopErrors) {
-      const missed = missedRef.current;
-      return (
-        <div className="mx-auto max-w-xl">
-          <div
-            className="flex flex-col items-center gap-2.5 px-7 py-8 text-center text-white"
-            style={{ background: perfect ? "linear-gradient(135deg,#10B981,#059669)" : "linear-gradient(135deg,#F59E0B,#D97706)" }}
-          >
-            {perfect ? <SpiraCelebrate size={220} /> : <Icon name="alert-circle" size={40} color="#fff" />}
-            <p className="text-[28px] font-extrabold">
-              {score}/{queue.length}
-            </p>
-            <p className="text-[13px] font-semibold text-white/90">
-              {perfect ? `Chapitre maîtrisé · +${result.xp} XP` : "Sans chrono — on reboucle uniquement sur tes erreurs."}
-            </p>
-          </div>
-          <div className="space-y-3 px-5 py-5">
-            {!perfect && missed.length > 0 ? (
-              <button
-                type="button"
-                onClick={() => {
-                  setQueue(missed);
-                  missedRef.current = [];
-                  setDone(false);
-                  setCurrent(0);
-                  setScore(0);
-                  setSelected(null);
-                  setResult(null);
-                }}
-                className="w-full rounded-[14px] py-3.5 text-[15px] font-extrabold text-white"
-                style={{ background: colors.primary }}
-              >
-                Boucler sur les {missed.length} erreurs
-              </button>
-            ) : (
-              <button
-                type="button"
-                onClick={() => router.push("/app/modes/cramming")}
-                className="w-full rounded-[14px] py-3.5 text-[15px] font-extrabold text-white"
-                style={{ background: colors.primary }}
-              >
-                Retour Cramming
-              </button>
-            )}
-          </div>
-        </div>
-      );
-    }
-
+    const missed = missedRef.current;
     return (
-      <div className="mx-auto max-w-xl">
-        <div
-          className="flex flex-col items-center gap-2.5 px-7 py-8 text-center text-white"
-          style={{ background: perfect ? "linear-gradient(135deg,#10B981,#059669)" : "linear-gradient(135deg,#EF4444,#DC2626)" }}
-        >
-          {perfect ? <SpiraCelebrate size={220} /> : <Icon name="alert-circle" size={40} color="#fff" />}
-          <p className="text-[28px] font-extrabold">{perfect ? "Parfait !" : `${score}/{queue.length}`}</p>
-          <p className="text-[13px] font-semibold text-white/90">
-            {perfect
+      <SessionRecap
+        success={perfect}
+        title={perfect ? "Parfait !" : `${score}/${queue.length}`}
+        subtitle={
+          loopErrors
+            ? perfect
+              ? `Chapitre maîtrisé · +${result.xp} XP`
+              : "Sans chrono — on reboucle uniquement sur tes erreurs."
+            : perfect
               ? `Règle du 10/10 validée · +${result.xp} XP${result.challenger ? " · Badge CHALLENGER" : ""}`
-              : "Accès au Grand Quizz refusé — revois les points ratés"}
-          </p>
-        </div>
-
-        {perfect ? (
-          <div className="space-y-3 px-5 py-5">
+              : "Accès au Grand Quizz refusé — revois les points ratés"
+        }
+        stats={recapStats}
+      >
+        {loopErrors ? (
+          !perfect && missed.length > 0 ? (
+            <button
+              type="button"
+              onClick={() => {
+                setQueue(missed);
+                missedRef.current = [];
+                setDone(false);
+                setCurrent(0);
+                setScore(0);
+                setSelected(null);
+                setResult(null);
+              }}
+              className="w-full rounded-[14px] py-3.5 text-[15px] font-extrabold text-white"
+              style={{ background: colors.primary }}
+            >
+              Boucler sur les {missed.length} erreurs
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => router.push("/app/modes/cramming")}
+              className="w-full rounded-[14px] py-3.5 text-[15px] font-extrabold text-white"
+              style={{ background: colors.primary }}
+            >
+              Retour Cramming
+            </button>
+          )
+        ) : perfect ? (
+          <>
             <p className="text-center text-[10px] font-extrabold uppercase tracking-widest" style={{ color: colors.textMuted }}>
               Étape 2 — Instant T
             </p>
@@ -168,10 +153,9 @@ function QuizInner() {
                 </span>
               </span>
             </button>
-          </div>
+          </>
         ) : (
-          <div className="flex flex-col items-center gap-3 px-5 py-5">
-            <Spira scene="quiz.fail" size={88} />
+          <>
             <button
               type="button"
               onClick={() => router.push(`/app/cours/${chapterId}`)}
@@ -194,9 +178,9 @@ function QuizInner() {
             >
               Réessayer le quizz
             </button>
-          </div>
+          </>
         )}
-      </div>
+      </SessionRecap>
     );
   }
 

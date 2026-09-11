@@ -9,7 +9,6 @@ import InteractiveLessonText from "@/components/InteractiveLessonText";
 import { AppMain, ScreenHeader } from "@/components/ui";
 import { ficheForChapter } from "@/data/fiches";
 import { normalizeKeyword, toDetailBlocks, toLessonContent } from "@/data/lessonContent";
-import { questionsForChapter } from "@/data/modeContent";
 import { usePublishedCatalog } from "@/data/publishedCache";
 import { chapterHas3dImage } from "@/data/schemas3d";
 import { useLearnFlowStore } from "@/store/useLearnFlowStore";
@@ -21,14 +20,10 @@ export default function CoursePage() {
   const { chapterId } = useParams<{ chapterId: string }>();
   const router = useRouter();
   const catalogEpoch = usePublishedCatalog();
-  const fiche = useMemo(() => ficheForChapter(chapterId), [chapterId, catalogEpoch]);
-  const lesson = useMemo(() => toLessonContent(fiche), [fiche]);
   const classe = useLearnFlowStore((s) => s.getActiveProfile()?.classe);
-  const quizFallback = useMemo(
-    () => (chapterId ? questionsForChapter(chapterId, classe) : []),
-    [chapterId, classe, catalogEpoch],
-  );
-  const detailBlocks = useMemo(() => toDetailBlocks(fiche, quizFallback), [fiche, quizFallback]);
+  const fiche = useMemo(() => ficheForChapter(chapterId, classe), [chapterId, classe, catalogEpoch]);
+  const lesson = useMemo(() => toLessonContent(fiche), [fiche]);
+  const detailBlocks = useMemo(() => toDetailBlocks(fiche), [fiche]);
   const { colors } = useAppTheme();
   const markChapterPart = useLearnFlowStore((s) => s.markChapterPart);
 

@@ -116,6 +116,19 @@ export default function ProfStudio() {
   };
 
   const payload = active?.payload ?? emptyPayload();
+  const sit = payload.fiche.situationProbleme ?? { recit: "", question: "", competenceVisee: "" };
+  const ex = payload.fiche.exempleResolu ?? { enonce: "", etapes: [], reponseFinale: "" };
+  const miniPad = emptyPayload().fiche.miniQuiz ?? [];
+  const mini = [...(payload.fiche.miniQuiz ?? []), ...miniPad].slice(0, 2);
+
+  const patchFiche = (patch: Partial<CoursePayload["fiche"]>) => {
+    if (!active) return;
+    setActive({
+      ...active,
+      payload: { ...payload, fiche: { ...payload.fiche, ...patch } },
+    });
+  };
+
   const dropProps = {
     accept: COURSE_ACCEPT,
     file,
@@ -197,56 +210,159 @@ export default function ProfStudio() {
               <button type="button" disabled={busy} onClick={() => void saveDraft()} className="rounded-2xl bg-[#F1F5F9] px-4 py-2 text-sm font-extrabold">Sauver</button>
             </div>
             <label className="block text-xs font-extrabold text-[#64748B]">
-              L&apos;Essentiel (synthèse autonome, [mots] entre crochets)
+              L&apos;Essentiel — fiche réflexe (~5 min, [mots] entre crochets)
               <textarea
                 rows={8}
                 value={payload.fiche.essentialText ?? payload.fiche.pucesEssentiel.join("\n")}
                 onChange={(e) => {
                   const essentialText = e.target.value;
-                  setActive({
-                    ...active,
-                    payload: {
-                      ...payload,
-                      fiche: {
-                        ...payload.fiche,
-                        essentialText,
-                        pucesEssentiel: essentialText
-                          .split(/\n+/)
-                          .map((l) => l.replace(/^[•\-]\s+/, "").trim())
-                          .filter(Boolean),
-                      },
-                    },
+                  patchFiche({
+                    essentialText,
+                    pucesEssentiel: essentialText
+                      .split(/\n+/)
+                      .map((l) => l.replace(/^[•\-]\s+/, "").trim())
+                      .filter(Boolean),
                   });
                 }}
                 className="mt-1 w-full rounded-2xl border-2 border-[#F0EFEE] p-3 text-sm leading-relaxed"
               />
             </label>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <label className="block text-xs font-extrabold text-[#64748B] sm:col-span-2">
+                Situation-problème — récit du quotidien
+                <textarea
+                  rows={3}
+                  value={sit.recit}
+                  onChange={(e) => patchFiche({ situationProbleme: { ...sit, recit: e.target.value } })}
+                  className="mt-1 w-full rounded-2xl border-2 border-[#F0EFEE] p-3 text-sm leading-relaxed"
+                />
+              </label>
+              <label className="block text-xs font-extrabold text-[#64748B]">
+                Question déclencheur
+                <input
+                  value={sit.question}
+                  onChange={(e) => patchFiche({ situationProbleme: { ...sit, question: e.target.value } })}
+                  className="mt-1 h-11 w-full rounded-2xl border-2 border-[#F0EFEE] px-3 text-sm font-bold"
+                />
+              </label>
+              <label className="block text-xs font-extrabold text-[#64748B] sm:col-span-2">
+                Compétence visée (APC)
+                <textarea
+                  rows={2}
+                  value={sit.competenceVisee}
+                  onChange={(e) => patchFiche({ situationProbleme: { ...sit, competenceVisee: e.target.value } })}
+                  className="mt-1 w-full rounded-2xl border-2 border-[#F0EFEE] p-3 text-sm leading-relaxed"
+                />
+              </label>
+            </div>
             <label className="block text-xs font-extrabold text-[#64748B]">
-              En Détails (cours APC complet, lecture continue)
+              En Détails — savoirs &amp; savoir-faire (sans l&apos;exemple)
               <textarea
                 rows={10}
                 value={payload.fiche.detailedText ?? payload.fiche.sectionsDetaillees.map((s) => `${s.titre}\n${s.paragraphes.join("\n")}`).join("\n\n")}
                 onChange={(e) => {
                   const detailedText = e.target.value;
-                  setActive({
-                    ...active,
-                    payload: {
-                      ...payload,
-                      fiche: {
-                        ...payload.fiche,
-                        detailedText,
-                        sectionsDetaillees: detailedText.trim()
-                          ? [{ id: "s1", titre: "Cours développé", paragraphes: [detailedText] }]
-                          : payload.fiche.sectionsDetaillees,
-                      },
-                    },
+                  patchFiche({
+                    detailedText,
+                    sectionsDetaillees: detailedText.trim()
+                      ? [{ id: "s1", titre: "Cours développé", paragraphes: [detailedText] }]
+                      : payload.fiche.sectionsDetaillees,
                   });
                 }}
                 className="mt-1 w-full rounded-2xl border-2 border-[#F0EFEE] p-3 text-sm leading-relaxed"
               />
             </label>
             <label className="block text-xs font-extrabold text-[#64748B]">
-              Quiz (JSON)
+              Exemple résolu — énoncé
+              <textarea
+                rows={3}
+                value={ex.enonce}
+                onChange={(e) => patchFiche({ exempleResolu: { ...ex, enonce: e.target.value } })}
+                className="mt-1 w-full rounded-2xl border-2 border-[#F0EFEE] p-3 text-sm leading-relaxed"
+              />
+            </label>
+            <label className="block text-xs font-extrabold text-[#64748B]">
+              Étapes (un paragraphe = une étape)
+              <textarea
+                rows={6}
+                value={ex.etapes.map((s) => (s.titre ? `${s.titre}\n${s.texte}` : s.texte)).join("\n\n")}
+                onChange={(e) => {
+                  const etapes = e.target.value
+                    .split(/\n\n+/)
+                    .map((block, i) => {
+                      const lines = block.split("\n").map((l) => l.trim()).filter(Boolean);
+                      if (lines.length === 0) return { titre: `Étape ${i + 1}`, texte: "" };
+                      if (lines.length === 1) return { titre: `Étape ${i + 1}`, texte: lines[0] };
+                      return { titre: lines[0], texte: lines.slice(1).join(" ") };
+                    })
+                    .filter((s) => s.texte.trim());
+                  patchFiche({ exempleResolu: { ...ex, etapes } });
+                }}
+                className="mt-1 w-full rounded-2xl border-2 border-[#F0EFEE] p-3 text-sm leading-relaxed"
+              />
+            </label>
+            <label className="block text-xs font-extrabold text-[#64748B]">
+              Réponse finale
+              <input
+                value={ex.reponseFinale}
+                onChange={(e) => patchFiche({ exempleResolu: { ...ex, reponseFinale: e.target.value } })}
+                className="mt-1 h-11 w-full rounded-2xl border-2 border-[#F0EFEE] px-3 text-sm font-bold"
+              />
+            </label>
+            {mini.map((q, qi) => (
+              <fieldset key={q.id || qi} className="rounded-2xl border-2 border-[#F0EFEE] p-3">
+                <legend className="px-1 text-xs font-extrabold text-[#64748B]">Mini-QCM {qi + 1} / 2</legend>
+                <input
+                  value={q.enonceQuestion}
+                  onChange={(e) => {
+                    const next = mini.map((item, i) => (i === qi ? { ...item, enonceQuestion: e.target.value } : item));
+                    patchFiche({ miniQuiz: next });
+                  }}
+                  placeholder="Énoncé"
+                  className="h-11 w-full rounded-2xl border-2 border-[#F0EFEE] px-3 text-sm font-bold"
+                />
+                <textarea
+                  rows={4}
+                  value={q.optionsProposees.join("\n")}
+                  onChange={(e) => {
+                    const optionsProposees = e.target.value.split("\n").slice(0, 6);
+                    const next = mini.map((item, i) => (i === qi ? { ...item, optionsProposees } : item));
+                    patchFiche({ miniQuiz: next });
+                  }}
+                  placeholder={"Option A\nOption B\nOption C\nOption D"}
+                  className="mt-2 w-full rounded-2xl border-2 border-[#F0EFEE] p-3 text-sm leading-relaxed"
+                />
+                <div className="mt-2 flex flex-wrap gap-2">
+                  <label className="text-xs font-extrabold text-[#64748B]">
+                    Index correct (0–3)
+                    <input
+                      type="number"
+                      min={0}
+                      max={5}
+                      value={q.indexReponseCorrecte}
+                      onChange={(e) => {
+                        const indexReponseCorrecte = Math.max(0, Number(e.target.value) || 0);
+                        const next = mini.map((item, i) => (i === qi ? { ...item, indexReponseCorrecte } : item));
+                        patchFiche({ miniQuiz: next });
+                      }}
+                      className="ml-2 h-9 w-16 rounded-xl border-2 border-[#F0EFEE] px-2 text-sm font-bold"
+                    />
+                  </label>
+                </div>
+                <textarea
+                  rows={2}
+                  value={q.explicationPedagogique}
+                  onChange={(e) => {
+                    const next = mini.map((item, i) => (i === qi ? { ...item, explicationPedagogique: e.target.value } : item));
+                    patchFiche({ miniQuiz: next });
+                  }}
+                  placeholder="Explication"
+                  className="mt-2 w-full rounded-2xl border-2 border-[#F0EFEE] p-3 text-sm leading-relaxed"
+                />
+              </fieldset>
+            ))}
+            <label className="block text-xs font-extrabold text-[#64748B]">
+              Quiz d&apos;assimilation (JSON, 10 questions)
               <textarea
                 rows={10}
                 value={JSON.stringify(payload.quiz, null, 2)}

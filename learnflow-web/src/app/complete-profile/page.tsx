@@ -9,7 +9,8 @@ import { AuthStage, Page, PrimaryButton } from "@/components/ui";
 import { classLabel } from "@/data/mock";
 import { ensureBeginnerLeague, fetchOwnStudentProfile, trackActivity, upsertStudentProfile } from "@/lib/cloud";
 import { isProfileComplete } from "@/lib/cloudTypes";
-import { isValidTogoLocal, toTogoE164 } from "@/lib/phoneTogo";
+import { markParentConfirmed } from "@/lib/parentConfirm";
+import { isValidTogoLocal, toTogoE164, TOGO_MOBILE_ERROR } from "@/lib/phoneTogo";
 import { notifySecureLogin } from "@/lib/secureAuth";
 import { getBrowserSupabase } from "@/lib/supabase";
 import { useLearnFlowStore } from "@/store/useLearnFlowStore";
@@ -22,6 +23,7 @@ export default function CompleteProfilePage() {
   const applyCloudUser = useLearnFlowStore((s) => s.applyCloudUser);
   const [classe, setClasse] = useState<ClasseAPC | "">("");
   const [parentLocal, setParentLocal] = useState("");
+  const [parentConfirmed, setParentConfirmed] = useState(false);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const [ready, setReady] = useState(false);
@@ -76,6 +78,14 @@ export default function CompleteProfilePage() {
       return;
     }
     const phone = isValidTogoLocal(parentLocal) ? toTogoE164(parentLocal) : undefined;
+    if (parentLocal && !phone) {
+      setError(TOGO_MOBILE_ERROR);
+      return;
+    }
+    if (phone && !parentConfirmed) {
+      setError("Coche la case pour confirmer que ce numéro est celui d’un parent, pas le tien.");
+      return;
+    }
     setError("");
     setBusy(true);
     const result = await upsertStudentProfile({
@@ -109,6 +119,7 @@ export default function CompleteProfilePage() {
     void ensureBeginnerLeague(userId);
     void trackActivity("profile_complete", { classe, platform: "web" });
     void notifySecureLogin(phone ? "parent_linked" : "profile_complete");
+    if (phone) markParentConfirmed(userId);
     router.replace("/success");
   };
 
@@ -144,10 +155,14 @@ export default function CompleteProfilePage() {
           </div>
         </label>
 
-        <ParentPhoneField value={parentLocal} onChange={setParentLocal} className="mt-4" />
-        <p className="mt-2 text-[11px] font-semibold" style={{ color: colors.textMuted }}>
-          Numéro parent facultatif. S’il est renseigné, un WhatsApp LearnFlow part aux parents à chaque connexion.
-        </p>
+        <ParentPhoneField
+          value={parentLocal}
+          onChange={setParentLocal}
+          confirmed={parentConfirmed}
+          onConfirmChange={setParentConfirmed}
+          optional
+          className="mt-4"
+        />
 
         {error ? <p className="mt-3 text-xs font-bold text-red-500">{error}</p> : null}
 

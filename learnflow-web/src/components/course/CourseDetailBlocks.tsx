@@ -1,6 +1,5 @@
 "use client";
 
-import MiniAutoEval from "@/components/course/MiniAutoEval";
 import { isDetailHeading, splitDetailParas, type DetailBlocks } from "@/data/lessonContent";
 import { useAppTheme } from "@/theme/useAppTheme";
 import type { ReactNode } from "react";
@@ -10,7 +9,7 @@ function BlockCard({ n, label, children }: { n: number; label: string; children:
   return (
     <article className="rounded-3xl px-5 py-[22px]" style={{ background: colors.white }}>
       <p className="text-[11px] font-extrabold uppercase tracking-[0.14em]" style={{ color: colors.primary }}>
-        {n} / 4 · {label}
+        {n} / 3 · {label}
       </p>
       {children}
     </article>
@@ -92,13 +91,6 @@ export default function CourseDetailBlocks({ blocks }: { blocks: DetailBlocks })
             {blocks.exemple.reponseFinale}
           </p>
         ) : null}
-      </BlockCard>
-
-      <BlockCard n={4} label="Mini-autoévaluation">
-        <p className="mt-2 text-sm font-semibold" style={{ color: colors.textMuted }}>
-          2 questions pour valider avant le quiz d&apos;assimilation.
-        </p>
-        <MiniAutoEval questions={blocks.miniQuiz} />
       </BlockCard>
     </div>
   );

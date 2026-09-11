@@ -36,7 +36,7 @@ export default function BlitzInviteCard({
       }}
     >
       <div
-        className="flex items-center justify-between gap-2 px-4 py-2.5 text-[11px] font-black uppercase tracking-[0.18em]"
+        className="flex flex-wrap items-center justify-between gap-2 px-3 py-2 text-[10px] font-black uppercase tracking-[0.14em] sm:px-4 sm:py-2.5 sm:text-[11px] sm:tracking-[0.18em]"
         style={{ background: "repeating-linear-gradient(-45deg, #F59E0B 0 10px, #111 10px 20px)" }}
       >
         <span className="rounded-full bg-black/70 px-2.5 py-1 text-[#FDE68A]">Duel Blitz</span>
@@ -82,7 +82,7 @@ export default function BlitzInviteCard({
             On t&apos;a défié ?
           </p>
           <form
-            className="flex gap-2"
+            className="flex flex-col gap-2 min-[420px]:flex-row"
             onSubmit={(e) => {
               e.preventDefault();
               onJoin();
@@ -92,12 +92,12 @@ export default function BlitzInviteCard({
               value={codeInput}
               onChange={(e) => onCodeInput(e.target.value.toUpperCase())}
               placeholder="Colle le code du rival"
-              className="min-h-12 flex-1 rounded-2xl border border-amber-300/35 bg-black/40 px-4 text-sm font-bold uppercase tracking-widest text-white outline-none placeholder:normal-case placeholder:tracking-normal placeholder:text-white/35 md:min-h-14"
+              className="min-h-12 min-w-0 w-full rounded-2xl border border-amber-300/35 bg-black/40 px-4 text-sm font-bold uppercase tracking-widest text-white outline-none placeholder:normal-case placeholder:tracking-normal placeholder:text-white/35 min-[420px]:flex-1 md:min-h-14"
             />
             <button
               type="submit"
               disabled={busy}
-              className="rounded-2xl bg-[#F59E0B] px-4 text-sm font-black text-[#111] disabled:opacity-60 md:px-5"
+              className="min-h-12 shrink-0 rounded-2xl bg-[#F59E0B] px-4 text-sm font-black text-[#111] disabled:opacity-60 min-[420px]:px-5"
             >
               Entrer
             </button>

@@ -8,7 +8,6 @@ import Icon from "../../components/Icon";
 import InteractiveLessonText from "../../components/InteractiveLessonText";
 import { ficheForChapter } from "../../data/fiches";
 import { normalizeKeyword, toDetailBlocks, toLessonContent } from "../../data/lessonContent";
-import { questionsForChapter } from "../../data/modeContent";
 import { usePublishedCatalog } from "../../data/publishedCache";
 import { chapterHas3dImage } from "../../data/schemas3d";
 import { useAppTheme } from "../../theme/useAppTheme";
@@ -23,16 +22,12 @@ type ActiveTab = "essentiel" | "details";
 export default function CourseScreen({ navigation, route }: Props) {
   const { colors } = useAppTheme();
   const markChapterPart = useLearnFlowStore((s) => s.markChapterPart);
+  const classe = useLearnFlowStore((s) => s.getActiveProfile()?.classe);
   const chapterId = route.params?.chapterId ?? "eq2";
   const catalogEpoch = usePublishedCatalog();
-  const fiche = useMemo(() => ficheForChapter(chapterId), [chapterId, catalogEpoch]);
+  const fiche = useMemo(() => ficheForChapter(chapterId, classe), [chapterId, classe, catalogEpoch]);
   const lesson = useMemo(() => toLessonContent(fiche), [fiche]);
-  const classe = useLearnFlowStore((s) => s.getActiveProfile()?.classe);
-  const quizFallback = useMemo(
-    () => questionsForChapter(chapterId, classe),
-    [chapterId, classe, catalogEpoch],
-  );
-  const detailBlocks = useMemo(() => toDetailBlocks(fiche, quizFallback), [fiche, quizFallback]);
+  const detailBlocks = useMemo(() => toDetailBlocks(fiche), [fiche]);
   const [activeTab, setActiveTab] = useState<ActiveTab>("essentiel");
   const [masked, setMasked] = useState(false);
   const [revealed, setRevealed] = useState<Set<string>>(new Set());

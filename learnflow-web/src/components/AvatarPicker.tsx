@@ -1,6 +1,6 @@
 "use client";
 
-import { AVATAR_IDS } from "@/data/avatars";
+import { AVATARS } from "@/data/avatars";
 import { useAppTheme } from "@/theme/useAppTheme";
 import Avatar from "./Avatar";
 import Icon from "./Icon";
@@ -15,25 +15,28 @@ export function AvatarChoiceGrid({
   compact?: boolean;
 }) {
   const { colors } = useAppTheme();
-  const size = compact ? 56 : 64;
+  const size = compact ? 52 : 64;
   return (
-    <div className="flex flex-wrap">
-      {AVATAR_IDS.map((id, i) => {
-        const on = selectedId === id;
+    <div className="grid grid-cols-4 gap-2">
+      {AVATARS.map((persona) => {
+        const on = selectedId === persona.id;
         return (
           <button
-            key={id}
+            key={persona.id}
             type="button"
-            onClick={() => onSelect(id)}
+            onClick={() => onSelect(persona.id)}
             aria-pressed={on}
-            aria-label={`Avatar ${i + 1}`}
-            className="flex w-1/5 items-center justify-center rounded-2xl border-2 py-2"
+            aria-label={persona.label}
+            className="flex flex-col items-center gap-1 rounded-2xl border-2 px-1 py-2"
             style={{
               background: on ? colors.mathsBg : "transparent",
               borderColor: on ? colors.primary : "transparent",
             }}
           >
-            <Avatar avatarId={id} size={size} selected={on} />
+            <Avatar avatarId={persona.id} size={size} selected={on} />
+            <span className="text-[11px] font-extrabold" style={{ color: on ? colors.primary : colors.textDark }}>
+              {persona.label}
+            </span>
           </button>
         );
       })}
@@ -46,18 +49,25 @@ export default function AvatarPicker({
   selectedId,
   onSelect,
   onClose,
+  required,
 }: {
   open: boolean;
   selectedId?: string | null;
   onSelect: (id: string) => void;
   onClose: () => void;
+  required?: boolean;
 }) {
   const { colors } = useAppTheme();
   if (!open) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center md:items-center">
-      <button type="button" className="absolute inset-0 bg-slate-900/45" onClick={onClose} aria-label="Fermer" />
+      <button
+        type="button"
+        className="absolute inset-0 bg-slate-900/45"
+        onClick={required ? undefined : onClose}
+        aria-label={required ? undefined : "Fermer"}
+      />
       <div
         className="relative z-10 w-full max-w-md rounded-t-[28px] px-4 pb-5 pt-2 md:rounded-[28px] md:p-5"
         style={{ background: colors.white, paddingBottom: "max(1.25rem, env(safe-area-inset-bottom))" }}
@@ -66,21 +76,23 @@ export default function AvatarPicker({
         <div className="mb-3 flex items-start gap-3 px-1">
           <div className="min-w-0 flex-1">
             <p className="text-lg font-extrabold" style={{ color: colors.textDark }}>
-              Choisis ton avatar
+              Choisis ta personnalité
             </p>
             <p className="mt-1 text-xs font-medium" style={{ color: colors.textMuted }}>
-              10 visages d’élèves — il t’identifie partout dans l’app.
+              Une mascotte à toi — son look change avec ton rang de ligue.
             </p>
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
-            style={{ background: colors.surfaceAlt }}
-            aria-label="Fermer"
-          >
-            <Icon name="x" size={16} color={colors.textDark} />
-          </button>
+          {required ? null : (
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
+              style={{ background: colors.surfaceAlt }}
+              aria-label="Fermer"
+            >
+              <Icon name="x" size={16} color={colors.textDark} />
+            </button>
+          )}
         </div>
         <AvatarChoiceGrid
           selectedId={selectedId}

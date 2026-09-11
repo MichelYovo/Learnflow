@@ -225,7 +225,6 @@ export interface FicheCoursData {
   schema?: SchemaCoursKind;
   situationProbleme?: SituationProbleme;
   exempleResolu?: ExempleResolu;
-  /** 2 QCM formatifs, avant le quiz d'assimilation. */
   miniQuiz?: QCMData[];
   estBioniqueActive?: boolean;
   ancreId?: string;

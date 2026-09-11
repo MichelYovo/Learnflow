@@ -2,6 +2,7 @@ import TopBar from "@/components/TopBar";
 import { getAdminSession } from "@/lib/auth";
 import { isMailConfigured } from "@/lib/mail";
 import { adminHasGemini, cloudStatusLabel, isAdminCloudReady, isSupabaseConfigured } from "@/lib/supabase";
+import { isWhatsAppConfigured } from "@/lib/whatsapp";
 
 export default async function SettingsPage() {
   const session = await getAdminSession();
@@ -29,9 +30,13 @@ export default async function SettingsPage() {
               <dt className="font-semibold text-[#64748B]">Gemini (Prof, schémas, Super Prof)</dt>
               <dd className="font-extrabold text-[#1C1917]">{adminHasGemini() ? "GEMINI_API_KEY ok" : "Clé absente"}</dd>
             </div>
-            <div className="flex justify-between gap-4">
+            <div className="flex justify-between gap-4 border-b border-[#F0EFEE] pb-3">
               <dt className="font-semibold text-[#64748B]">Mails de relance</dt>
               <dd className="font-extrabold text-[#1C1917]">{isMailConfigured() ? "SMTP / Resend ok" : "Non configuré"}</dd>
+            </div>
+            <div className="flex justify-between gap-4">
+              <dt className="font-semibold text-[#64748B]">WhatsApp parents</dt>
+              <dd className="font-extrabold text-[#1C1917]">{isWhatsAppConfigured() ? "Branché" : "Non configuré"}</dd>
             </div>
           </dl>
           <p className="mt-5 text-sm font-medium leading-relaxed text-[#64748B]">

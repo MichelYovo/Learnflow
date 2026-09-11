@@ -13,8 +13,15 @@ export function normalizeTogoLocal(value: string): string {
 }
 
 export function isValidTogoLocal(local: string): boolean {
-  return /^\d{8}$/.test(local);
+  return isLikelyTogoMobile(local);
 }
+
+export function isLikelyTogoMobile(value?: string): boolean {
+  return /^[79]\d{7}$/.test(normalizeTogoLocal(value ?? ""));
+}
+
+export const TOGO_MOBILE_ERROR =
+  "Le WhatsApp parent doit être un mobile Togo : 8 chiffres après +228, commençant par 7 (Moov) ou 9 (Togocel).";
 
 export function toTogoE164(local: string): string {
   return `${TOGO_PREFIX}${normalizeTogoLocal(local)}`;

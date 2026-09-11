@@ -1,5 +1,6 @@
 import { ensureBeginnerLeague, fetchOwnStudentProfile, isProfileComplete, trackActivity, upsertStudentProfile } from "./cloud";
 import { clearPendingAuth, loadPendingAuth } from "./pendingAuth";
+import { markParentConfirmed } from "./parentConfirm";
 import { notifySecureLogin } from "./secureAuth";
 import { isSupabaseConfigured, supabase } from "./supabase";
 
@@ -65,6 +66,7 @@ export async function settleVerifiedUser(): Promise<
     await clearPendingAuth();
     void trackActivity("signup", { provider: "email" });
     void notifySecureLogin("signup");
+    void markParentConfirmed(user.id);
     return {
       next: "ready",
       fresh: true,

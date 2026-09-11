@@ -19,7 +19,7 @@ import ClassPicker from "../../components/ClassPicker";
 import SocialAuth from "../../components/SocialAuth";
 import { advanceFromSession } from "../../lib/advanceAuth";
 import { signInWithGoogle } from "../../lib/googleAuth";
-import { isValidTogoLocal, toTogoE164 } from "../../lib/phoneTogo";
+import { isValidTogoLocal, toTogoE164, TOGO_MOBILE_ERROR } from "../../lib/phoneTogo";
 import { savePendingAuth } from "../../lib/pendingAuth";
 import { useLearnFlowStore } from "../../store/useLearnFlowStore";
 import { colors } from "../../theme/colors";
@@ -40,6 +40,7 @@ export default function SignUpScreen({ navigation }: Props) {
   const [confirm, setConfirm] = useState("");
   const [classe, setClasse] = useState<ClasseAPC | "">("");
   const [parentLocal, setParentLocal] = useState("");
+  const [parentConfirmed, setParentConfirmed] = useState(false);
   const [showPw, setShowPw] = useState(false);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
@@ -92,7 +93,11 @@ export default function SignUpScreen({ navigation }: Props) {
         return;
       }
       if (!isValidTogoLocal(parentLocal)) {
-        setError("Indique le numéro parent togolais (8 chiffres après +228).");
+        setError(TOGO_MOBILE_ERROR);
+        return;
+      }
+      if (!parentConfirmed) {
+        setError("Coche la case pour confirmer que ce numéro est celui d’un parent, pas le tien.");
         return;
       }
     }
@@ -245,7 +250,12 @@ export default function SignUpScreen({ navigation }: Props) {
             <ClassPicker value={classe} onChange={setClasse} />
           </View>
 
-          <ParentPhoneField value={parentLocal} onChange={setParentLocal} />
+          <ParentPhoneField
+            value={parentLocal}
+            onChange={setParentLocal}
+            confirmed={parentConfirmed}
+            onConfirmChange={setParentConfirmed}
+          />
 
           {error ? <Text style={styles.error}>{error}</Text> : null}
 

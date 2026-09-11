@@ -78,7 +78,7 @@ export default function AccueilPage() {
     <div>
       <AppBar bordered={false} innerClassName="justify-between gap-2 py-3.5 sm:gap-3">
         <Link href="/app/profil" className="flex min-w-0 items-center gap-2 sm:gap-3">
-          <Avatar avatarId={profile.avatarId} size={40} initials={profile.firstName} fallbackColor={profile.color} />
+          <Avatar avatarId={profile.avatarId} size={40} initials={profile.firstName} fallbackColor={profile.color} tier={ligue.nomLigue} />
           <span className="min-w-0">
             <span className="block text-[12px] font-semibold sm:text-[13px]" style={{ color: colors.textSecondary }}>
               Salut

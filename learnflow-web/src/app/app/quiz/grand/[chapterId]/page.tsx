@@ -3,11 +3,11 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import QuizPlay from "@/components/quiz/QuizPlay";
+import SessionRecap, { useSessionStats } from "@/components/SessionRecap";
 import Spira from "@/components/Spira";
 import { PrimaryButton } from "@/components/ui";
 import { questionsForGrandQuiz } from "@/data/modeContent";
 import { usePublishedCatalog } from "@/data/publishedCache";
-import { spiraForScore } from "@/data/spira";
 import { calculerXP } from "@/engine/xp";
 import { playSfx, preloadSfx } from "@/lib/sfx";
 import { useLearnFlowStore } from "@/store/useLearnFlowStore";
@@ -26,6 +26,8 @@ export default function GrandQuizzPage() {
   const [selected, setSelected] = useState<number | null>(null);
   const [score, setScore] = useState(0);
   const [done, setDone] = useState(false);
+  const [xpGained, setXpGained] = useState(0);
+  const recapStats = useSessionStats({ xp: xpGained, score, total: questions.length });
   const q = questions[current];
 
   useEffect(() => {
@@ -64,6 +66,7 @@ export default function GrandQuizzPage() {
         multiplicateurPrecision: 2,
       });
       accumulerXP(xp);
+      setXpGained(xp);
       setDone(true);
     } else {
       setCurrent((c) => c + 1);
@@ -72,23 +75,16 @@ export default function GrandQuizzPage() {
   };
 
   if (done) {
+    const perfect = score === questions.length;
     return (
-      <div className="flex min-h-dvh flex-col items-center justify-center px-6 text-center">
-        <Spira
-          mood={spiraForScore(score, questions.length)}
-          size={96}
-          message={score === questions.length ? "Sprint parfait !" : "Grand Quizz terminé. XP sprint ×2 appliqué."}
-        />
-        <p className="mt-3 text-3xl font-extrabold">
-          {score}/{questions.length}
-        </p>
-        <p className="mt-1 text-sm font-semibold" style={{ color: colors.textMuted }}>
-          Grand Quizz terminé · XP sprint ×2 appliqué
-        </p>
-        <div className="mt-6 w-full max-w-sm">
-          <PrimaryButton onClick={() => router.push("/app")}>Retour</PrimaryButton>
-        </div>
-      </div>
+      <SessionRecap
+        success={perfect}
+        title={perfect ? "Sprint parfait !" : `${score}/${questions.length}`}
+        subtitle="Grand Quizz terminé · XP sprint ×2 appliqué"
+        stats={recapStats}
+      >
+        <PrimaryButton onClick={() => router.push("/app")}>Retour</PrimaryButton>
+      </SessionRecap>
     );
   }
 

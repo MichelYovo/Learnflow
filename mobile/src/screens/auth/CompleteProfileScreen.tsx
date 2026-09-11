@@ -8,7 +8,8 @@ import ClassPicker from "../../components/ClassPicker";
 import ParentPhoneField from "../../components/ParentPhoneField";
 import { classLabel } from "../../data/mock";
 import { ensureBeginnerLeague, fetchOwnStudentProfile, isProfileComplete, trackActivity, upsertStudentProfile } from "../../lib/cloud";
-import { isValidTogoLocal, toTogoE164 } from "../../lib/phoneTogo";
+import { markParentConfirmed } from "../../lib/parentConfirm";
+import { isValidTogoLocal, toTogoE164, TOGO_MOBILE_ERROR } from "../../lib/phoneTogo";
 import { notifySecureLogin } from "../../lib/secureAuth";
 import { isSupabaseConfigured, supabase } from "../../lib/supabase";
 import { useLearnFlowStore } from "../../store/useLearnFlowStore";
@@ -24,6 +25,7 @@ export default function CompleteProfileScreen({ navigation }: Props) {
   const applyCloudUser = useLearnFlowStore((s) => s.applyCloudUser);
   const [classe, setClasse] = useState<ClasseAPC | "">("");
   const [parentLocal, setParentLocal] = useState("");
+  const [parentConfirmed, setParentConfirmed] = useState(false);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const [userId, setUserId] = useState("");
@@ -76,6 +78,14 @@ export default function CompleteProfileScreen({ navigation }: Props) {
       return;
     }
     const phone = isValidTogoLocal(parentLocal) ? toTogoE164(parentLocal) : undefined;
+    if (parentLocal && !phone) {
+      setError(TOGO_MOBILE_ERROR);
+      return;
+    }
+    if (phone && !parentConfirmed) {
+      setError("Coche la case pour confirmer que ce numéro est celui d’un parent, pas le tien.");
+      return;
+    }
     setError("");
     setBusy(true);
     const result = await upsertStudentProfile({
@@ -112,6 +122,7 @@ export default function CompleteProfileScreen({ navigation }: Props) {
     void ensureBeginnerLeague(userId);
     void trackActivity("profile_complete", { classe, platform: "mobile" });
     void notifySecureLogin(phone ? "parent_linked" : "profile_complete");
+    if (phone) void markParentConfirmed(userId);
     navigation.replace("Success");
   };
 
@@ -125,10 +136,13 @@ export default function CompleteProfileScreen({ navigation }: Props) {
         </Text>
         <Text style={[styles.label, { color: colors.textDark }]}>Ma classe</Text>
         <ClassPicker value={classe} onChange={setClasse} />
-        <ParentPhoneField value={parentLocal} onChange={setParentLocal} />
-        <Text style={[styles.optional, { color: colors.textMuted }]}>
-          Numéro parent facultatif. S’il est renseigné, un WhatsApp LearnFlow part aux parents à chaque connexion.
-        </Text>
+        <ParentPhoneField
+          value={parentLocal}
+          onChange={setParentLocal}
+          confirmed={parentConfirmed}
+          onConfirmChange={setParentConfirmed}
+          optional
+        />
         {error ? <Text style={styles.error}>{error}</Text> : null}
         {classe ? (
           <Text style={[styles.hint, { color: colors.textMuted }]}>Classe : {classLabel(classe)}</Text>

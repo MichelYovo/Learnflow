@@ -34,8 +34,8 @@ export default function PrivacyPage() {
             onChange={(v) => update({ shareBlitzScores: v })}
           />
           <SettingsToggleRow
-            label="SMS parent passif"
-            sub="Félicitations uniquement (10/10, Challenger) — jamais intrusif"
+            label="WhatsApp parent"
+            sub="Accueil + point de progrès toutes les 1 à 2 semaines — pas à chaque connexion"
             value={prefs.parentSmsPassive}
             onChange={(v) => update({ parentSmsPassive: v })}
           />

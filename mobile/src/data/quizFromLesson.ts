@@ -34,41 +34,36 @@ function seededShuffle<T>(arr: T[], seed: string): T[] {
   return a;
 }
 
-const DISTRACTORS = [
-  "le discriminant Δ = b² − 4ac",
-  "la bile produite par le pancréas",
-  "un neurone qui conduit dans les deux sens",
-  "une équation du premier degré",
-  "la petite circulation uniquement",
-  "un module égal à l'argument",
-];
+const DISTRACTORS_BY_SUBJECT: Record<string, string[]> = {
+  maths: ["u · v = 0 pour tous vecteurs", "une primitive de e^x est ln x", "card(E) = 0 si E est non vide", "i² = 1"],
+  svt: ["l'ADN humain est simple brin", "la méiose produit des cellules diploïdes", "l'insuline augmente la glycémie", "le pollen est un ovule"],
+  pc: ["un référentiel galiléen nie l'inertie", "un acide capte toujours H+", "T d'un satellite dépend de sa masse", "pH = 7 signifie acide fort"],
+  hg: ["l'ONU naît en 1919", "le Togo n'a pas de façade maritime", "la Guerre froide commence en 1991", "le Port de Lomé est enclavé"],
+};
+
+function distractorsFor(matiere: string): string[] {
+  const key = (matiere || "").toLowerCase();
+  if (key.includes("math")) return DISTRACTORS_BY_SUBJECT.maths;
+  if (key.includes("svt")) return DISTRACTORS_BY_SUBJECT.svt;
+  if (key.includes("pc") || key.includes("phys") || key.includes("chim")) return DISTRACTORS_BY_SUBJECT.pc;
+  if (key.includes("hist") || key.includes("géo") || key.includes("geo") || key.includes("hg")) return DISTRACTORS_BY_SUBJECT.hg;
+  return DISTRACTORS_BY_SUBJECT.maths;
+}
 
 function siblingTitles(chapterId: string, titre: string): string[] {
   const lists = [...PROGRAMME_3EME, ...PROGRAMME_TLE];
-  const titles: string[] = [];
   for (const subject of lists) {
-    for (const theme of subject.themes) {
-      const hit = theme.chapters.some((c) => c.id === chapterId);
-      if (!hit) continue;
-      for (const c of theme.chapters) {
-        if (c.title !== titre) titles.push(c.title);
-      }
-    }
+    const chapters = subject.themes.flatMap((t) => t.chapters);
+    if (!chapters.some((c) => c.id === chapterId)) continue;
+    return chapters.filter((c) => c.title !== titre).map((c) => c.title).slice(0, 6);
   }
-  if (titles.length >= 3) return titles.slice(0, 6);
-  for (const subject of lists) {
-    for (const theme of subject.themes) {
-      for (const c of theme.chapters) {
-        if (c.title !== titre && !titles.includes(c.title)) titles.push(c.title);
-      }
-    }
-  }
-  return titles.slice(0, 6);
+  return [];
 }
 
 function mcq(id: string, enonce: string, correct: string, wrongs: string[], matiere: string): QCMData {
+  const pad = distractorsFor(matiere);
   const pool = [...new Set(wrongs.map((w) => w.trim()).filter((w) => w && w !== correct))];
-  while (pool.length < 3) pool.push(DISTRACTORS[pool.length % DISTRACTORS.length]);
+  while (pool.length < 3) pool.push(pad[pool.length % pad.length]);
   const options = seededShuffle([correct, ...pool.slice(0, 3)], id);
   return {
     id,
@@ -106,7 +101,7 @@ export function quizFromLesson(chapterId: string, classe?: string): QCMData[] {
       `${chapterId}-titre`,
       "Ce quiz d'assimilation porte sur quel chapitre ?",
       lesson.title,
-      others.length ? others : ["Équations du 2nd degré", "La digestion", "Nombres complexes"],
+      others.length ? others : distractorsFor(matiere),
       matiere,
     ),
   );
@@ -116,13 +111,13 @@ export function quizFromLesson(chapterId: string, classe?: string): QCMData[] {
       `${chapterId}-matiere`,
       `Le chapitre « ${lesson.title} » appartient à quelle matière ?`,
       matiere,
-      ["Maths", "SVT", "PC", "Histoire-Géo", "Français"].filter((m) => m !== matiere),
+      ["Mathématiques", "SVT", "PC", "PCT", "Histoire-Géographie", "Français"].filter((m) => m !== matiere),
       matiere,
     ),
   );
 
   facts.forEach((fact, i) => {
-    const wrongs = facts.filter((f) => f !== fact).concat(DISTRACTORS);
+    const wrongs = facts.filter((f) => f !== fact).concat(distractorsFor(matiere));
     out.push(mcq(`${chapterId}-f${i}`, "Quelle affirmation est exacte pour ce cours ?", fact, wrongs, matiere));
   });
 
@@ -130,7 +125,7 @@ export function quizFromLesson(chapterId: string, classe?: string): QCMData[] {
     if (out.length >= 10) return;
     const line = splitAroundKeyword(lesson.essentialText, kw);
     if (!line) return;
-    const wrongs = keywords.filter((k) => k !== kw).concat(["discriminant", "bile", "synapse"]);
+    const wrongs = keywords.filter((k) => k !== kw).concat(distractorsFor(matiere));
     out.push(
       mcq(
         `${chapterId}-k${i}`,
@@ -150,8 +145,8 @@ export function quizFromLesson(chapterId: string, classe?: string): QCMData[] {
         "Présenter la compétence, les savoirs et les savoir-faire APC",
         [
           "Raccourcir L'Essentiel en le coupant",
-          "Reposer les questions du discriminant Δ",
           "Remplacer le quizz 10/10",
+          "Copier une autre matière",
         ],
         matiere,
       ),
@@ -163,7 +158,7 @@ export function quizFromLesson(chapterId: string, classe?: string): QCMData[] {
         `${chapterId}-mask`,
         "Les mots entre [crochets] dans L'Essentiel servent à…",
         "Le rappel actif (texte masqué)",
-        ["Décorer le titre", "Remplacer En Détails", "Noter le discriminant"],
+        ["Décorer le titre", "Remplacer En Détails", "Sauter le cours"],
         matiere,
       ),
     );
@@ -210,7 +205,7 @@ export function clozeFromLesson(chapterId: string, classe?: string): GeneratedCl
     const idx = raw.indexOf(m[0]);
     const before = stripCardinalMarkup(raw.slice(0, idx)).replace(/^[•\-]\s+/, "");
     const after = stripCardinalMarkup(raw.slice(idx + m[0].length));
-    const wrongs = keywords.filter((k) => k !== answer).concat(["discriminant", "bile", "synapse"]);
+    const wrongs = keywords.filter((k) => k !== answer).concat(distractorsFor(fiche.matiereId ?? "maths"));
     const options = seededShuffle([answer, ...wrongs.slice(0, 3)], `${chapterId}-cloze-${i}`);
     items.push({
       id: `${chapterId}-cl${i}`,

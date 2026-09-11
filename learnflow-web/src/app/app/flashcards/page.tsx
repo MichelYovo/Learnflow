@@ -3,6 +3,7 @@
 import { Suspense, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Icon from "@/components/Icon";
+import SessionRecap, { useSessionStats } from "@/components/SessionRecap";
 import Spira from "@/components/Spira";
 import { PrimaryButton } from "@/components/ui";
 import { spiraMoodForSession } from "@/data/spira";
@@ -31,6 +32,7 @@ function FlashInner() {
   const [idx, setIdx] = useState(0);
   const [flipped, setFlipped] = useState(false);
   const [done, setDone] = useState(false);
+  const recapStats = useSessionStats({ cards: deck.length });
 
   if (deck.length === 0) {
     return (
@@ -64,13 +66,9 @@ function FlashInner() {
 
   if (done) {
     return (
-      <div className="flex min-h-[calc(100dvh-5.5rem)] flex-col items-center justify-center gap-4 px-6 text-center lg:min-h-dvh">
-        <Spira scene="flash.done" size={88} />
-        <p className="text-lg font-extrabold">Session flashcards terminée</p>
-        <div className="w-full max-w-sm">
-          <PrimaryButton onClick={() => router.back()}>OK</PrimaryButton>
-        </div>
-      </div>
+      <SessionRecap success title="Session terminée" subtitle="Tes cartes sont à jour." stats={recapStats}>
+        <PrimaryButton onClick={() => router.back()}>OK</PrimaryButton>
+      </SessionRecap>
     );
   }
 

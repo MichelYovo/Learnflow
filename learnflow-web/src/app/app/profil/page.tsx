@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Avatar from "@/components/Avatar";
 import AvatarPicker from "@/components/AvatarPicker";
 import Icon, { type IconName } from "@/components/Icon";
+import ParentPhoneCard from "@/components/ParentPhoneCard";
 import LeagueBadge from "@/components/LeagueBadge";
 import { AppBar, AppMain } from "@/components/ui";
 import { classLabel } from "@/data/mock";
@@ -112,7 +113,7 @@ export default function ProfilPage() {
       <AppMain className="pb-10">
         <div className="flex flex-col items-center pb-6 pt-7">
           <button type="button" onClick={() => setPickerOpen(true)} className="relative mb-3">
-            <Avatar avatarId={profile.avatarId} size={96} initials={profile.firstName} fallbackColor={profile.color} />
+            <Avatar avatarId={profile.avatarId} size={96} initials={profile.firstName} fallbackColor={profile.color} tier={ligue.nomLigue} />
             <span className="absolute -bottom-0.5 -right-0.5 flex h-7 w-7 items-center justify-center rounded-full border-2" style={{ background: colors.primary, borderColor: colors.white }}>
               <Icon name="pen" size={11} color="#fff" />
             </span>
@@ -146,6 +147,8 @@ export default function ProfilPage() {
             </div>
           ))}
         </div>
+
+        <ParentPhoneCard />
 
         <h2 className="mt-6 text-[18px] font-extrabold">Ma ligue</h2>
         <button

@@ -6,6 +6,7 @@ import { useEffect } from "react";
 import { useAppTheme } from "@/theme/useAppTheme";
 import type { IconName } from "./Icon";
 import FloatingChatbot from "./FloatingChatbot";
+import ParentConfirmModal from "./ParentConfirmModal";
 import AvatarGate from "./AvatarGate";
 import AppTour from "./AppTour";
 
@@ -157,6 +158,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       </nav>
 
       <FloatingChatbot />
+      <ParentConfirmModal />
       <AvatarGate />
       <AppTour />
     </div>

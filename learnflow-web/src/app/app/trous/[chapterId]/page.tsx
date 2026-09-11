@@ -3,9 +3,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Spira from "@/components/Spira";
+import SessionRecap, { useSessionStats } from "@/components/SessionRecap";
 import { ScreenHeader, PrimaryButton } from "@/components/ui";
 import { chapterTitle, clozeForChapter } from "@/data/modeContent";
-import { spiraForScore } from "@/data/spira";
 import { playSfx, preloadSfx } from "@/lib/sfx";
 import { useAppTheme } from "@/theme/useAppTheme";
 
@@ -22,6 +22,7 @@ export default function FillBlanksPage() {
   const [wrong, setWrong] = useState<typeof items>([]);
   const [done, setDone] = useState(false);
   const item = queue[Math.min(idx, Math.max(queue.length - 1, 0))];
+  const recapStats = useSessionStats({ score, total: queue.length });
 
   useEffect(() => {
     preloadSfx();
@@ -69,31 +70,30 @@ export default function FillBlanksPage() {
     const total = queue.length;
     const perfect = score === total;
     return (
-      <div className="flex min-h-[calc(100dvh-5.5rem)] flex-col items-center justify-center px-6 text-center lg:min-h-dvh">
-        <Spira mood={spiraForScore(score, total)} size={88} message={perfect ? "Textes à trous maîtrisés." : "On reprend uniquement les phrases ratées."} />
-        <p className="mt-3 text-3xl font-black">
-          {score}/{total}
-        </p>
-        <div className="mt-6 w-full max-w-sm space-y-3">
-          {!perfect && wrong.length > 0 ? (
-            <PrimaryButton
-              onClick={() => {
-                setQueue(wrong);
-                setIdx(0);
-                setPicked(null);
-                setLocked(false);
-                setScore(0);
-                setDone(false);
-                setWrong([]);
-              }}
-            >
-              Reprendre les erreurs
-            </PrimaryButton>
-          ) : (
-            <PrimaryButton onClick={() => router.back()}>OK</PrimaryButton>
-          )}
-        </div>
-      </div>
+      <SessionRecap
+        success={perfect}
+        title={perfect ? "Maîtrisé !" : `${score}/${total}`}
+        subtitle={perfect ? "Textes à trous maîtrisés." : "On reprend uniquement les phrases ratées."}
+        stats={recapStats}
+      >
+        {!perfect && wrong.length > 0 ? (
+          <PrimaryButton
+            onClick={() => {
+              setQueue(wrong);
+              setIdx(0);
+              setPicked(null);
+              setLocked(false);
+              setScore(0);
+              setDone(false);
+              setWrong([]);
+            }}
+          >
+            Reprendre les erreurs
+          </PrimaryButton>
+        ) : (
+          <PrimaryButton onClick={() => router.back()}>OK</PrimaryButton>
+        )}
+      </SessionRecap>
     );
   }
 

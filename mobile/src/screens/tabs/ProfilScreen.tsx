@@ -1,11 +1,12 @@
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import { Alert, Pressable, ScrollView, StyleSheet, Switch, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { CompositeNavigationProp, useNavigation } from "@react-navigation/native";
+import { CompositeNavigationProp, useFocusEffect, useNavigation } from "@react-navigation/native";
 import type { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import Avatar from "../../components/Avatar";
 import AvatarPicker from "../../components/AvatarPicker";
+import { notifyLeftProfilWithoutAvatar } from "../../components/AvatarGate";
 import Icon from "../../components/Icon";
 import LeagueBadge from "../../components/league/LeagueBadge";
 import { useLearnFlowStore } from "../../store/useLearnFlowStore";
@@ -94,6 +95,16 @@ export default function ProfilScreen() {
   const [pinConfirm, setPinConfirm] = useState("");
   const [pinError, setPinError] = useState("");
   const [showPinSetup, setShowPinSetup] = useState(false);
+
+  useFocusEffect(
+    useCallback(() => {
+      return () => {
+        if (!useLearnFlowStore.getState().getActiveProfile()?.avatarId) {
+          notifyLeftProfilWithoutAvatar();
+        }
+      };
+    }, [])
+  );
 
   const grade = profile.gradeLabel ?? classLabel(profile.classe);
   const stats = [
@@ -201,6 +212,7 @@ export default function ProfilScreen() {
               initials={profile.firstName[0]}
               fallbackColor={profile.color ?? colors.primary}
               animated
+              tier={ligue.nomLigue}
             />
             <View style={styles.editBadge}>
               <Icon name="pen" size={11} color={colors.onPrimary} />

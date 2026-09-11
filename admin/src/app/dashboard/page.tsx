@@ -13,7 +13,6 @@ export default async function DashboardPage() {
   const session = await getAdminSession();
   const data = await loadDashboardData();
   const inbox = await listSupportMessages();
-  const newMessages = inbox.data.filter((m) => m.status === "new").length;
   const top = data.students.slice().sort((a, b) => b.xpTotale - a.xpTotale).slice(0, 6);
 
   return (
@@ -37,7 +36,14 @@ export default async function DashboardPage() {
               tone="red"
             />
           </Link>
-          <StatCard label="Messages" value={String(newMessages)} hint="Non lus · site vitrine" tone="violet" />
+          <Link href="/dashboard/parents">
+            <StatCard
+              label="Parents"
+              value={String(data.students.filter((s) => s.parentPhone).length)}
+              hint="WhatsApp suivi"
+              tone="violet"
+            />
+          </Link>
         </section>
 
         <ActivityCharts stats={data.stats} />

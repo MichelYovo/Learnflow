@@ -179,4 +179,29 @@ export function adminHasGemini() {
   return Boolean(process.env.GEMINI_API_KEY?.trim());
 }
 
+export type LoginNotice = {
+  id: string;
+  student_id: string;
+  channel: string;
+  event: string;
+  status: string;
+  detail?: string | null;
+  created_at: string;
+};
+
+export async function fetchLoginNotices() {
+  return restGet<LoginNotice>("login_notices?select=*&order=created_at.desc&limit=400");
+}
+
+export async function insertLoginNotice(row: Omit<LoginNotice, "id" | "created_at"> & { id?: string; created_at?: string }) {
+  return insertRow("login_notices", {
+    id: row.id,
+    student_id: row.student_id,
+    channel: row.channel,
+    event: row.event,
+    status: row.status,
+    detail: row.detail ?? null,
+  });
+}
+
 export { supabaseUrl };

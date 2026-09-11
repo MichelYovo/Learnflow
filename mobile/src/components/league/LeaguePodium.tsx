@@ -10,6 +10,7 @@ type Props = {
   first: LeaguePlayer;
   second: LeaguePlayer;
   third: LeaguePlayer;
+  tier?: import("../../types/learnflow").LigueNom;
 };
 
 const PLACE = {
@@ -42,7 +43,7 @@ const PLACE = {
   },
 } as const;
 
-export default function LeaguePodium({ first, second, third }: Props) {
+export default function LeaguePodium({ first, second, third, tier }: Props) {
   const { colors } = useAppTheme();
 
   const slots: { player: LeaguePlayer; place: 1 | 2 | 3 }[] = [
@@ -83,6 +84,7 @@ export default function LeaguePodium({ first, second, third }: Props) {
                     radius={meta.size / 2}
                     initials={player.initials}
                     fallbackColor={player.avatarColor}
+                    tier={tier}
                   />
                 </View>
                 <View style={[styles.placeBadge, { backgroundColor: meta.ring, borderColor: colors.white }]}>

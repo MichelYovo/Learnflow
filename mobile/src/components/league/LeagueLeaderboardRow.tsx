@@ -8,9 +8,10 @@ import Icon from "../Icon";
 type Props = {
   player: LeaguePlayer;
   onPress?: () => void;
+  tier?: import("../../types/learnflow").LigueNom;
 };
 
-export default function LeagueLeaderboardRow({ player, onPress }: Props) {
+export default function LeagueLeaderboardRow({ player, onPress, tier }: Props) {
   const { colors, darkMode } = useAppTheme();
   const highlight = player.you;
 
@@ -54,6 +55,7 @@ export default function LeagueLeaderboardRow({ player, onPress }: Props) {
         radius={22}
         initials={player.initials}
         fallbackColor={player.avatarColor}
+        tier={tier}
       />
       <View style={{ flex: 1, minWidth: 0 }}>
         <Text numberOfLines={1} style={{ fontSize: 15, fontWeight: "700", color: colors.textDark }}>

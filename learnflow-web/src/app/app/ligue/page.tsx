@@ -183,6 +183,7 @@ export default function LiguePage() {
                               size={meta.size}
                               initials={player.initials}
                               fallbackColor={player.avatarColor}
+                              tier={selectedTier}
                             />
                           </div>
                           <span
@@ -249,7 +250,7 @@ export default function LiguePage() {
                   >
                     {player.rank}
                   </span>
-                  <Avatar avatarId={player.avatarId} size={44} initials={player.initials} fallbackColor={player.avatarColor} />
+                  <Avatar avatarId={player.avatarId} size={44} initials={player.initials} fallbackColor={player.avatarColor} tier={selectedTier} />
                   <span className="min-w-0 flex-1">
                     <span className="block truncate text-[15px] font-bold">{player.you ? `${player.name} (toi)` : player.name}</span>
                     <span className="text-xs" style={{ color: colors.textMuted }}>

@@ -1,6 +1,5 @@
 import React from "react";
 import { StyleSheet, Text, View } from "react-native";
-import MiniAutoEval from "./MiniAutoEval";
 import { isDetailHeading, splitDetailParas, type DetailBlocks } from "../../data/lessonContent";
 import { useAppTheme } from "../../theme/useAppTheme";
 import { appFont } from "../../theme/typography";
@@ -18,7 +17,7 @@ function BlockCard({
   return (
     <View style={[styles.card, { backgroundColor: colors.white }]}>
       <Text style={[styles.kicker, { color: colors.primary }]}>
-        {n} / 4 · {label}
+        {n} / 3 · {label}
       </Text>
       {children}
     </View>
@@ -76,13 +75,6 @@ export default function CourseDetailBlocks({ blocks }: { blocks: DetailBlocks })
           </View>
         ) : null}
       </BlockCard>
-
-      <BlockCard n={4} label="Mini-autoévaluation">
-        <Text style={[styles.hint, { color: colors.textMuted }]}>
-          2 questions pour valider avant le quiz d'assimilation.
-        </Text>
-        <MiniAutoEval questions={blocks.miniQuiz} />
-      </BlockCard>
     </View>
   );
 }
@@ -110,5 +102,4 @@ const styles = StyleSheet.create({
   stepN: { fontFamily: appFont, fontSize: 12, fontWeight: "800" },
   stepTitle: { fontFamily: appFont, fontSize: 14, fontWeight: "800" },
   stepBody: { fontFamily: appFont, fontSize: 15, fontWeight: "500", lineHeight: 22, marginTop: 2 },
-  hint: { fontFamily: appFont, fontSize: 13, fontWeight: "600" },
 });

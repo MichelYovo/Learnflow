@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Icon from "@/components/Icon";
+import SessionRecap, { useSessionStats } from "@/components/SessionRecap";
 import Spira from "@/components/Spira";
 import { ScreenHeader, PrimaryButton } from "@/components/ui";
 import { spiraForFlashRating, type SpiraMoodId } from "@/data/spira";
@@ -34,6 +35,7 @@ export default function ModeGuidePage() {
       ? `${liveDue.length} carte${liveDue.length > 1 ? "s" : ""} due${liveDue.length > 1 ? "s" : ""} aujourd'hui.`
       : "Rien à réviser aujourd'hui."
   );
+  const recapStats = useSessionStats({ cards: deck.length });
 
   const card = deck[Math.min(idx, Math.max(deck.length - 1, 0))];
 
@@ -100,15 +102,9 @@ export default function ModeGuidePage() {
 
   if (done) {
     return (
-      <div className="flex min-h-[calc(100dvh-5.5rem)] flex-col lg:min-h-dvh">
-        <ScreenHeader title="Mode Guidé" backHref="/app" />
-        <div className="lf-slide-in mx-auto my-auto flex w-full max-w-xl flex-col items-center justify-center gap-6 px-6 py-8 sm:px-7 sm:py-10">
-          <Spira scene="mode.guide.done" size={104} />
-          <div className="w-full max-w-xs">
-            <PrimaryButton onClick={() => router.push("/app")}>Terminer</PrimaryButton>
-          </div>
-        </div>
-      </div>
+      <SessionRecap success title="Entretien terminé" subtitle="Tes cartes du jour sont faites." stats={recapStats}>
+        <PrimaryButton onClick={() => router.push("/app")}>Terminer</PrimaryButton>
+      </SessionRecap>
     );
   }
 

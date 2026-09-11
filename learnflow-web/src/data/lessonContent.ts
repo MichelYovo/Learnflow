@@ -2,7 +2,6 @@ import type {
   ExempleResolu,
   FicheCoursData,
   LessonContent,
-  QCMData,
   SectionCoursAPC,
   SituationProbleme,
 } from "../types/learnflow";
@@ -138,7 +137,6 @@ export interface DetailBlocks {
   situation: SituationProbleme;
   developpement: string;
   exemple: ExempleResolu;
-  miniQuiz: QCMData[];
 }
 
 function foldTitle(s: string) {
@@ -231,57 +229,12 @@ function exempleFromSection(section: SectionCoursAPC): ExempleResolu {
   };
 }
 
-function genericMiniQuiz(fiche: FicheCoursData): QCMData[] {
-  const titre = fiche.titre;
-  return [
-    {
-      id: `${fiche.chapitreId}-mini-1`,
-      enonceQuestion: `À quoi sert la fiche réflexe du chapitre « ${titre} » ?`,
-      optionsProposees: [
-        "Retenir formules et définitions clés",
-        "Remplacer le quiz d'assimilation",
-        "Copier En Détails en plus court",
-        "Sauter les exercices",
-      ],
-      indexReponseCorrecte: 0,
-      explicationPedagogique: "L'Essentiel est une fiche réflexe autonome : formules, définitions, mots-clés.",
-    },
-    {
-      id: `${fiche.chapitreId}-mini-2`,
-      enonceQuestion: "Après ces 2 questions, que dois-tu faire ?",
-      optionsProposees: [
-        "Passer le quizz d'assimilation (10 questions)",
-        "Fermer l'application",
-        "Relire uniquement l'analogie",
-        "Ignorer l'exemple résolu",
-      ],
-      indexReponseCorrecte: 0,
-      explicationPedagogique: "La mini-autoévaluation vérifie la compréhension ; le quiz d'assimilation 10/10 vient ensuite.",
-    },
-  ];
-}
-
-function pickMiniQuiz(fiche: FicheCoursData, quizFallback: QCMData[]): QCMData[] {
-  const out: QCMData[] = [];
-  const seen = new Set<string>();
-  const push = (q: QCMData | undefined) => {
-    const enonce = q?.enonceQuestion?.trim();
-    if (!q || !enonce || seen.has(enonce) || out.length >= 2) return;
-    seen.add(enonce);
-    out.push(q);
-  };
-  for (const q of fiche.miniQuiz ?? []) push(q);
-  for (const q of quizFallback) push(q);
-  for (const q of genericMiniQuiz(fiche)) push(q);
-  return out.slice(0, 2);
-}
-
 /**
- * Découpe En Détails en 4 blocs APC.
- * Les champs authored (situationProbleme, exempleResolu, miniQuiz) priment ;
- * sinon extraction depuis sectionsDetaillees / detailedText + quiz du chapitre.
+ * Découpe En Détails en 3 blocs APC.
+ * Les champs authored (situationProbleme, exempleResolu) priment ;
+ * sinon extraction depuis sectionsDetaillees / detailedText.
  */
-export function toDetailBlocks(fiche: FicheCoursData, quizFallback: QCMData[] = []): DetailBlocks {
+export function toDetailBlocks(fiche: FicheCoursData): DetailBlocks {
   const fromFiche = (fiche.sectionsDetaillees ?? []).some((s) => s.titre.trim() || s.paragraphes.some((p) => p.trim()))
     ? fiche.sectionsDetaillees
     : sectionsFromText(fiche.detailedText || fiche.contenuDetaille || "");
@@ -324,6 +277,5 @@ export function toDetailBlocks(fiche: FicheCoursData, quizFallback: QCMData[] = 
     situation,
     developpement,
     exemple,
-    miniQuiz: pickMiniQuiz(fiche, quizFallback),
   };
 }

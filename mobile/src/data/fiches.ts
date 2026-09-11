@@ -1,4 +1,5 @@
 import type { AnalogieSpiraData, FicheCoursData, SchemaCoursKind } from "../types/learnflow";
+import { FICHES_TLE } from "./fichesTle";
 import { countWords as countWordsInText, hydrateFiche } from "./lessonContent";
 import { findChapterMeta } from "./programme";
 import { overlayFiche } from "./publishedCache";
@@ -16,7 +17,7 @@ function analogie(parole: string, concept: string, exemple: string): AnalogieSpi
   };
 }
 
-export const FICHES: Record<string, FicheCoursData> = {
+const FICHES_3EME: Record<string, FicheCoursData> = {
   eq2: {
     chapitreId: "eq2",
     titre: "Équations du 2nd degré · Δ",
@@ -51,22 +52,6 @@ export const FICHES: Record<string, FicheCoursData> = {
       ],
       reponseFinale: "S = {2 ; 3}. Contrôle Viète : somme 5 = −b/a, produit 6 = c/a.",
     },
-    miniQuiz: [
-      {
-        id: "eq2-mini-1",
-        enonceQuestion: "Quelle est la formule du discriminant ?",
-        optionsProposees: ["Δ = b² + 4ac", "Δ = b² − 4ac", "Δ = 2b − 4ac", "Δ = b − 4ac"],
-        indexReponseCorrecte: 1,
-        explicationPedagogique: "Le discriminant est Δ = b² − 4ac.",
-      },
-      {
-        id: "eq2-mini-2",
-        enonceQuestion: "Si Δ = 0, combien de solutions l'équation possède-t-elle ?",
-        optionsProposees: ["Aucune", "Une racine double", "Deux distinctes", "Infinité"],
-        indexReponseCorrecte: 1,
-        explicationPedagogique: "Quand Δ = 0, racine double x = −b / 2a.",
-      },
-    ],
     sectionsDetaillees: [
       {
         id: "competence",
@@ -673,37 +658,11 @@ export const FICHES: Record<string, FicheCoursData> = {
       },
     ],
   },
+};
 
-  "tle-d-vecteurs": {
-    chapitreId: "tle-d-vecteurs",
-    titre: "Vecteurs de l'espace et repérage",
-    matiereId: "maths",
-    motsClesMasques: ["colinéaires", "base", "coordonnées", "repère"],
-    essentialText:
-      "Dans l'espace, un vecteur est défini par une [direction], un [sens] et une [norme].\n\n• Deux vecteurs non nuls sont [colinéaires] s'il existe k réel tel que u = k v.\n• Une [base] de l'espace est un triplet de vecteurs non coplanaires (i, j, k).\n• Dans un [repère] (O ; i, j, k), un point M a des [coordonnées] (x ; y ; z).\n• Vectoriellement : OM = x i + y j + z k.\n\nRetiens le lien : colinéarité ↔ alignement ; base ↔ tout vecteur s'écrit de façon unique.",
-    detailedText:
-      "Les vecteurs de l'espace prolongent la géométrie du plan : on travaille dans un espace affine de dimension 3. Un vecteur u est caractérisé par sa direction, son sens et sa norme. Deux vecteurs non nuls u et v sont colinéaires lorsqu'il existe un réel k tel que u = k v ; géométriquement, ils portent des droites parallèles. Trois vecteurs sont coplanaires s'ils appartiennent à un même plan vectoriel ; sinon, ils forment une base de l'espace.\n\nCompétence visée (APC)\n\nRepérer un point et décomposer un vecteur dans une base, puis utiliser la colinéarité pour caractériser l'alignement ou le parallélisme dans l'espace.\n\nSavoirs\n\nSoit (O ; i, j, k) un repère de l'espace. Tout point M est déterminé par le triplet (x ; y ; z) tel que OM = x i + y j + z k. Les coordonnées d'un vecteur AB sont (xB − xA ; yB − yA ; zB − zA). La relation de Chasles AB + BC = AC reste valable. Une famille (i, j, k) est une base si et seulement si tout vecteur de l'espace s'écrit de manière unique comme combinaison linéaire de i, j et k.\n\nSavoir-faire\n\nLire et placer un point dans un repère orthonormé de l'espace. Calculer les coordonnées d'un vecteur. Démontrer que deux vecteurs sont colinéaires (recherche d'un coefficient k, ou proportionnalité des coordonnées). Décomposer un vecteur dans une base donnée. Relier colinéarité et alignement de trois points : A, B, C alignés ⇔ AB et AC colinéaires.",
-    pucesEssentiel: [
-      "Un vecteur de l'espace a une direction, un sens et une norme.",
-      "Deux vecteurs non nuls sont colinéaires s'il existe k réel tel que u = k v.",
-      "Une base de l'espace est un triplet de vecteurs non coplanaires.",
-      "Dans un repère (O ; i, j, k), un point M a des coordonnées (x ; y ; z).",
-    ],
-    analogie: analogie(
-      "Un vecteur, c'est une flèche : où elle pointe (direction), de quel côté (sens), et quelle longueur (norme). Colinéaires, c'est deux flèches sur la même route, éventuellement à l'envers. Un repère, c'est trois flèches d'origine O qui te disent « avance de x, de y, de z ».",
-      "Vecteurs de l'espace",
-      "Trois flèches depuis O : les coordonnées d'un point.",
-    ),
-    sectionsDetaillees: [
-      {
-        id: "competence",
-        titre: "Compétence visée (APC)",
-        paragraphes: [
-          "Repérer un point et décomposer un vecteur dans une base, puis utiliser la colinéarité pour l'alignement dans l'espace.",
-        ],
-      },
-    ],
-  },
+export const FICHES: Record<string, FicheCoursData> = {
+  ...FICHES_3EME,
+  ...FICHES_TLE,
 };
 
 function fallbackFiche(chapitreId: string): FicheCoursData {
@@ -795,13 +754,8 @@ function fallbackFiche(chapitreId: string): FicheCoursData {
   };
 }
 
-const FICHE_ALIASES: Record<string, string> = {
-  "tle-d-complexes": "complexes",
-};
-
 export function ficheForChapter(chapitreId: string, classe?: string): FicheCoursData {
-  const resolved = FICHE_ALIASES[chapitreId] ?? chapitreId;
-  const fallback = hydrateFiche(FICHES[resolved] ?? FICHES[chapitreId] ?? fallbackFiche(chapitreId));
+  const fallback = hydrateFiche(FICHES[chapitreId] ?? fallbackFiche(chapitreId));
   return hydrateFiche(overlayFiche(chapitreId, fallback, classe) ?? fallback);
 }
 
