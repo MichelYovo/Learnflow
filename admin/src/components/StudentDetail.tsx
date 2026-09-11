@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { CLASS_GROUPS, classLabel, initialsFromName, normalizeClassId } from "@/lib/brand";
+import { AI_DAILY_QUOTA, eventCaption, formatLastSeen } from "@/lib/activity";
 import { maskTogoPhone } from "@/lib/phoneTogo";
 import type { AdminActivityEvent, AdminLeagueRow } from "@/lib/catalog";
 import type { AdminStudent } from "@/data/seed";
@@ -108,17 +109,15 @@ export default function StudentDetail({
           <Info label="Classe" value={classLabel(student.classe)} />
           <Info label="Ligue" value={`${league?.tier ?? student.leagueTier} · #${league?.rank ?? "—"}`} />
           <Info label="XP" value={student.xpTotale.toLocaleString("fr-FR")} />
+          <Info label="XP hebdo" value={(league?.weeklyXp ?? student.weeklyXp).toLocaleString("fr-FR")} />
           <Info label="Série" value={`${student.streak} j`} />
           <Info label="Leçons" value={String(student.lessonsDone)} />
-          <Info label="App" value={student.platform || "—"} />
           <Info
-            label="Dernière activité"
-            value={
-              student.lastSeenAt
-                ? new Date(student.lastSeenAt).toLocaleString("fr-FR")
-                : "Jamais"
-            }
+            label="Crédits IA"
+            value={typeof student.aiQuotaRestant === "number" ? `${student.aiQuotaRestant}/${AI_DAILY_QUOTA}` : "—"}
           />
+          <Info label="App" value={student.platform || "—"} />
+          <Info label="Dernière activité" value={formatLastSeen(student.lastSeenAt)} />
           <Info
             label="Parent"
             value={
@@ -204,7 +203,7 @@ export default function StudentDetail({
         <ul className="space-y-2">
           {events.slice(0, 30).map((e) => (
             <li key={e.id} className="flex items-center justify-between rounded-xl bg-[#FAFAF9] px-3 py-2 text-sm">
-              <span className="font-bold text-[#1C1917]">{e.type}</span>
+              <span className="font-bold text-[#1C1917]">{eventCaption(e)}</span>
               <span className="text-xs font-semibold text-[#64748B]">
                 {e.platform} · {new Date(e.createdAt).toLocaleString("fr-FR")}
               </span>

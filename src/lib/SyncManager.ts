@@ -2,7 +2,7 @@ import { InteractionManager } from "react-native";
 import * as Network from "expo-network";
 import type { LeaguePlayer } from "../data/mock";
 import type { LeagueCacheRow } from "../types/database";
-import type { LeagueScoreRow, StudentProfile } from "../types/supabase";
+import type { LeagueScoreInsert, LeagueScoreRow, StudentProfile } from "../types/supabase";
 import { supabase, isSupabaseConfigured } from "./supabase";
 import { defaultAvatarId } from "../data/avatars";
 import { nowIso } from "./ids";
@@ -119,17 +119,17 @@ async function pushPendingXp(parentId: string, leagueTier: string): Promise<void
     const existing = existingRow as LeagueScoreRow | null;
 
     const weekly = (existing?.weekly_xp ?? 0) + pendingXp;
-    const scorePayload: LeagueScoreRow = {
-      id: existing?.id ?? studentId,
+    const scorePayload: LeagueScoreInsert = {
       student_id: studentId,
       league_tier: existing?.league_tier ?? leagueTier,
       weekly_xp: weekly,
       last_sync: nowIso(),
     };
+    if (existing?.id) scorePayload.id = existing.id;
 
     const { error: scoreError } = await supabase
       .from("league_scores")
-      .upsert(scorePayload, { onConflict: "id" });
+      .upsert(scorePayload, { onConflict: "student_id" });
     if (scoreError) {
       console.warn("[LearnFlow] push league_scores", scoreError.message);
       continue;

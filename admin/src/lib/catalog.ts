@@ -1,10 +1,12 @@
 import { classLabel, initialsFromName, LEAGUE_TIERS } from "./brand";
 import { type AdminStudent } from "../data/seed";
+import { quotaFromProgress } from "./activity";
 import { INACTIVITY_DAYS, withLastSeen } from "./inactivity";
 import {
   fetchCloudEvents,
   fetchCloudLeagues,
   fetchCloudStudents,
+  isAdminCloudReady,
   isSupabaseConfigured,
   type CloudEvent,
   type CloudStudent,
@@ -146,7 +148,13 @@ function buildStats(students: AdminStudent[], leagues: AdminLeagueRow[], events:
     count: tierMap.get(t.id) ?? 0,
   }));
   const cutoff = Date.now() - 24 * 3600_000;
-  const activeIds = new Set(events.filter((e) => new Date(e.createdAt).getTime() >= cutoff).map((e) => e.studentId));
+  const activeIds = new Set(
+    events.filter((e) => new Date(e.createdAt).getTime() >= cutoff).map((e) => e.studentId),
+  );
+  for (const s of students) {
+    const seen = s.lastSeenAt || s.progressUpdatedAt || s.updatedAt;
+    if (seen && new Date(seen).getTime() >= cutoff) activeIds.add(s.id);
+  }
   const days = last7DayKeys();
   const last7Days = days.map((day) => {
     const ofDay = events.filter((e) => dayKey(e.createdAt) === day);
@@ -202,6 +210,7 @@ function mapStudent(row: CloudStudent, i: number, weeklyXp: number, leagueTier: 
     createdAt: row.created_at ?? undefined,
     updatedAt: row.updated_at ?? undefined,
     progressUpdatedAt: row.progress_updated_at ?? undefined,
+    aiQuotaRestant: quotaFromProgress(row.progress),
   };
 }
 
@@ -215,6 +224,12 @@ export function invalidateDashboardCache() {
 async function loadDashboardDataUncached(): Promise<DashboardData> {
   if (!isSupabaseConfigured) {
     return emptyDashboard("local", "Ajoute NEXT_PUBLIC_SUPABASE_URL et SUPABASE_SECRET_KEY.");
+  }
+  if (!isAdminCloudReady) {
+    return emptyDashboard(
+      "local",
+      "Ajoute SUPABASE_SECRET_KEY (service_role) : sans elle, RLS masque élèves, XP et mouvements.",
+    );
   }
   try {
     const [studentsRes, leaguesRes, eventsRes] = await Promise.all([

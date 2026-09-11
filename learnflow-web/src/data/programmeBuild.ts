@@ -22,25 +22,27 @@ export const SUBJECT_STYLE = {
 export type SubjectId = keyof typeof SUBJECT_STYLE;
 
 export function packTheme(id: string, title: string, chapters: ProgrammeChapter[]): ProgrammeTheme {
-  const lessons = chapters.flatMap((c) => c.lessons);
+  const safeChapters = Array.isArray(chapters) ? chapters.filter(Boolean) : [];
+  const lessons = safeChapters.flatMap((c) => (Array.isArray(c.lessons) ? c.lessons : []));
   return {
     id,
     title,
-    chapters,
+    chapters: safeChapters,
     lessonsTotal: lessons.length,
-    lessonsDone: lessons.filter((l) => l.status === "done").length,
+    lessonsDone: lessons.filter((l) => l?.status === "done").length,
   };
 }
 
 export function packSubject(id: SubjectId, themes: ProgrammeTheme[], name?: string): ProgrammeSubject {
-  const style = SUBJECT_STYLE[id];
-  const done = themes.reduce((a, t) => a + t.lessonsDone, 0);
-  const total = themes.reduce((a, t) => a + t.lessonsTotal, 0);
+  const style = SUBJECT_STYLE[id] ?? SUBJECT_STYLE.svt;
+  const safeThemes = Array.isArray(themes) ? themes.filter(Boolean) : [];
+  const done = safeThemes.reduce((a, t) => a + (Number(t.lessonsDone) || 0), 0);
+  const total = safeThemes.reduce((a, t) => a + (Number(t.lessonsTotal) || 0), 0);
   return {
-    id,
+    id: id in SUBJECT_STYLE ? id : "svt",
     ...style,
-    name: name ?? style.name,
+    name: name || style.name,
     progress: total ? Math.round((done / total) * 100) : 0,
-    themes,
+    themes: safeThemes,
   };
 }

@@ -758,7 +758,11 @@ function fallbackFiche(chapitreId: string): FicheCoursData {
 
 export function ficheForChapter(chapitreId: string, classe?: string): FicheCoursData {
   const fallback = hydrateFiche(FICHES[chapitreId] ?? fallbackFiche(chapitreId));
-  return hydrateFiche(overlayFiche(chapitreId, fallback, classe) ?? fallback);
+  try {
+    return hydrateFiche(overlayFiche(chapitreId, fallback, classe) ?? fallback);
+  } catch {
+    return fallback;
+  }
 }
 
 export function countWords(puces: string[]): number {

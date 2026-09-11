@@ -12,17 +12,22 @@ import { useLearnFlowStore } from "@/store/useLearnFlowStore";
 import { useAppTheme } from "@/theme/useAppTheme";
 import type { ProgrammeChapter, ProgrammeSubject, ProgrammeTheme } from "@/types/learnflow";
 
+const EMPTY_PROGRESS: Record<string, never> = {};
+
 function CoursInner() {
   const router = useRouter();
   const params = useSearchParams();
   const { colors } = useAppTheme();
   const profile = useLearnFlowStore((s) => s.getActiveProfile());
-  const chapterProgress = useLearnFlowStore((s) => s.chapterProgress);
+  const chapterProgress = useLearnFlowStore((s) => s.chapterProgress || EMPTY_PROGRESS);
   const catalogEpoch = usePublishedCatalog();
-  const programme = useMemo(
-    () => programmeForLearner(profile?.classe, profile?.id, chapterProgress),
-    [profile?.classe, profile?.id, chapterProgress, catalogEpoch],
-  );
+  const programme = useMemo(() => {
+    try {
+      return programmeForLearner(profile?.classe, profile?.id, chapterProgress);
+    } catch {
+      return [];
+    }
+  }, [profile?.classe, profile?.id, chapterProgress, catalogEpoch]);
   const [level, setLevel] = useState<0 | 1 | 2 | 3>(0);
   const [subject, setSubject] = useState<ProgrammeSubject | null>(null);
   const [theme, setTheme] = useState<ProgrammeTheme | null>(null);
@@ -104,8 +109,9 @@ function CoursInner() {
       <AppMain className="space-y-3 py-5 pb-8">
         {level === 0
           ? programme.map((s) => {
-              const done = s.themes.reduce((a, t) => a + t.lessonsDone, 0);
-              const total = s.themes.reduce((a, t) => a + t.lessonsTotal, 0);
+              const themes = s.themes ?? [];
+              const done = themes.reduce((a, t) => a + (t.lessonsDone ?? 0), 0);
+              const total = themes.reduce((a, t) => a + (t.lessonsTotal ?? 0), 0);
               return (
                 <button
                   key={s.id}
@@ -138,7 +144,7 @@ function CoursInner() {
           : null}
 
         {level === 1 && liveSubject
-          ? liveSubject.themes.map((t, ti) => {
+          ? (liveSubject.themes ?? []).map((t, ti) => {
               const pct = t.lessonsTotal > 0 ? Math.round((t.lessonsDone / t.lessonsTotal) * 100) : 0;
               return (
                 <button
@@ -172,7 +178,7 @@ function CoursInner() {
           : null}
 
         {level === 2 && liveTheme
-          ? liveTheme.chapters.map((c, ci) => {
+          ? (liveTheme.chapters ?? []).map((c, ci) => {
               const done = c.progressDone ?? 0;
               const total = c.progressTotal ?? 3;
               const pct = Math.round((done / total) * 100);
@@ -224,7 +230,7 @@ function CoursInner() {
           : null}
 
         {level === 3 && liveChapter
-          ? liveChapter.lessons.map((l, li) => {
+          ? (liveChapter.lessons ?? []).map((l, li) => {
               const locked = l.status === "locked";
               return (
                 <button

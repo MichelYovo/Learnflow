@@ -1,16 +1,6 @@
 import Link from "next/link";
+import { eventCaption } from "@/lib/activity";
 import type { AdminActivityEvent } from "@/lib/catalog";
-
-const LABELS: Record<string, string> = {
-  login: "Connexion",
-  signup: "Inscription",
-  profile_complete: "Profil complété",
-  chapter_open: "Chapitre ouvert",
-  quiz_complete: "Quiz 10/10",
-  blitz_complete: "Blitz",
-  xp_gain: "XP gagné",
-  mode_start: "Mode lancé",
-};
 
 export default function ActivityFeed({ events }: { events: AdminActivityEvent[] }) {
   return (
@@ -36,7 +26,7 @@ export default function ActivityFeed({ events }: { events: AdminActivityEvent[] 
               </span>
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-extrabold text-[#1C1917]">{e.studentName}</p>
-                <p className="text-xs font-semibold text-[#64748B]">{LABELS[e.type] ?? e.type}</p>
+                <p className="text-xs font-semibold text-[#64748B]">{eventCaption(e)}</p>
               </div>
               <time className="shrink-0 text-[11px] font-bold text-[#A8A29E]">
                 {new Date(e.createdAt).toLocaleString("fr-FR", { hour: "2-digit", minute: "2-digit", day: "numeric", month: "short" })}

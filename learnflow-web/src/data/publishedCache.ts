@@ -59,9 +59,25 @@ export function usePublishedCatalog() {
   return useSyncExternalStore(subscribeCatalog, getCatalogEpoch, getCatalogEpoch);
 }
 
+function asRowArray<T>(value: unknown): T[] {
+  return Array.isArray(value) ? (value.filter((row) => row && typeof row === "object") as T[]) : [];
+}
+
+function parsePayload(raw: unknown): PublishedLessonRow["payload"] {
+  if (typeof raw === "string") {
+    try {
+      return parsePayload(JSON.parse(raw));
+    } catch {
+      return {};
+    }
+  }
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return {};
+  return raw as PublishedLessonRow["payload"];
+}
+
 export function setPublishedCatalog(next: { lessons?: PublishedLessonRow[]; schemas?: PublishedSchemaRow[] }) {
-  if (next.lessons) lessons = next.lessons;
-  if (next.schemas) schemas = next.schemas;
+  if (next.lessons) lessons = asRowArray<PublishedLessonRow>(next.lessons);
+  if (next.schemas) schemas = asRowArray<PublishedSchemaRow>(next.schemas);
   notifyCatalog();
 }
 
@@ -75,63 +91,88 @@ export function getPublishedSchemas() {
 
 export function publishedRowForChapter(chapterId: string, classe?: string) {
   const wanted = normalizeClassId(classe);
-  if (!wanted) return undefined;
-  return lessons.find((r) => r.chapter_id === chapterId && normalizeClassId(r.class_level) === wanted);
+  if (!wanted || !Array.isArray(lessons)) return undefined;
+  return lessons.find((r) => r?.chapter_id === chapterId && normalizeClassId(r.class_level) === wanted);
 }
 
 export function mergePublishedProgramme(
   subjects: ProgrammeSubject[],
   classe: string | undefined,
 ): ProgrammeSubject[] {
-  const wanted = normalizeClassId(classe);
-  const mine = lessons.filter((r) => wanted && normalizeClassId(r.class_level) === wanted);
-  if (mine.length === 0) return subjects;
-  const next = subjects.map((s) => ({
-    ...s,
-    themes: s.themes.map((t) => ({ ...t, chapters: t.chapters.map((c) => ({ ...c, lessons: [...c.lessons] })) })),
-  }));
-  for (const row of mine) {
-    if (!row?.chapter_id || !row.payload || typeof row.payload !== "object") continue;
-    const sid = (row.subject_id in SUBJECT_STYLE ? row.subject_id : "svt") as SubjectId;
-    const packedLessons: ProgrammeLesson[] = (row.payload.lessons ?? []).map((l, i) =>
-      L(l.id || `${row.chapter_id}-${i}`, l.title, l.duration || "12 min", l.xp || 50, i === 0 ? "current" : "locked"),
-    );
-    const chapter = {
-      id: row.chapter_id,
-      title: row.chapter_title,
-      lessons: packedLessons.length ? packedLessons : [L(`${row.chapter_id}-1`, row.chapter_title, "12 min", 50, "current")],
-    };
-    const idx = next.findIndex((s) => s.id === sid);
-    if (idx < 0) {
-      const label = sid === "pc" && isLyceeClass(classe) ? "PC" : undefined;
-      next.push(packSubject(sid, [packTheme(`cloud-${sid}`, "Cours LearnFlow", [chapter])], label));
-      continue;
-    }
-    let replaced = false;
-    const themes = next[idx].themes.map((theme) => ({
-      ...theme,
-      chapters: theme.chapters.map((ch) => {
-        if (ch.id !== row.chapter_id) return ch;
-        replaced = true;
-        return { ...ch, title: row.chapter_title, lessons: chapter.lessons };
-      }),
+  try {
+    const wanted = normalizeClassId(classe);
+    const catalog = Array.isArray(lessons) ? lessons : [];
+    const mine = catalog.filter((r) => r && wanted && normalizeClassId(r.class_level) === wanted);
+    if (mine.length === 0) return subjects;
+    const next = (subjects ?? []).map((s) => ({
+      ...s,
+      themes: (s.themes ?? []).map((t) => ({
+        ...t,
+        chapters: (t.chapters ?? []).map((c) => ({ ...c, lessons: [...(c.lessons ?? [])] })),
+      })),
     }));
-    next[idx] = packSubject(sid, replaced ? themes : [...themes, packTheme(`cloud-${sid}`, "Cours LearnFlow", [chapter])], next[idx].name);
+    for (const row of mine) {
+      const payload = parsePayload(row.payload);
+      if (!row?.chapter_id) continue;
+      const sid = (row.subject_id in SUBJECT_STYLE ? row.subject_id : "svt") as SubjectId;
+      const packedLessons: ProgrammeLesson[] = (Array.isArray(payload.lessons) ? payload.lessons : [])
+        .filter((l): l is NonNullable<typeof l> => Boolean(l) && typeof l === "object")
+        .map((l, i) =>
+          L(
+            String(l.id || `${row.chapter_id}-${i}`),
+            String(l.title || row.chapter_title || "Leçon"),
+            String(l.duration || "12 min"),
+            Number(l.xp) || 50,
+            i === 0 ? "current" : "locked",
+          ),
+        );
+      const chapter = {
+        id: String(row.chapter_id),
+        title: String(row.chapter_title || "Chapitre"),
+        lessons: packedLessons.length
+          ? packedLessons
+          : [L(`${row.chapter_id}-1`, String(row.chapter_title || "Leçon"), "12 min", 50, "current")],
+      };
+      const idx = next.findIndex((s) => s.id === sid);
+      if (idx < 0) {
+        const label = sid === "pc" && isLyceeClass(classe) ? "PC" : undefined;
+        next.push(packSubject(sid, [packTheme(`cloud-${sid}`, "Cours LearnFlow", [chapter])], label));
+        continue;
+      }
+      let replaced = false;
+      const themes = (next[idx].themes ?? []).map((theme) => ({
+        ...theme,
+        chapters: (theme.chapters ?? []).map((ch) => {
+          if (ch.id !== row.chapter_id) return ch;
+          replaced = true;
+          return { ...ch, title: chapter.title, lessons: chapter.lessons };
+        }),
+      }));
+      next[idx] = packSubject(
+        sid,
+        replaced ? themes : [...themes, packTheme(`cloud-${sid}`, "Cours LearnFlow", [chapter])],
+        next[idx].name,
+      );
+    }
+    return next;
+  } catch {
+    return subjects;
   }
-  return next;
 }
 
 export function overlayFiche(chapterId: string, fallback: FicheCoursData | undefined, classe?: string): FicheCoursData | undefined {
+  try {
   const row = publishedRowForChapter(chapterId, classe);
-  if (!row?.payload.fiche) return fallback;
-  const f = row.payload.fiche;
+  const payload = parsePayload(row?.payload);
+  if (!payload.fiche || typeof payload.fiche !== "object") return fallback;
+  const f = payload.fiche;
   return {
     chapitreId: chapterId,
-    titre: row.chapter_title,
-    matiereId: row.subject_id,
-    pucesEssentiel: f.pucesEssentiel ?? fallback?.pucesEssentiel ?? [],
-    sectionsDetaillees: f.sectionsDetaillees ?? fallback?.sectionsDetaillees ?? [],
-    motsClesMasques: f.motsClesMasques ?? fallback?.motsClesMasques ?? [],
+    titre: String(row?.chapter_title || fallback?.titre || "Cours"),
+    matiereId: String(row?.subject_id || fallback?.matiereId || "svt"),
+    pucesEssentiel: Array.isArray(f.pucesEssentiel) ? f.pucesEssentiel : (fallback?.pucesEssentiel ?? []),
+    sectionsDetaillees: Array.isArray(f.sectionsDetaillees) ? f.sectionsDetaillees : (fallback?.sectionsDetaillees ?? []),
+    motsClesMasques: Array.isArray(f.motsClesMasques) ? f.motsClesMasques : (fallback?.motsClesMasques ?? []),
     essentialText: typeof f.essentialText === "string" && f.essentialText.trim()
       ? f.essentialText
       : Array.isArray(f.pucesEssentiel)
@@ -142,24 +183,27 @@ export function overlayFiche(chapterId: string, fallback: FicheCoursData | undef
       : Array.isArray(f.sectionsDetaillees)
         ? undefined
         : fallback?.detailedText,
-    analogie: f.analogie
+    analogie: f.analogie && typeof f.analogie === "object"
       ? {
           kicker: "EN D'AUTRE TERME",
           titre: "L'Analogie de Spira",
-          parole: f.analogie.parole,
-          concept: f.analogie.concept,
-          exemple: f.analogie.exemple,
+          parole: String(f.analogie.parole ?? ""),
+          concept: String(f.analogie.concept ?? ""),
+          exemple: String(f.analogie.exemple ?? ""),
         }
       : fallback?.analogie,
     schema: fallback?.schema,
     situationProbleme: f.situationProbleme ?? fallback?.situationProbleme,
     exempleResolu: f.exempleResolu ?? fallback?.exempleResolu,
   };
+  } catch {
+    return fallback;
+  }
 }
 
 export function overlayQuiz(chapterId: string, fallback: QCMData[], classe?: string): QCMData[] {
-  const quiz = publishedRowForChapter(chapterId, classe)?.payload.quiz;
-  return quiz && quiz.length > 0 ? quiz : fallback;
+  const quiz = parsePayload(publishedRowForChapter(chapterId, classe)?.payload).quiz;
+  return Array.isArray(quiz) && quiz.length > 0 ? quiz : fallback;
 }
 
 export async function refreshPublishedCatalog(platform: "web" | "mobile") {
@@ -179,8 +223,8 @@ export async function refreshPublishedCatalog(platform: "web" | "mobile") {
       fetch(`${url}/rest/v1/published_lessons?select=*&${flag}`, { headers }),
       fetch(`${url}/rest/v1/schema_models?select=*&${flag}`, { headers }),
     ]);
-    if (lessonsRes.ok) lessons = (await lessonsRes.json()) as PublishedLessonRow[];
-    if (schemasRes.ok) schemas = (await schemasRes.json()) as PublishedSchemaRow[];
+    if (lessonsRes.ok) lessons = asRowArray<PublishedLessonRow>(await lessonsRes.json());
+    if (schemasRes.ok) schemas = asRowArray<PublishedSchemaRow>(await schemasRes.json());
     notifyCatalog();
   } catch {
     /* offline */

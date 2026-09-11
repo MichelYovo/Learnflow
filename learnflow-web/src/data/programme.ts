@@ -29,11 +29,11 @@ export function programmeForClass(classe?: string): ProgrammeSubject[] {
 
 /** Première leçon de chaque chapitre ouverte. Le 10/10 débloque le Grand Quizz, pas l'accès au cours. */
 export function programmeStartingFresh(subjects: ProgrammeSubject[]): ProgrammeSubject[] {
-  return subjects.map((subject) => {
-    const themes = subject.themes.map((theme) => {
-      const chapters = theme.chapters.map((chapter) => ({
+  return (subjects ?? []).map((subject) => {
+    const themes = (subject.themes ?? []).map((theme) => {
+      const chapters = (theme.chapters ?? []).map((chapter) => ({
         ...chapter,
-        lessons: chapter.lessons.map((lesson, i) => ({
+        lessons: (chapter.lessons ?? []).map((lesson, i) => ({
           ...lesson,
           status: i === 0 ? ("current" as const) : ("locked" as const),
         })),
@@ -55,10 +55,11 @@ export function applyChapterProgress(
   subjects: ProgrammeSubject[],
   chapterProgress: Record<string, ChapterProgress> = {}
 ): ProgrammeSubject[] {
-  return subjects.map((subject) => {
-    const themes = subject.themes.map((theme) => {
-      const chapters = theme.chapters.map((chapter) => {
-        const p = chapterProgress[chapter.id];
+  const progress = chapterProgress && typeof chapterProgress === "object" ? chapterProgress : {};
+  return (subjects ?? []).map((subject) => {
+    const themes = (subject.themes ?? []).map((theme) => {
+      const chapters = (theme.chapters ?? []).map((chapter) => {
+        const p = progress[chapter.id];
         const progressDone = chapterActivityDone(p);
         const progressTotal = CHAPTER_ACTIVITY_TOTAL;
         const complete = progressDone >= progressTotal;
@@ -87,10 +88,19 @@ export function programmeForLearner(
   profileId?: string,
   chapterProgress: Record<string, ChapterProgress> = {}
 ): ProgrammeSubject[] {
-  const base = programmeForClass(classe);
-  const source = programmeStartingFresh(base);
-  const merged = mergePublishedProgramme(source, classe);
-  return applyChapterProgress(merged, chapterProgress);
+  const progress = chapterProgress && typeof chapterProgress === "object" ? chapterProgress : {};
+  try {
+    const base = programmeForClass(classe);
+    const source = programmeStartingFresh(base);
+    const merged = mergePublishedProgramme(source, classe);
+    return applyChapterProgress(merged, progress);
+  } catch {
+    try {
+      return applyChapterProgress(programmeStartingFresh(programmeForClass(classe)), progress);
+    } catch {
+      return programmeForClass(classe);
+    }
+  }
 }
 
 /** Programme par défaut (3ème) — compat anciens imports. */
@@ -160,32 +170,36 @@ export function continueLessonForLearner(
   profileId?: string,
   chapterProgress: Record<string, ChapterProgress> = {}
 ): ContinueLesson {
-  const programme = programmeForLearner(classe, profileId, chapterProgress);
-  for (const subject of programme) {
-    for (const theme of subject.themes) {
-      for (const chapter of theme.chapters) {
-        const done = chapter.progressDone ?? 0;
-        const total = chapter.progressTotal ?? CHAPTER_ACTIVITY_TOTAL;
-        if (done >= total) continue;
-        const current = chapter.lessons.find((l) => l.status === "current");
-        if (!current && done === 0) continue;
-        return {
-          chapterId: chapter.id,
-          title: chapter.title,
-          lessonLabel: `${subject.name} · ${done} / ${total}`,
-          progress: Math.round((done / total) * 100),
-        };
+  const fallback = continueLessonForClass(classe);
+  try {
+    const programme = programmeForLearner(classe, profileId, chapterProgress);
+    for (const subject of programme) {
+      for (const theme of subject.themes ?? []) {
+        for (const chapter of theme.chapters ?? []) {
+          const done = chapter.progressDone ?? 0;
+          const total = chapter.progressTotal ?? CHAPTER_ACTIVITY_TOTAL;
+          if (done >= total) continue;
+          const current = (chapter.lessons ?? []).find((l) => l.status === "current");
+          if (!current && done === 0) continue;
+          return {
+            chapterId: chapter.id,
+            title: chapter.title,
+            lessonLabel: `${subject.name} · ${done} / ${total}`,
+            progress: Math.round((done / total) * 100),
+          };
+        }
       }
     }
+    const first = programme[0]?.themes?.[0]?.chapters?.[0];
+    return {
+      chapterId: first?.id ?? fallback.chapterId,
+      title: first?.title ?? fallback.title,
+      lessonLabel: "À commencer",
+      progress: 0,
+    };
+  } catch {
+    return fallback;
   }
-  const fallback = continueLessonForClass(classe);
-  const first = programme[0]?.themes[0]?.chapters[0];
-  return {
-    chapterId: first?.id ?? fallback.chapterId,
-    title: first?.title ?? fallback.title,
-    lessonLabel: "À commencer",
-    progress: 0,
-  };
 }
 
 export function firstOpenChapterId(
@@ -205,6 +219,7 @@ export function subjectShortcutsForLearner(
   profileId?: string,
   chapterProgress: Record<string, ChapterProgress> = {}
 ): SubjectShortcut[] {
+  try {
   return programmeForLearner(classe, profileId, chapterProgress).map((s) => ({
     id: s.id,
     name: s.id === "maths" ? "Maths" : s.id === "hg" ? "H-G" : s.id === "philo" ? "Philo" : s.name,
@@ -214,6 +229,9 @@ export function subjectShortcutsForLearner(
     colorScheme: s.id,
     slug: s.id,
   }));
+  } catch {
+    return [];
+  }
 }
 
 export function crammingChaptersForClass(classe?: string): {

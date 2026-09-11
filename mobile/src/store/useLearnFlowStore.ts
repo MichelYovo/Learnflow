@@ -117,6 +117,8 @@ interface LearnFlowState {
       estGelee: boolean;
       groupe: number;
     };
+    aiQuotaRestant?: number;
+    aiQuotaDay?: string;
   }) => void;
   selectProfile: (id: string) => void;
   dismissFocusPrompt: () => void;
@@ -293,7 +295,7 @@ export const useLearnFlowStore = create<LearnFlowState>()(
       applyCloudUser: (user, opts) => {
         const existing = get().profiles.find((p) => p.id === user.id);
         const switching = get().activeProfileId !== user.id;
-        const xp = user.xpTotale ?? 0;
+        const xp = Math.max(user.xpTotale ?? 0, existing?.xpTotale ?? 0);
         const startFresh = opts?.fresh === true;
         const parts = user.nom.trim().split(/\s+/);
         const firstName = parts[0] || "Élève";
@@ -392,6 +394,9 @@ export const useLearnFlowStore = create<LearnFlowState>()(
             estGelee: data.ligue.estGelee || get().ligue.estGelee,
             groupe: data.ligue.groupe || get().ligue.groupe,
           },
+          ...(typeof data.aiQuotaRestant === "number"
+            ? { aiQuotaRestant: data.aiQuotaRestant, aiQuotaDay: data.aiQuotaDay || get().aiQuotaDay }
+            : {}),
         });
         void setProfileXp(data.id, Math.max(data.xpTotale, get().getActiveProfile().xpTotale)).catch((error) =>
           console.warn("[LearnFlow] setProfileXp", error)
@@ -677,6 +682,7 @@ export const useLearnFlowStore = create<LearnFlowState>()(
           return false;
         }
         set({ aiQuotaDay: today, aiQuotaRestant: restant - 1 });
+        void import("../lib/progressSync").then((m) => m.requestProgressSync());
         return true;
       },
 

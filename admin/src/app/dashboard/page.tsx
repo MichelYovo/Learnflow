@@ -25,9 +25,15 @@ export default async function DashboardPage() {
             {data.cloudError ? ` · ${data.cloudError}` : ""}
           </p>
         </div>
-        <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
           <StatCard label="Élèves" value={String(data.stats.students)} hint="Profils suivis" tone="blue" />
-          <StatCard label="Actifs 24 h" value={String(data.stats.active24h)} hint="Mouvements récents" tone="green" />
+          <StatCard
+            label="XP total"
+            value={data.stats.xpTotal.toLocaleString("fr-FR")}
+            hint={`Moy. ${data.stats.avgXp.toLocaleString("fr-FR")}`}
+            tone="amber"
+          />
+          <StatCard label="Actifs 24 h" value={String(data.stats.active24h)} hint="Connexions et sync" tone="green" />
           <Link href="/dashboard/relances">
             <StatCard
               label="Inactifs"

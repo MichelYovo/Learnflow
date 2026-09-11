@@ -10,10 +10,10 @@ import {
   pruneExtraLocalProfiles,
 } from "../db";
 import { startSyncManager } from "../lib/SyncManager";
-import { fetchOwnStudentProfile, isProfileComplete } from "../lib/cloud";
+import { fetchOwnStudentProfile, isProfileComplete, trackActivity } from "../lib/cloud";
 import { syncProgress } from "../lib/progressSync";
 import { isSupabaseConfigured, supabase } from "../lib/supabase";
-import { isCloudProfileId, keepLocalTestProfiles } from "../data/mock";
+import { keepLocalTestProfiles } from "../data/mock";
 import { refreshPublishedCatalog } from "../data/publishedCache";
 import { useLearnFlowStore } from "../store/useLearnFlowStore";
 
@@ -58,21 +58,21 @@ async function restoreCloudSession(): Promise<void> {
     useLearnFlowStore.getState().logout();
     return;
   }
-  const state = useLearnFlowStore.getState();
-  const already = isCloudProfileId(state.activeProfileId) && state.activeProfileId === user.id && state.isAuthenticated;
-  if (!already) {
-    if (!isProfileComplete(profile)) return;
+  if (profile) {
     useLearnFlowStore.getState().applyCloudUser({
       id: user.id,
-      email: user.email ?? profile?.email ?? "",
-      nom: profile?.name ?? String(user.user_metadata?.full_name ?? "Élève"),
-      classe: profile?.class_level ?? "3eme",
-      parentPhone: profile?.parent_phone ?? "",
-      xpTotale: profile?.total_xp ?? 0,
-      streak: profile?.streak ?? 0,
-      lessonsDone: profile?.lessons_done ?? 0,
-      avatarId: profile?.avatar_id ?? undefined,
+      email: user.email ?? profile.email ?? "",
+      nom: profile.name ?? String(user.user_metadata?.full_name ?? "Élève"),
+      classe: profile.class_level ?? "3eme",
+      parentPhone: profile.parent_phone ?? "",
+      xpTotale: profile.total_xp ?? 0,
+      streak: profile.streak ?? 0,
+      lessonsDone: profile.lessons_done ?? 0,
+      avatarId: profile.avatar_id ?? undefined,
     });
+    void trackActivity("heartbeat", { xp: profile.total_xp ?? 0, source: "restore" });
+  } else if (!isProfileComplete(profile)) {
+    return;
   }
   await syncProgress();
 }
@@ -125,6 +125,7 @@ export default function OfflineBootstrap({ children }: { children: React.ReactNo
           if (next === "active") {
             void refreshPublishedCatalog("mobile");
             void syncProgress();
+            void trackActivity("heartbeat", { source: "active" });
           }
         });
         stop = () => {

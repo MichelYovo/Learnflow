@@ -2,9 +2,9 @@
 
 import { Component, type ReactNode } from "react";
 
-/** Un widget (tuteur, tuto, toast) ne doit jamais faire tomber toute l’app. */
+/** Un widget ou une page ne doit jamais faire tomber toute l’app. */
 export default class WidgetErrorBoundary extends Component<
-  { children: ReactNode },
+  { children: ReactNode; fallback?: ReactNode },
   { failed: boolean }
 > {
   state = { failed: false };
@@ -14,7 +14,7 @@ export default class WidgetErrorBoundary extends Component<
   }
 
   render() {
-    if (this.state.failed) return null;
+    if (this.state.failed) return this.props.fallback ?? null;
     return this.props.children;
   }
 }

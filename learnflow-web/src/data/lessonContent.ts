@@ -56,7 +56,7 @@ export function extractBracketKeywords(text: string): string[] {
 }
 
 export function pucesToEssentialText(puces: string[]): string {
-  const lines = puces.map((p) => p.trim()).filter(Boolean);
+  const lines = (Array.isArray(puces) ? puces : []).map((p) => String(p ?? "").trim()).filter(Boolean);
   if (!lines.length) return "";
   return lines
     .map((p, i) => {
@@ -67,10 +67,11 @@ export function pucesToEssentialText(puces: string[]): string {
 }
 
 export function sectionsToDetailedText(sections: SectionCoursAPC[]): string {
-  return sections
+  return (Array.isArray(sections) ? sections : [])
     .map((s) => {
-      const body = s.paragraphes.map((p) => stripCardinalMarkup(p).trim()).filter(Boolean).join("\n\n");
-      return body ? `${s.titre}\n\n${body}` : s.titre;
+      const body = (s?.paragraphes ?? []).map((p) => stripCardinalMarkup(String(p ?? "")).trim()).filter(Boolean).join("\n\n");
+      const titre = s?.titre ?? "";
+      return body ? `${titre}\n\n${body}` : titre;
     })
     .filter((block) => block.trim())
     .join("\n\n");
@@ -84,6 +85,9 @@ export function essentialTextToPuces(text: string): string[] {
 }
 
 export function toLessonContent(fiche: FicheCoursData): LessonContent {
+  if (!fiche) {
+    return { id: "", title: "Cours", essentialText: "", detailedText: "" };
+  }
   const essentialText =
     fiche.essentialText?.trim() ||
     fiche.contenuEssentiel?.trim() ||
@@ -94,7 +98,7 @@ export function toLessonContent(fiche: FicheCoursData): LessonContent {
     sectionsToDetailedText(fiche.sectionsDetaillees ?? []);
   return {
     id: fiche.chapitreId,
-    title: fiche.titre,
+    title: fiche.titre || "Cours",
     essentialText,
     detailedText,
   };
@@ -140,7 +144,7 @@ export interface DetailBlocks {
 }
 
 function foldTitle(s: string) {
-  return s
+  return String(s ?? "")
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase();
@@ -156,7 +160,7 @@ function isExempleTitle(titre: string) {
 }
 
 function cleanParas(section: SectionCoursAPC): string[] {
-  return section.paragraphes.map((p) => stripCardinalMarkup(p).trim()).filter(Boolean);
+  return (section?.paragraphes ?? []).map((p) => stripCardinalMarkup(String(p ?? "")).trim()).filter(Boolean);
 }
 
 function sectionsFromText(text: string): SectionCoursAPC[] {
@@ -235,7 +239,9 @@ function exempleFromSection(section: SectionCoursAPC): ExempleResolu {
  * sinon extraction depuis sectionsDetaillees / detailedText.
  */
 export function toDetailBlocks(fiche: FicheCoursData): DetailBlocks {
-  const fromFiche = (fiche.sectionsDetaillees ?? []).some((s) => s.titre.trim() || s.paragraphes.some((p) => p.trim()))
+  const fromFiche = (fiche.sectionsDetaillees ?? []).some(
+    (s) => (s?.titre ?? "").trim() || (s?.paragraphes ?? []).some((p) => String(p ?? "").trim()),
+  )
     ? fiche.sectionsDetaillees
     : sectionsFromText(fiche.detailedText || fiche.contenuDetaille || "");
 

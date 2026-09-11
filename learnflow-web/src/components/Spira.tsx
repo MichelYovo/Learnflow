@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { useCallback, useEffect, useState } from "react";
 import { pickSpiraQuip, resolveSpiraScene, type SpiraMoodId, type SpiraScene } from "@/data/spira";
 import { useAppTheme } from "@/theme/useAppTheme";
@@ -40,7 +39,8 @@ export default function Spira({
 }: Props) {
   const { colors } = useAppTheme();
   const fromScene = scene ? resolveSpiraScene(scene) : null;
-  const id = mood ?? fromScene?.mood ?? "neutre";
+  const id = (mood ?? fromScene?.mood ?? "neutre") as SpiraMoodId;
+  const src = ASSETS[id] ?? ASSETS.neutre;
   const text = message === "" ? undefined : (message ?? fromScene?.message);
   const [reduce, setReduce] = useState(false);
   const [act, setAct] = useState<"idle" | "react">("idle");
@@ -78,14 +78,15 @@ export default function Spira({
         </span>
       ) : null}
       <span className={`lf-spira-3d relative z-[1] overflow-visible ${live ? (act === "react" ? "lf-spira-react" : "lf-spira-live") : ""}`}>
-        <Image
-          src={ASSETS[id]}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={src}
           alt={interactive ? "Spira" : `Spira ${id}`}
           width={size}
           height={size}
           className="bg-transparent object-contain"
           style={{ width: size, height: size, background: "transparent" }}
-          priority={size >= 80}
+          draggable={false}
         />
       </span>
     </span>

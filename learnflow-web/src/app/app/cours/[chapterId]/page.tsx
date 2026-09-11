@@ -21,9 +21,15 @@ export default function CoursePage() {
   const router = useRouter();
   const catalogEpoch = usePublishedCatalog();
   const classe = useLearnFlowStore((s) => s.getActiveProfile()?.classe);
-  const fiche = useMemo(() => ficheForChapter(chapterId, classe), [chapterId, classe, catalogEpoch]);
-  const lesson = useMemo(() => toLessonContent(fiche), [fiche]);
-  const detailBlocks = useMemo(() => toDetailBlocks(fiche), [fiche]);
+  const fiche = useMemo(() => {
+    try {
+      return chapterId ? ficheForChapter(chapterId, classe) : undefined;
+    } catch {
+      return undefined;
+    }
+  }, [chapterId, classe, catalogEpoch]);
+  const lesson = useMemo(() => (fiche ? toLessonContent(fiche) : { id: "", title: "Cours", essentialText: "", detailedText: "" }), [fiche]);
+  const detailBlocks = useMemo(() => (fiche ? toDetailBlocks(fiche) : null), [fiche]);
   const { colors } = useAppTheme();
   const markChapterPart = useLearnFlowStore((s) => s.markChapterPart);
 
@@ -36,10 +42,10 @@ export default function CoursePage() {
   const [activeTab, setActiveTab] = useState<ActiveTab>("essentiel");
   const [masked, setMasked] = useState(false);
   const [revealed, setRevealed] = useState<Set<string>>(new Set());
-  const show2d = fiche.schema === "2d" || fiche.schema === "both";
-  const show3d = fiche.schema === "3d" || fiche.schema === "both" || chapterHas3dImage(chapterId);
+  const show2d = fiche?.schema === "2d" || fiche?.schema === "both";
+  const show3d = fiche?.schema === "3d" || fiche?.schema === "both" || Boolean(chapterId && chapterHas3dImage(chapterId));
 
-  const analogieBox = fiche.analogie ? <AnalogieSpira analogie={fiche.analogie} /> : null;
+  const analogieBox = fiche?.analogie ? <AnalogieSpira analogie={fiche.analogie} /> : null;
 
   const selectTab = (next: ActiveTab) => {
     setActiveTab(next);
@@ -119,8 +125,12 @@ export default function CoursePage() {
             </div>
             {analogieBox}
           </>
-        ) : (
+        ) : detailBlocks ? (
           <CourseDetailBlocks blocks={detailBlocks} />
+        ) : (
+          <p className="rounded-3xl px-5 py-6 text-sm font-semibold" style={{ color: colors.textMuted }}>
+            Ce chapitre n’est pas encore disponible.
+          </p>
         )}
 
         {show2d || show3d ? (

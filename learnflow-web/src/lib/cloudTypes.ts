@@ -6,7 +6,8 @@ export type ActivityType =
   | "quiz_complete"
   | "blitz_complete"
   | "xp_gain"
-  | "mode_start";
+  | "mode_start"
+  | "heartbeat";
 
 export type ActivityPlatform = "web" | "mobile";
 
@@ -49,6 +50,8 @@ export type CloudProgress = {
   ligue: CloudLigueState;
   chapterProgress: Record<string, CloudChapterProgress>;
   flashcards: CloudFlashcardState[];
+  aiQuotaRestant?: number;
+  aiQuotaDay?: string;
 };
 
 export type StudentCloudProfile = {

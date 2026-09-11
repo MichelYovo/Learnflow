@@ -117,7 +117,21 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       </aside>
 
       <div key={pathname} className="lf-page-in flex min-w-0 flex-1 flex-col pb-[calc(5.5rem+env(safe-area-inset-bottom,0px))] lg:pb-0">
-        {children}
+        <WidgetErrorBoundary
+          fallback={
+            <div className="flex flex-1 flex-col items-center justify-center gap-3 p-8 text-center">
+              <p className="text-lg font-extrabold">Cette page a rencontré un souci</p>
+              <p className="text-sm font-medium" style={{ color: colors.textMuted }}>
+                Réessaie ou ouvre un autre onglet.
+              </p>
+              <Link href="/app" className="rounded-full bg-[#1677FF] px-5 py-2.5 text-sm font-extrabold text-white">
+                Revenir à l’accueil
+              </Link>
+            </div>
+          }
+        >
+          {children}
+        </WidgetErrorBoundary>
       </div>
 
       <nav className="lf-tabbar lg:hidden" aria-label="Navigation">

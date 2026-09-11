@@ -11,7 +11,8 @@ import MesMatieres from "@/components/MesMatieres";
 import ModeWorkSelector from "@/components/ModeWorkSelector";
 import { EMPTY_WEEK_CHART } from "@/data/mock";
 import { usePublishedCatalog } from "@/data/publishedCache";
-import { continueLessonForLearner, programmeForLearner, subjectShortcutsForLearner } from "@/data/programme";
+import { continueLessonForClass, continueLessonForLearner, programmeForLearner, subjectShortcutsForLearner } from "@/data/programme";
+import WidgetErrorBoundary from "@/components/WidgetErrorBoundary";
 import { cardsDueToday } from "@/engine/spacedRepetition";
 import { useLearnFlowStore } from "@/store/useLearnFlowStore";
 import { useAppTheme } from "@/theme/useAppTheme";
@@ -40,7 +41,7 @@ export default function AccueilPage() {
     try {
       return continueLessonForLearner(profile?.classe, profile?.id, chapterProgress);
     } catch {
-      return continueLessonForLearner("3eme");
+      return continueLessonForClass(profile?.classe);
     }
   }, [profile?.classe, profile?.id, chapterProgress, catalogEpoch]);
   const shortcuts = useMemo(() => {
@@ -52,7 +53,7 @@ export default function AccueilPage() {
   }, [profile?.classe, profile?.id, chapterProgress, catalogEpoch]);
   const [selectedMode, setSelectedMode] = useState<AppMode | null>(null);
   const dueCount = cardsDueToday(flashcards).length;
-  const unread = inbox.filter((n) => !n.read).length;
+  const unread = inbox.filter((n) => n && !n.read).length;
   const todayIdx = (new Date().getDay() + 6) % 7;
   const todaySessions = agendaSessions
     .filter((s) => s.day === todayIdx)
@@ -60,7 +61,7 @@ export default function AccueilPage() {
   const totalDone = useMemo(() => {
     try {
       return programmeForLearner(profile?.classe, profile?.id, chapterProgress).reduce(
-        (a, s) => a + s.themes.reduce((b, t) => b + t.lessonsDone, 0),
+        (a, s) => a + (s.themes ?? []).reduce((b, t) => b + (t.lessonsDone ?? 0), 0),
         0,
       );
     } catch {
@@ -76,14 +77,16 @@ export default function AccueilPage() {
     return null;
   }, [ligue?.nomLigue]);
 
+  const continueHref = continueLesson.chapterId ? `/app/cours/${continueLesson.chapterId}` : "/app/cours";
+
   const openMode = (mode: AppMode) => {
     setSelectedMode(mode);
     setCustomTools(MODE_DEFAULT_TOOLS[mode]);
     setPendingMode(appModeToSessionMode(mode));
-    if (mode === "blitz") router.push("/app/blitz");
-    else if (mode === "libre") router.push(`/app/modes/libre?chapterId=${continueLesson.chapterId}`);
+                if (mode === "blitz") router.push("/app/blitz");
+    else if (mode === "libre") router.push(`/app/modes/libre?chapterId=${continueLesson.chapterId || "circulation"}`);
     else if (mode === "guide") router.push("/app/modes/guide");
-    else router.push(`/app/modes/cramming?chapterId=${continueLesson.chapterId}`);
+    else router.push(`/app/modes/cramming?chapterId=${continueLesson.chapterId || "circulation"}`);
   };
 
   useEffect(() => {
@@ -131,7 +134,7 @@ export default function AccueilPage() {
           style={{ background: "linear-gradient(135deg, #1677FF 0%, #00B8F4 100%)" }}
         >
           <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center">
-            <Link href={`/app/cours/${continueLesson.chapterId}`} className="min-w-0 flex-1 text-white sm:pr-3">
+            <Link href={continueHref} className="min-w-0 flex-1 text-white sm:pr-3">
               <p className="text-[17px] font-extrabold leading-snug sm:text-[20px]">{continueLesson.title}</p>
               <p className="mt-1.5 text-[13px] font-semibold text-white/90 sm:text-[15px]">{continueLesson.lessonLabel}</p>
               <div className="mt-3.5 h-2 overflow-hidden rounded-full bg-white/30">
@@ -139,7 +142,7 @@ export default function AccueilPage() {
               </div>
             </Link>
             <Link
-              href={`/app/cours/${continueLesson.chapterId}`}
+              href={continueHref}
               className="w-full shrink-0 self-stretch rounded-2xl bg-white px-4 py-3 text-center text-[15px] font-extrabold text-[#1677FF] sm:w-auto sm:self-center sm:py-3.5 sm:text-[16px]"
             >
               Continuer
@@ -147,22 +150,28 @@ export default function AccueilPage() {
           </div>
         </div>
 
-        <ModeWorkSelector selectedMode={selectedMode} guideInactive={dueCount === 0} onSelectMode={openMode} />
+        <WidgetErrorBoundary>
+          <ModeWorkSelector selectedMode={selectedMode} guideInactive={dueCount === 0} onSelectMode={openMode} />
+        </WidgetErrorBoundary>
 
-        <DailyChallenges
-          onOpen={(id) => {
-            if (id === "flash") router.push(`/app/flashcards?chapterId=${continueLesson.chapterId}`);
-            else if (id === "qcm") router.push(`/app/quiz/assimilation/${continueLesson.chapterId}`);
-            else if (id === "duel_win") router.push("/app/blitz");
-            else router.push(`/app/cours/${continueLesson.chapterId}`);
-          }}
-        />
+        <WidgetErrorBoundary>
+          <DailyChallenges
+            onOpen={(id) => {
+              if (id === "flash") router.push(`/app/flashcards?chapterId=${continueLesson.chapterId}`);
+              else if (id === "qcm") router.push(`/app/quiz/assimilation/${continueLesson.chapterId}`);
+              else if (id === "duel_win") router.push("/app/blitz");
+              else router.push(`/app/cours/${continueLesson.chapterId}`);
+            }}
+          />
+        </WidgetErrorBoundary>
 
-        <MesMatieres
-          subjects={shortcuts}
-          onSelect={(s) => router.push(`/app/cours?subjectId=${s.slug}`)}
-          onSeeAll={() => router.push("/app/cours")}
-        />
+        <WidgetErrorBoundary>
+          <MesMatieres
+            subjects={shortcuts}
+            onSelect={(s) => router.push(`/app/cours?subjectId=${s.slug}`)}
+            onSeeAll={() => router.push("/app/cours")}
+          />
+        </WidgetErrorBoundary>
 
         {todaySessions.length > 0 ? (
           <section className="rounded-3xl border p-5" style={{ background: colors.white, borderColor: colors.border }}>

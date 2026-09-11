@@ -17,6 +17,7 @@ export type AdminStudent = {
   updatedAt?: string;
   progressUpdatedAt?: string;
   lastSeenAt?: string;
+  aiQuotaRestant?: number;
 };
 
 export const SEED_STUDENTS: AdminStudent[] = [];

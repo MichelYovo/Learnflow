@@ -58,7 +58,7 @@ export default function CompleteProfileScreen({ navigation }: Props) {
             lessonsDone: existing?.lessons_done ?? 0,
             avatarId: existing?.avatar_id ?? undefined,
           },
-          { fresh: (existing?.total_xp ?? 0) === 0, authenticate: false },
+          { fresh: false, authenticate: false },
         );
         void trackActivity("login", { provider: "google" });
         void notifySecureLogin("login");

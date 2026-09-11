@@ -108,6 +108,7 @@ export type CloudStudent = {
   progress_updated_at?: string | null;
   created_at?: string | null;
   updated_at?: string | null;
+  progress?: Record<string, unknown> | null;
 };
 
 export type CloudLeague = {
@@ -152,7 +153,7 @@ export async function fetchCloudLeagues() {
 
 export async function fetchCloudEvents(studentId?: string) {
   const filter = studentId ? `&student_id=eq.${encodeURIComponent(studentId)}` : "";
-  return restGet<CloudEvent>(`activity_events?select=*&order=created_at.desc&limit=400${filter}`);
+  return restGet<CloudEvent>(`activity_events?select=*&order=created_at.desc&limit=800${filter}`);
 }
 
 export async function fetchSupportMessages() {

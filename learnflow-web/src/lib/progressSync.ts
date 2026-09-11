@@ -4,6 +4,7 @@ import { fetchOwnStudentProfile, saveCloudProgress } from "./cloud";
 import { nowIso } from "./ids";
 import { isCloudProfileId } from "@/data/mock";
 import { FLASHCARDS } from "@/data/mock";
+import { remainingAiQuota, todayIsoDate } from "@/data/tutor";
 import { getBrowserSupabase } from "./supabase";
 
 const DEBOUNCE_MS = 900;
@@ -14,9 +15,22 @@ let queued = false;
 
 export function parseCloudProgress(raw: StudentCloudProfile["progress"]): CloudProgress | null {
   if (!raw || typeof raw !== "object") return null;
-  const p = raw as CloudProgress;
-  if (p.v !== 1 || typeof p.chapterProgress !== "object" || !p.chapterProgress) return null;
-  return p;
+  const p = raw as Partial<CloudProgress>;
+  if (p.v !== 1) return null;
+  return {
+    v: 1,
+    updatedAt: typeof p.updatedAt === "string" ? p.updatedAt : nowIso(),
+    xpTotale: Number(p.xpTotale) || 0,
+    streak: Number(p.streak) || 0,
+    lessonsDone: Number(p.lessonsDone) || 0,
+    badgesDebloques: Array.isArray(p.badgesDebloques) ? p.badgesDebloques : [],
+    avatarId: p.avatarId,
+    ligue: p.ligue ?? { nomLigue: "Bronze", rangActuel: 1, scoreHebdo: 0, estGelee: false, groupe: 1 },
+    chapterProgress: p.chapterProgress && typeof p.chapterProgress === "object" ? p.chapterProgress : {},
+    flashcards: Array.isArray(p.flashcards) ? p.flashcards : [],
+    aiQuotaRestant: p.aiQuotaRestant,
+    aiQuotaDay: p.aiQuotaDay,
+  };
 }
 
 function mergeChapter(a?: CloudChapterProgress, b?: CloudChapterProgress): CloudChapterProgress | undefined {
@@ -84,6 +98,8 @@ export function snapshotProgress(input: {
   ligue: Ligue;
   chapterProgress: Record<string, ChapterProgress>;
   flashcards: FlashcardData[];
+  aiQuotaRestant?: number;
+  aiQuotaDay?: string;
 }): CloudProgress {
   return {
     v: 1,
@@ -102,6 +118,8 @@ export function snapshotProgress(input: {
     },
     chapterProgress: input.chapterProgress,
     flashcards: snapshotFlashcards(input.flashcards),
+    aiQuotaRestant: input.aiQuotaRestant,
+    aiQuotaDay: input.aiQuotaDay,
   };
 }
 
@@ -135,6 +153,11 @@ export function mergeProgress(local: CloudProgress, remote: CloudProgress | null
         remote.flashcards
       )
     ),
+    aiQuotaDay: local.aiQuotaDay === todayIsoDate() ? local.aiQuotaDay : remote.aiQuotaDay,
+    aiQuotaRestant:
+      local.aiQuotaDay === todayIsoDate()
+        ? remainingAiQuota(local.aiQuotaRestant ?? 5, local.aiQuotaDay)
+        : remainingAiQuota(remote.aiQuotaRestant ?? 5, remote.aiQuotaDay),
   };
 }
 
@@ -152,11 +175,25 @@ export async function syncProgress(): Promise<void> {
     if (!uid) return;
 
     const { useLearnFlowStore } = await import("@/store/useLearnFlowStore");
-    const state = useLearnFlowStore.getState();
-    if (!isCloudProfileId(state.activeProfileId) || state.activeProfileId !== uid) return;
-
+    let state = useLearnFlowStore.getState();
     const cloud = await fetchOwnStudentProfile();
-    if (!cloud) return;
+
+    if (cloud && (state.activeProfileId !== uid || !isCloudProfileId(state.activeProfileId))) {
+      useLearnFlowStore.getState().applyCloudUser({
+        id: uid,
+        email: cloud.email ?? "",
+        nom: cloud.name || "Élève",
+        classe: cloud.class_level || "3eme",
+        parentPhone: cloud.parent_phone ?? "",
+        xpTotale: cloud.total_xp ?? 0,
+        streak: cloud.streak ?? 0,
+        lessonsDone: cloud.lessons_done ?? 0,
+        avatarId: cloud.avatar_id ?? undefined,
+      });
+      state = useLearnFlowStore.getState();
+    }
+
+    if (!isCloudProfileId(state.activeProfileId) || state.activeProfileId !== uid) return;
 
     const profile = state.getActiveProfile();
     const local = snapshotProgress({
@@ -164,9 +201,11 @@ export async function syncProgress(): Promise<void> {
       ligue: state.ligue,
       chapterProgress: state.chapterProgress,
       flashcards: state.flashcards,
+      aiQuotaRestant: remainingAiQuota(state.aiQuotaRestant, state.aiQuotaDay),
+      aiQuotaDay: todayIsoDate(),
     });
-    const remote = parseCloudProgress(cloud.progress);
-    const merged = mergeProgress(local, remote, cloud.total_xp ?? 0);
+    const remote = parseCloudProgress(cloud?.progress);
+    const merged = mergeProgress(local, remote, cloud?.total_xp ?? 0);
 
     useLearnFlowStore.getState().ingestCloudProgress({
       id: uid,
@@ -178,6 +217,8 @@ export async function syncProgress(): Promise<void> {
       chapterProgress: merged.chapterProgress,
       flashcards: mergeFlashcards(state.flashcards.length ? state.flashcards : FLASHCARDS, merged.flashcards),
       ligue: merged.ligue,
+      aiQuotaRestant: merged.aiQuotaRestant,
+      aiQuotaDay: merged.aiQuotaDay,
     });
 
     const next = useLearnFlowStore.getState().getActiveProfile();

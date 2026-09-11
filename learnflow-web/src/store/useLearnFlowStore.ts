@@ -110,6 +110,8 @@ interface LearnFlowState {
       estGelee: boolean;
       groupe: number;
     };
+    aiQuotaRestant?: number;
+    aiQuotaDay?: string;
   }) => void;
   selectProfile: (id: string) => void;
   dismissFocusPrompt: () => void;
@@ -148,7 +150,7 @@ interface LearnFlowState {
   gelerLigue: (jours: number) => void;
   envoyerSMSFelicitation: (msg: string) => Promise<boolean>;
   settings: AppSettings;
-  pushInbox: (item: { kind: InboxKind; title: string; body: string }) => void;
+  pushInbox: (item: { kind: InboxKind; title: string; body: string; id?: string }) => void;
   markInboxRead: (id: string) => void;
   markAllInboxRead: () => void;
   tickChallenge: (id: ChallengeId, amount?: number) => void;
@@ -313,7 +315,7 @@ export const useLearnFlowStore = create<LearnFlowState>()(
       applyCloudUser: (user, opts) => {
         const existing = get().profiles.find((p) => p.id === user.id);
         const switching = get().activeProfileId !== user.id;
-        const xp = user.xpTotale ?? 0;
+        const xp = Math.max(user.xpTotale ?? 0, existing?.xpTotale ?? 0);
         const startFresh = opts?.fresh === true;
         const parts = user.nom.trim().split(/\s+/);
         const firstName = parts[0] || "Élève";
@@ -395,6 +397,9 @@ export const useLearnFlowStore = create<LearnFlowState>()(
             estGelee: data.ligue.estGelee || get().ligue.estGelee,
             groupe: data.ligue.groupe || get().ligue.groupe,
           },
+          ...(typeof data.aiQuotaRestant === "number"
+            ? { aiQuotaRestant: data.aiQuotaRestant, aiQuotaDay: data.aiQuotaDay || get().aiQuotaDay }
+            : {}),
         });
       },
       selectProfile: (id) =>
@@ -649,6 +654,7 @@ export const useLearnFlowStore = create<LearnFlowState>()(
           return false;
         }
         set({ aiQuotaDay: today, aiQuotaRestant: restant - 1 });
+        void import("@/lib/progressSync").then((m) => m.requestProgressSync());
         return true;
       },
 
@@ -686,18 +692,20 @@ export const useLearnFlowStore = create<LearnFlowState>()(
         return true;
       },
 
-      pushInbox: ({ kind, title, body }) => {
+      pushInbox: ({ kind, title, body, id }) => {
+        const inbox = Array.isArray(get().inbox) ? get().inbox : [];
+        if (id && inbox.some((n) => n.id === id)) return;
         set({
           inbox: [
             {
-              id: createId(),
+              id: id || createId(),
               kind,
               title,
               body,
               createdAt: nowIso(),
               read: false,
             },
-            ...get().inbox,
+            ...inbox,
           ].slice(0, 50),
         });
       },
@@ -960,7 +968,10 @@ export const useLearnFlowStore = create<LearnFlowState>()(
             ligue: { ...BEGINNER_LIGUE, ...(p.ligue && typeof p.ligue === "object" ? p.ligue : current.ligue) },
             suiviParental: p.suiviParental ?? current.suiviParental,
             flashcards: extraCards.length ? [...baseCards, ...extraCards] : baseCards,
-            chapterProgress: p.chapterProgress ?? current.chapterProgress,
+            chapterProgress:
+              p.chapterProgress && typeof p.chapterProgress === "object" && !Array.isArray(p.chapterProgress)
+                ? p.chapterProgress
+                : (current.chapterProgress ?? {}),
             aiQuotaRestant: p.aiQuotaRestant ?? current.aiQuotaRestant,
             aiQuotaDay: typeof p.aiQuotaDay === "string" ? p.aiQuotaDay : "",
             customTools: p.customTools ?? current.customTools,

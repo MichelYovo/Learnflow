@@ -24,7 +24,6 @@ export async function upsertStudentProfile(
   const { error } = await supabase.from("student_profiles").upsert(
     {
       parent_id: patch.parent_id ?? patch.id,
-      total_xp: patch.total_xp ?? 0,
       platform: "web",
       ...patch,
     },
@@ -76,16 +75,14 @@ export async function saveCloudProgress(payload: {
     .eq("student_id", payload.id)
     .maybeSingle();
   const weekly = Math.max(existingRow?.weekly_xp ?? 0, payload.progress.ligue.scoreHebdo);
-  const { error: leagueError } = await supabase.from("league_scores").upsert(
-    {
-      id: existingRow?.id ?? payload.id,
-      student_id: payload.id,
-      league_tier: existingRow?.league_tier ?? payload.progress.ligue.nomLigue ?? "Bronze",
-      weekly_xp: weekly,
-      last_sync: stamp,
-    },
-    { onConflict: "id" }
-  );
+  const leagueRow: Record<string, unknown> = {
+    student_id: payload.id,
+    league_tier: existingRow?.league_tier ?? payload.progress.ligue.nomLigue ?? "Bronze",
+    weekly_xp: weekly,
+    last_sync: stamp,
+  };
+  if (existingRow?.id) leagueRow.id = existingRow.id;
+  const { error: leagueError } = await supabase.from("league_scores").upsert(leagueRow, { onConflict: "student_id" });
   if (leagueError) console.warn("[LearnFlow] league_scores", leagueError.message);
   return {};
 }
@@ -103,6 +100,9 @@ export async function ensureBeginnerLeague(studentId: string): Promise<void> {
   if (error) console.warn("[LearnFlow] league seed", error.message);
 }
 
+let lastHeartbeatAt = 0;
+const HEARTBEAT_MS = 4 * 60_000;
+
 export async function trackActivity(type: ActivityType, payload: Record<string, unknown> = {}): Promise<void> {
   if (!isSupabaseConfigured) return;
   const supabase = getBrowserSupabase();
@@ -110,6 +110,11 @@ export async function trackActivity(type: ActivityType, payload: Record<string, 
   const { data } = await supabase.auth.getSession();
   const uid = data.session?.user.id;
   if (!uid) return;
+  if (type === "heartbeat") {
+    const now = Date.now();
+    if (now - lastHeartbeatAt < HEARTBEAT_MS) return;
+    lastHeartbeatAt = now;
+  }
   const { error } = await supabase.from("activity_events").insert({
     student_id: uid,
     type,

@@ -207,11 +207,11 @@ export const SPIRA_SCENE: Record<SpiraScene, SpiraSceneDef> = {
 };
 
 export function resolveSpiraScene(scene: SpiraScene): SpiraSceneDef {
-  return SPIRA_SCENE[scene];
+  return SPIRA_SCENE[scene] ?? SPIRA_SCENE.welcome;
 }
 
 export function spiraMoodForMode(mode: AppMode): SpiraMoodId {
-  return SPIRA_FOR_MODE[mode];
+  return SPIRA_FOR_MODE[mode] ?? "neutre";
 }
 
 export function spiraMoodForSession(mode?: string | null): SpiraMoodId {

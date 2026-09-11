@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { CLASS_GROUPS, classLabel, initialsFromName, normalizeClassId } from "@/lib/brand";
+import { AI_DAILY_QUOTA, formatLastSeen } from "@/lib/activity";
 import { maskTogoPhone } from "@/lib/phoneTogo";
 import type { AdminStudent } from "@/data/seed";
 
@@ -57,8 +58,10 @@ export default function StudentsTable({ students }: { students: AdminStudent[] }
               <th className="px-4 py-3">Parent</th>
               <th className="px-4 py-3">Ligue</th>
               <th className="px-4 py-3">XP</th>
+              <th className="px-4 py-3">Hebdo</th>
               <th className="px-4 py-3">Série</th>
-              <th className="px-4 py-3">Leçons</th>
+              <th className="px-4 py-3">IA</th>
+              <th className="px-4 py-3">Vu</th>
               <th className="px-4 py-3">Statut</th>
             </tr>
           </thead>
@@ -102,8 +105,12 @@ export default function StudentsTable({ students }: { students: AdminStudent[] }
                 </td>
                 <td className="px-4 py-3 font-bold text-[#1C1917]">{s.leagueTier}</td>
                 <td className="px-4 py-3 font-black text-[#1677FF]">{s.xpTotale.toLocaleString("fr-FR")}</td>
+                <td className="px-4 py-3 font-bold text-[#475569]">{s.weeklyXp.toLocaleString("fr-FR")}</td>
                 <td className="px-4 py-3 font-bold">{s.streak} j</td>
-                <td className="px-4 py-3 font-bold">{s.lessonsDone}</td>
+                <td className="px-4 py-3 font-bold">
+                  {typeof s.aiQuotaRestant === "number" ? `${s.aiQuotaRestant}/${AI_DAILY_QUOTA}` : "—"}
+                </td>
+                <td className="px-4 py-3 text-xs font-bold text-[#64748B]">{formatLastSeen(s.lastSeenAt)}</td>
                 <td className="px-4 py-3">
                   <span
                     className={`rounded-full px-2 py-0.5 text-[10px] font-extrabold uppercase ${
@@ -117,7 +124,7 @@ export default function StudentsTable({ students }: { students: AdminStudent[] }
             ))}
             {rows.length === 0 ? (
               <tr>
-                <td colSpan={9} className="px-4 py-10 text-center font-semibold text-[#A8A29E]">
+                <td colSpan={11} className="px-4 py-10 text-center font-semibold text-[#A8A29E]">
                   Aucun élève pour ce filtre.
                 </td>
               </tr>

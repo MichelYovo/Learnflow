@@ -57,7 +57,7 @@ export default function CompleteProfilePage() {
             lessonsDone: existing?.lessons_done ?? 0,
             avatarId: existing?.avatar_id ?? undefined,
           },
-          { fresh: (existing?.total_xp ?? 0) === 0, authenticate: false },
+          { fresh: false, authenticate: false },
         );
         void trackActivity("login", { provider: "google" });
         void notifySecureLogin("login");
@@ -88,17 +88,18 @@ export default function CompleteProfilePage() {
     }
     setError("");
     setBusy(true);
+    const existing = await fetchOwnStudentProfile();
     const result = await upsertStudentProfile({
       id: userId,
       parent_id: userId,
       name: displayName,
       email,
       class_level: classe,
-      parent_phone: phone ?? null,
+      parent_phone: phone ?? existing?.parent_phone ?? null,
       platform: "web",
-      total_xp: 0,
-      streak: 0,
-      lessons_done: 0,
+      total_xp: existing?.total_xp ?? 0,
+      streak: existing?.streak ?? 0,
+      lessons_done: existing?.lessons_done ?? 0,
     });
     if (result.error) {
       setError(result.error);
@@ -110,12 +111,13 @@ export default function CompleteProfilePage() {
       email,
       nom: displayName,
       classe,
-      parentPhone: phone,
-      xpTotale: 0,
-      streak: 0,
-      lessonsDone: 0,
+      parentPhone: phone ?? existing?.parent_phone ?? undefined,
+      xpTotale: existing?.total_xp ?? 0,
+      streak: existing?.streak ?? 0,
+      lessonsDone: existing?.lessons_done ?? 0,
       rang: 1,
-    }, { fresh: true, authenticate: false });
+      avatarId: existing?.avatar_id ?? undefined,
+    }, { fresh: !existing, authenticate: false });
     void ensureBeginnerLeague(userId);
     void trackActivity("profile_complete", { classe, platform: "web" });
     void notifySecureLogin(phone ? "parent_linked" : "profile_complete");

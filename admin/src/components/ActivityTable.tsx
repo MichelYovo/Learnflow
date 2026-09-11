@@ -1,18 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { ACTIVITY_LABELS, eventCaption } from "@/lib/activity";
 import type { AdminActivityEvent } from "@/lib/catalog";
-
-const LABELS: Record<string, string> = {
-  login: "Connexion",
-  signup: "Inscription",
-  profile_complete: "Profil complété",
-  chapter_open: "Chapitre ouvert",
-  quiz_complete: "Quiz 10/10",
-  blitz_complete: "Blitz",
-  xp_gain: "XP gagné",
-  mode_start: "Mode lancé",
-};
 
 export default function ActivityTable({ events }: { events: AdminActivityEvent[] }) {
   const [platform, setPlatform] = useState("all");
@@ -57,7 +47,7 @@ export default function ActivityTable({ events }: { events: AdminActivityEvent[]
           <option value="all">Tous les types</option>
           {types.map((t) => (
             <option key={t} value={t}>
-              {LABELS[t] ?? t}
+              {ACTIVITY_LABELS[t] ?? t}
             </option>
           ))}
         </select>
@@ -79,7 +69,7 @@ export default function ActivityTable({ events }: { events: AdminActivityEvent[]
                   {new Date(e.createdAt).toLocaleString("fr-FR")}
                 </td>
                 <td className="px-4 py-3 font-extrabold text-[#1C1917]">{e.studentName}</td>
-                <td className="px-4 py-3 font-bold">{LABELS[e.type] ?? e.type}</td>
+                <td className="px-4 py-3 font-bold">{eventCaption(e)}</td>
                 <td className="px-4 py-3">
                   <span
                     className={`rounded-full px-2 py-0.5 text-[10px] font-extrabold uppercase ${
