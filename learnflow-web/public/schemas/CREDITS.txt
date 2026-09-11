@@ -1,0 +1,33 @@
+Learnflow SVT schemas — image credits
+=====================================
+
+These educational diagrams are bundled for classroom use. They are
+annotated (hotspots) in-app; the original files were not redrawn.
+
+Blausen Medical (CC BY 3.0)
+  Citation: Blausen.com staff (2014). "Medical gallery of Blausen Medical 2014".
+  WikiJournal of Medicine 1 (2). DOI:10.15347/wjm/2014.010
+  - coeur.png        File:Blausen 0452 Heart BloodFlow.png
+  - neurone.png      File:Blausen 0657 MultipolarNeuron.png
+  - rein.png         File:Blausen 0592 KidneyAnatomy 01.png
+  - digestif.png     File:Blausen 0316 DigestiveSystem.png
+  - oeil.png         File:Blausen 0388 EyeAnatomy 01.png
+  - poumons.png      File:Blausen 0770 RespiratorySystem 02.png
+  - cellule.png      File:Blausen 0208 CellAnatomy.png
+  - repro-f.png      File:Blausen 0399 FemaleReproSystem 01.png
+  - fecondation.png  File:Blausen 0404 Fertilization.png
+  - muscle.png       File:Blausen 0801 SkeletalMuscle.png
+  License: https://creativecommons.org/licenses/by/3.0/
+
+OpenStax Anatomy & Physiology (CC BY 4.0)
+  - adn.jpg          File:0322 DNA Nucleotides Numbered.jpg
+  License: https://creativecommons.org/licenses/by/4.0/
+
+Public domain / CC0 (Wikimedia Commons)
+  - synapse.jpg      File:Chemical synapse schema cropped.jpg (NIDA, US government)
+  - fleur.png        File:Mature flower diagram.svg
+  - terre.png        File:Earth-cutaway-schematic-english.svg
+  - repro-h.png      File:Human male reproductive anatomy.png (CC BY-SA 3.0)
+  - meiose.png       File:Meiosis Stages.svg (CC BY-SA 4.0)
+
+Sources: https://commons.wikimedia.org/

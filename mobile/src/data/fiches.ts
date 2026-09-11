@@ -182,7 +182,7 @@ const FICHES_3EME: Record<string, FicheCoursData> = {
     chapitreId: "digest",
     titre: "La digestion",
     matiereId: "svt",
-    schema: "2d",
+    schema: "both",
     motsClesMasques: ["nutriments", "bouche", "estomac", "enzymes", "intestin grêle", "gros intestin", "énergie"],
     essentialText:
       "La digestion est le processus par lequel le corps transforme les aliments en [nutriments] assimilables.\n\n• Les aliments passent par la [bouche], l'œsophage, puis l'[estomac].\n• Les sucs gastriques décomposent les aliments grâce aux [enzymes].\n• L'absorption des nutriments se fait principalement dans l'[intestin grêle].\n• Les déchets sont évacués par le [gros intestin].\n\nCe processus fournit l'[énergie] nécessaire au fonctionnement de nos cellules.",
@@ -670,7 +670,9 @@ function fallbackFiche(chapitreId: string): FicheCoursData {
   const titre = meta?.chapter.title ?? "Fiche de cours";
   const matiereId = meta?.subject.id ?? "maths";
   const schema: SchemaCoursKind | undefined = chapterHas3dImage(chapitreId)
-    ? "3d"
+    ? chapitreId === "digest"
+      ? "both"
+      : "3d"
     : chapitreId === "digest"
       ? "2d"
       : undefined;

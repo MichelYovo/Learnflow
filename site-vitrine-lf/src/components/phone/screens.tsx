@@ -335,7 +335,7 @@ export function CourseMock() {
         </div>
       </div>
       <div className="flex-1 space-y-3 overflow-hidden px-5 py-3">
-        <img src="/schemas/neurone.jpg" alt="" className="h-28 w-full rounded-2xl object-cover" />
+        <img src="/schemas/neurone.png" alt="" className="h-28 w-full rounded-2xl object-cover" />
         <ul className="space-y-3.5">
           {[
             <>Le <span className="font-bold text-[#1677FF]">neurone</span> conduit le message nerveux dans un seul sens.</>,

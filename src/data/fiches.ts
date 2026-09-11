@@ -171,7 +171,7 @@ export const FICHES: Record<string, FicheCoursData> = {
     chapitreId: "digest",
     titre: "La digestion",
     matiereId: "svt",
-    schema: "2d",
+    schema: "both",
     motsClesMasques: ["enzymes", "villosités", "absorption"],
     pucesEssentiel: [
       "La **digestion** transforme les aliments en **nutriments** assimilables.",
@@ -608,7 +608,9 @@ function fallbackFiche(chapitreId: string): FicheCoursData {
   const titre = meta?.chapter.title ?? "Fiche de cours";
   const matiereId = meta?.subject.id ?? "maths";
   const schema: SchemaCoursKind | undefined = chapterHas3dImage(chapitreId)
-    ? "3d"
+    ? chapitreId === "digest"
+      ? "both"
+      : "3d"
     : chapitreId === "digest"
       ? "2d"
       : undefined;

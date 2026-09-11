@@ -118,9 +118,9 @@ export function subjectIdForChapter(chapterId: string): string | undefined {
   return findChapterMeta(chapterId)?.subject.id;
 }
 
-/** Schémas interactifs : SVT avec visuel 2D (digestion) ou modèle 3D. */
+/** Schémas interactifs : SVT avec visuel 2D (digestion) ou modèle 3D annoté. */
 export function chapterHasSchema(chapterId: string): boolean {
-  return chapterHas3dImage(chapterId) || chapterId === "digest" || chapterId === "cell";
+  return chapterHas3dImage(chapterId) || chapterId === "digest";
 }
 
 export type ContinueLesson = {

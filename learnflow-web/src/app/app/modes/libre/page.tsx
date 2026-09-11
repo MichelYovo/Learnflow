@@ -21,7 +21,7 @@ function LibreInner() {
   const showFiche = open || tools.includes("fiche");
   const showFlash = open || tools.includes("flashcards");
   const show2d = chapterId === "digest";
-  const show3d = chapterHas3dImage(chapterId) || chapterId === "cell";
+  const show3d = chapterHas3dImage(chapterId);
   const showSchema = (show2d || show3d) && (open || tools.includes("schema"));
 
   return (

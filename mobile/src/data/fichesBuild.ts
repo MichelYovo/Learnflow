@@ -44,6 +44,7 @@ export function tleFiche(d: TleFicheDraft): FicheCoursData {
     chapitreId: d.id,
     titre: d.titre,
     matiereId: d.matiereId,
+    schema: d.matiereId === "svt" ? "3d" : undefined,
     motsClesMasques: d.mots,
     pucesEssentiel: d.puces,
     essentialText,
