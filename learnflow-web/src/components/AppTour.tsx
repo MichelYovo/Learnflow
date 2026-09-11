@@ -159,7 +159,7 @@ export default function AppTour() {
         }}
       >
         <div className="flex items-start gap-3">
-          <Spira mood={current.mood} size={64} message="" />
+          <Spira mood={current.mood} size={64} message="" wander={false} />
           <div className="min-w-0 flex-1 pt-1">
             <p className="text-[11px] font-extrabold uppercase tracking-widest" style={{ color: colors.primary }}>
               Spira t’accompagne

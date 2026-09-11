@@ -8,6 +8,7 @@ import QuizPlay from "../../components/quiz/QuizPlay";
 import SessionRecap, { useSessionStats } from "../../components/SessionRecap";
 import Spira from "../../components/Spira";
 import { questionsForChapter } from "../../data/modeContent";
+import { findChapterMeta } from "../../data/programme";
 import { usePublishedCatalog } from "../../data/publishedCache";
 import { playSfx, preloadSfx } from "../../lib/sfx";
 import { useLearnFlowStore } from "../../store/useLearnFlowStore";
@@ -21,6 +22,7 @@ export default function AssimilationQuizScreen({ navigation, route }: Props) {
   const loopErrors = route.params?.loopErrors === true;
   usePublishedCatalog();
   const classe = useLearnFlowStore((s) => s.getActiveProfile()?.classe);
+  const chapterTitle = findChapterMeta(chapterId)?.chapter.title;
   const bank = questionsForChapter(chapterId, classe);
   const [queue, setQueue] = useState(bank);
   const questions = queue;
@@ -161,7 +163,7 @@ export default function AssimilationQuizScreen({ navigation, route }: Props) {
   return (
     <SafeAreaView style={styles.safe} edges={["top"]}>
       <QuizPlay
-        kicker={`Assimilation${q.matiere ? ` · ${q.matiere}` : ""}`}
+        kicker={`Assimilation${q.matiere ? ` · ${q.matiere}` : ""}${chapterTitle ? ` · ${chapterTitle}` : ""}`}
         current={current}
         total={questions.length}
         question={q.enonceQuestion}

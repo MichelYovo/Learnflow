@@ -220,14 +220,15 @@ const q = (
   optionsProposees: string[],
   indexReponseCorrecte: number,
   explicationPedagogique: string
-): QCMData => ({
-  id,
-  enonceQuestion,
-  optionsProposees,
-  indexReponseCorrecte,
-  explicationPedagogique,
-  matiere: "SVT",
-});
+): QCMData =>
+  withOptionNotes({
+    id,
+    enonceQuestion,
+    optionsProposees,
+    indexReponseCorrecte,
+    explicationPedagogique,
+    matiere: "SVT",
+  });
 
 export const CIRCULATION_QCM: QCMData[] = [
   q("h1", "Combien de cavités a le cœur humain ?", ["2", "3", "4", "6"], 2, "Deux oreillettes et deux ventricules."),
@@ -373,10 +374,7 @@ export function questionsForChapter(chapterId: string, classe?: string): QCMData
     nerveux: NERVEUX_QCM,
     neurones: NERVEUX_QCM,
     excretion: EXCRETION_QCM,
-    glycemie: EXCRETION_QCM,
     adn: ADN_QCM,
-    brassage: ADN_QCM,
-    gene: ADN_QCM,
     complexes: COMPLEXES_QCM,
     "tle-d-complexes": COMPLEXES_QCM,
     "tle-d-vecteurs": VECTEURS_QCM,

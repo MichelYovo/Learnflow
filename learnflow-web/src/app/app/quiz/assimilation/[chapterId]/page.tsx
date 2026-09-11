@@ -7,6 +7,7 @@ import QuizPlay from "@/components/quiz/QuizPlay";
 import SessionRecap, { useSessionStats } from "@/components/SessionRecap";
 import Spira from "@/components/Spira";
 import { questionsForChapter } from "@/data/modeContent";
+import { findChapterMeta } from "@/data/programme";
 import { usePublishedCatalog } from "@/data/publishedCache";
 import { playSfx, preloadSfx } from "@/lib/sfx";
 import { useLearnFlowStore } from "@/store/useLearnFlowStore";
@@ -20,6 +21,7 @@ function QuizInner() {
   const { colors } = useAppTheme();
   const catalogEpoch = usePublishedCatalog();
   const classe = useLearnFlowStore((s) => s.getActiveProfile()?.classe);
+  const chapterTitle = findChapterMeta(chapterId)?.chapter.title;
   const bank = useMemo(() => questionsForChapter(chapterId, classe), [chapterId, classe, catalogEpoch]);
   const [queue, setQueue] = useState(bank);
   const recordAssimilation = useLearnFlowStore((s) => s.recordAssimilation);
@@ -188,7 +190,7 @@ function QuizInner() {
 
   return (
     <QuizPlay
-      kicker={`Assimilation${q.matiere ? ` · ${q.matiere}` : ""}`}
+      kicker={`Assimilation${q.matiere ? ` · ${q.matiere}` : ""}${chapterTitle ? ` · ${chapterTitle}` : ""}`}
       current={current}
       total={queue.length}
       question={q.enonceQuestion}

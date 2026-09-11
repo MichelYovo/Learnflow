@@ -69,11 +69,14 @@ function pickWrongs(correct: string, pool: string[]): string[] {
 }
 
 function notesFor(options: string[], correct: string, explain: string): string[] {
-  return options.map((opt) =>
-    fold(opt) === fold(correct)
-      ? `Bonne réponse. ${explain}`
-      : `Faux. Ce choix ne répond pas à la question : on le confond souvent avec la bonne idée. Retiens : ${clip(explain, 140)}`,
-  );
+  const why = clip(explain.replace(/\s+/g, " ").trim(), 180);
+  return options.map((opt) => {
+    if (fold(opt) === fold(correct)) return `Bonne réponse. ${why}`;
+    if (opt.length < 52) {
+      return `Faux. « ${opt} » n'est pas la bonne réponse. ${why}`;
+    }
+    return `Faux. « ${clip(opt, 88)} » est une autre idée du même cours, pas la réponse à cette question. Ici : ${clip(correct, 90)}.`;
+  });
 }
 
 export function withOptionNotes(q: QCMData): QCMData {
@@ -112,7 +115,7 @@ function stemFromPuce(text: string, titre: string, keywords: string[]): { stem: 
   const labeled = t.match(/^(.{10,80}?)\s*[:：]\s+(.{12,})$/);
   if (labeled) {
     return {
-      stem: `Dans le chapitre « ${titre} », ${labeled[1].trim().replace(/\?$/, "")} ?`,
+      stem: `${labeled[1].trim().replace(/\?$/, "")} ?`,
       correct: clip(labeled[2], 110),
     };
   }
@@ -126,14 +129,24 @@ function stemFromPuce(text: string, titre: string, keywords: string[]): { stem: 
   const kw = keywords.find((k) => t.toLowerCase().includes(k.toLowerCase()));
   if (kw) {
     return {
-      stem: `Dans « ${titre} », que retenir sur ${kw} ?`,
+      stem: `Que retenir sur « ${kw} » dans le chapitre « ${titre} » ?`,
       correct: clip(t, 110),
     };
   }
   return {
-    stem: `Quelle affirmation est exacte dans le cours « ${titre} » ?`,
+    stem: `Parmi ces points du cours « ${titre} », lequel est exact ?`,
     correct: clip(t, 110),
   };
+}
+
+function splitSentences(s: string): string[] {
+  const t = cleanLine(s);
+  if (!t) return [];
+  if (t.length < 40) return t.length > 22 ? [t] : [];
+  return t
+    .split(/(?<=[.!?])\s+(?=[A-ZÉÈÀÂÎÔÛÇ«"0-9])/)
+    .map(cleanLine)
+    .filter((p) => p.length > 22);
 }
 
 /** QCM d'assimilation : uniquement le contenu du chapitre, faux choix du même cours. */
@@ -160,7 +173,7 @@ export function quizFromLesson(chapterId: string, classe?: string): QCMData[] {
       parsed.correct,
       wrongs,
       matiere,
-      `${parsed.correct} C'est un point du cours « ${titre} ».`,
+      `${parsed.correct} C’est un point du cours « ${titre} ».`
     );
     if (q) out.push(q);
   });
@@ -214,20 +227,21 @@ export function quizFromLesson(chapterId: string, classe?: string): QCMData[] {
   const unique: QCMData[] = [];
   const seen = new Set<string>();
   for (const q of out) {
-    if (seen.has(q.enonceQuestion)) continue;
-    seen.add(q.enonceQuestion);
+    const key = `${fold(q.enonceQuestion)}|${fold(q.optionsProposees[q.indexReponseCorrecte] ?? "")}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
     unique.push({ ...q, id: `${chapterId}-${unique.length + 1}` });
     if (unique.length === 10) break;
   }
 
   const extraParas = (fiche.sectionsDetaillees ?? [])
-    .flatMap((s) => s.paragraphes.map(cleanLine))
+    .flatMap((s) => s.paragraphes.flatMap(splitSentences))
     .filter((p) => p.length > 24);
   extraParas.forEach((para, i) => {
     if (unique.length >= 10) return;
     const parsed = stemFromPuce(para, titre, keywords);
     if (!parsed) return;
-    if (seen.has(parsed.stem)) return;
+    if (seen.has(`${fold(parsed.stem)}|${fold(parsed.correct)}`)) return;
     const q = mcq(
       `${chapterId}-s${i}`,
       parsed.stem,
@@ -237,7 +251,7 @@ export function quizFromLesson(chapterId: string, classe?: string): QCMData[] {
       `${parsed.correct} (cours « ${titre} »)`,
     );
     if (!q) return;
-    seen.add(q.enonceQuestion);
+    seen.add(`${fold(q.enonceQuestion)}|${fold(q.optionsProposees[q.indexReponseCorrecte] ?? "")}`);
     unique.push({ ...q, id: `${chapterId}-${unique.length + 1}` });
   });
 

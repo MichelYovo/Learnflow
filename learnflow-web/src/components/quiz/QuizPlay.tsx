@@ -124,7 +124,8 @@ export default function QuizPlay({
               kind === "correct" ? colors.secondary : kind === "wrong" ? colors.danger : colors.surfaceAlt;
             const badgeFg = kind === "correct" || kind === "wrong" ? "#fff" : colors.textSecondary;
             const note = answered ? optionNotes?.[i] : undefined;
-            const tag = kind === "correct" ? "Bonne réponse" : kind === "wrong" ? "Ton choix" : null;
+            const tag =
+              kind === "correct" ? "Bonne réponse" : kind === "wrong" ? "Ton choix" : answered ? "Faux" : null;
             return (
               <button
                 key={`${i}-${opt}`}
@@ -141,7 +142,7 @@ export default function QuizPlay({
                 style={{
                   background: bg,
                   borderColor: border,
-                  opacity: kind === "dim" ? 0.72 : 1,
+                  opacity: kind === "dim" ? 0.88 : 1,
                   boxShadow: kind === "idle" ? "0 1px 0 rgba(15,23,42,0.04)" : "none",
                 }}
                 aria-pressed={selected === i}
@@ -154,7 +155,7 @@ export default function QuizPlay({
                 </span>
                 <span className="min-w-0 flex-1">
                   {tag ? (
-                    <span className="mb-1 block text-[10px] font-extrabold uppercase tracking-[0.12em]" style={{ color: kind === "correct" ? colors.secondary : colors.danger }}>
+                    <span className="mb-1 block text-[10px] font-extrabold uppercase tracking-[0.12em]" style={{ color: kind === "correct" ? colors.secondary : kind === "wrong" ? colors.danger : colors.textMuted }}>
                       {tag}
                     </span>
                   ) : null}

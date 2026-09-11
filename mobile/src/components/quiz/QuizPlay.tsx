@@ -91,7 +91,8 @@ export default function QuizPlay({
             const badgeBg = kind === "correct" ? colors.secondary : kind === "wrong" ? colors.danger : colors.surfaceAlt;
             const badgeFg = kind === "correct" || kind === "wrong" ? "#fff" : colors.textSecondary;
             const note = answered ? optionNotes?.[i] : undefined;
-            const tag = kind === "correct" ? "Bonne réponse" : kind === "wrong" ? "Ton choix" : null;
+            const tag =
+              kind === "correct" ? "Bonne réponse" : kind === "wrong" ? "Ton choix" : answered ? "Faux" : null;
             return (
               <Pressable
                 key={`${i}-${opt}`}
@@ -104,7 +105,7 @@ export default function QuizPlay({
                   {
                     backgroundColor: bg,
                     borderColor: border,
-                    opacity: kind === "dim" ? 0.72 : 1,
+                    opacity: kind === "dim" ? 0.88 : 1,
                     alignItems: "flex-start",
                   },
                 ]}
@@ -120,7 +121,7 @@ export default function QuizPlay({
                 </View>
                 <View style={{ flex: 1, minWidth: 0 }}>
                   {tag ? (
-                    <Text style={[styles.optTag, { color: kind === "correct" ? colors.secondary : colors.danger }]}>{tag}</Text>
+                    <Text style={[styles.optTag, { color: kind === "correct" ? colors.secondary : kind === "wrong" ? colors.danger : colors.textMuted }]}>{tag}</Text>
                   ) : null}
                   <Text style={[styles.optText, { color: colors.textDark }]}>{opt}</Text>
                   {note ? <Text style={[styles.optNote, { color: colors.textSecondary }]}>{note}</Text> : null}
