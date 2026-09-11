@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import AnimatedSplash, { INTRO_SESSION_KEY } from "./AnimatedSplash";
+import AnimatedSplash from "./AnimatedSplash";
 import { useLearnFlowStore } from "@/store/useLearnFlowStore";
 import { useHydrated } from "./useHydrated";
 
@@ -17,10 +17,6 @@ const AUTH_PATHS = [
   "/auth/continue",
 ];
 
-function skipFilm(pathname: string) {
-  return pathname === "/intro" || pathname.startsWith("/auth/");
-}
-
 export default function AuthGuard({ children }: { children: React.ReactNode }) {
   const ready = useHydrated();
   const router = useRouter();
@@ -28,23 +24,11 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
   const onboardingCompleted = useLearnFlowStore((s) => s.onboardingCompleted);
   const isAuthenticated = useLearnFlowStore((s) => s.isAuthenticated);
   const focusPromptPending = useLearnFlowStore((s) => s.focusPromptPending);
-  const [boot, setBoot] = useState<"wait" | "film" | "done">("wait");
+  const [bootDone, setBootDone] = useState(false);
+  const finishBoot = useCallback(() => setBootDone(true), []);
 
   useEffect(() => {
-    if (!ready) return;
-    if (skipFilm(pathname)) {
-      setBoot("done");
-      return;
-    }
-    try {
-      setBoot(sessionStorage.getItem(INTRO_SESSION_KEY) === "1" ? "done" : "film");
-    } catch {
-      setBoot("film");
-    }
-  }, [ready, pathname]);
-
-  useEffect(() => {
-    if (!ready || boot !== "done") return;
+    if (!ready || !bootDone) return;
     const isAuthRoute = AUTH_PATHS.some((p) => pathname === p) || pathname.startsWith("/auth/");
     const isFocus = pathname === "/focus";
     const isApp = pathname.startsWith("/app");
@@ -65,18 +49,14 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
     if (isAuthenticated && !focusPromptPending && !isComplete && (isAuthRoute || isFocus || pathname === "/")) {
       router.replace("/app");
     }
-  }, [ready, boot, pathname, onboardingCompleted, isAuthenticated, focusPromptPending, router]);
+  }, [ready, bootDone, pathname, onboardingCompleted, isAuthenticated, focusPromptPending, router]);
 
   if (!ready) {
     return <AnimatedSplash />;
   }
 
-  if (boot === "wait") {
-    return <AnimatedSplash />;
-  }
-
-  if (boot === "film") {
-    return <AnimatedSplash cinematic onFinish={() => setBoot("done")} />;
+  if (!bootDone) {
+    return <AnimatedSplash onFinish={finishBoot} />;
   }
 
   return <>{children}</>;
