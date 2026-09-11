@@ -12,6 +12,7 @@ import LeagueBadge from "../../components/league/LeagueBadge";
 import MesMatieres from "../../components/MesMatieres";
 import ModeWorkSelector from "../../components/ModeWorkSelector";
 import FloatingChatbot from "../../components/FloatingChatbot";
+import Spira from "../../components/Spira";
 import { HomeSkeleton } from "../../components/ui";
 import { WEEK_BARS, AGENDA_MODE_CONFIG } from "../../data/mock";
 import { continueLessonForClass, programmeForClass, subjectShortcutsForClass } from "../../data/programme";
@@ -151,20 +152,31 @@ export default function HomeScreen() {
       </View>
 
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-        <Pressable onPress={() => nav.navigate("Course", { chapterId: continueLesson.chapterId })} accessibilityRole="button" accessibilityLabel="Continuer la leçon">
-          <LinearGradient colors={[colors.primary, "#00B8F4"]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.hero}>
-            <View style={{ flex: 1, paddingRight: 12 }}>
-              <Text style={styles.heroTitle}>{continueLesson.title}</Text>
-              <Text style={styles.heroSub}>{continueLesson.lessonLabel}</Text>
-              <View style={styles.heroTrack}>
-                <View style={[styles.heroFill, { width: `${continueLesson.progress}%` }]} />
-              </View>
+        <LinearGradient colors={[colors.primary, "#00B8F4"]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.hero}>
+          <Pressable
+            onPress={() => nav.navigate("Course", { chapterId: continueLesson.chapterId })}
+            accessibilityRole="button"
+            accessibilityLabel="Continuer la leçon"
+            style={{ flex: 1, paddingRight: 8 }}
+          >
+            <Text style={styles.heroTitle}>{continueLesson.title}</Text>
+            <Text style={styles.heroSub}>{continueLesson.lessonLabel}</Text>
+            <View style={styles.heroTrack}>
+              <View style={[styles.heroFill, { width: `${continueLesson.progress}%` }]} />
             </View>
-            <View style={styles.heroPlay}>
+          </Pressable>
+          <View style={styles.heroSide}>
+            <Spira scene="tab.home" size={72} message="" />
+            <Pressable
+              onPress={() => nav.navigate("Course", { chapterId: continueLesson.chapterId })}
+              accessibilityRole="button"
+              accessibilityLabel="Continuer"
+              style={styles.heroPlay}
+            >
               <Text style={styles.heroCta}>Continuer</Text>
-            </View>
-          </LinearGradient>
-        </Pressable>
+            </Pressable>
+          </View>
+        </LinearGradient>
 
         <ModeWorkSelector
           selectedMode={selectedMode}
@@ -344,6 +356,7 @@ const styles = StyleSheet.create({
   heroSub: { color: "rgba(255,255,255,0.9)", fontSize: 15, marginTop: 6, fontWeight: "600" },
   heroTrack: { height: 8, backgroundColor: "rgba(255,255,255,0.28)", borderRadius: 99, marginTop: 14 },
   heroFill: { height: 8, backgroundColor: "#FFFFFF", borderRadius: 99 },
+  heroSide: { alignItems: "center", gap: 8, flexShrink: 0 },
   heroPlay: {
     backgroundColor: "#FFFFFF",
     borderRadius: 16,

@@ -128,7 +128,7 @@ export default function AssimilationQuizScreen({ navigation, route }: Props) {
                 navigation.popToTop();
               }}
             >
-              <Spira scene="quiz.rest" size={44} message="" />
+              <Spira scene="quiz.rest" size={36} message="" />
               <View style={{ flex: 1 }}>
                 <Text style={[styles.choiceTitle, { color: colors.accent }]}>Option Repos</Text>
                 <Text style={styles.muted}>Verrouille 1h + rappel local (démo)</Text>
@@ -199,10 +199,10 @@ const styles = StyleSheet.create({
     gap: 12,
     alignItems: "center",
     backgroundColor: colors.white,
-    borderRadius: 20,
+    borderRadius: 18,
     borderWidth: 2,
     borderColor: colors.border,
-    padding: 16,
+    padding: 12,
   },
   choiceTitle: { fontWeight: "800", fontSize: 15 },
 });

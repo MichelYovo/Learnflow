@@ -80,7 +80,8 @@ canvas {
   .lf-spira-fly-a,
   .lf-spira-fly-b,
   .lf-spira-fly-c,
-  .lf-spira-grimace {
+  .lf-spira-grimace,
+  .lf-spira-fly-bob {
     animation: none !important;
   }
 }
@@ -497,6 +498,20 @@ details summary::-webkit-details-marker {
 
 .lf-spira-grimace {
   animation: lf-spira-face 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.lf-spira-fly-bob {
+  animation: lf-spira-face 0.45s cubic-bezier(0.34, 1.56, 0.64, 1), lf-spira-idle-fly 2.2s ease-in-out infinite;
+}
+
+@keyframes lf-spira-idle-fly {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-6deg);
+  }
+  50% {
+    transform: translateY(-10px) rotate(8deg);
+  }
 }
 
 @keyframes lf-spira-face {

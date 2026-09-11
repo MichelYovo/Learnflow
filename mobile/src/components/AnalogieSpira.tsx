@@ -35,7 +35,7 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   title: { fontSize: 17, fontWeight: "800", color: colors.textDark },
-  speechRow: { flexDirection: "row", alignItems: "center", gap: 10 },
+  speechRow: { flexDirection: "row", alignItems: "center", gap: 10, overflow: "visible" },
   bubble: {
     flex: 1,
     backgroundColor: colors.white,
