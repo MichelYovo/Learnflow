@@ -9,6 +9,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Icon from "./Icon";
+import SubjectLogo from "./SubjectLogo";
 import type { SubjectShortcut } from "../types/learnflow";
 import { resolveSubjectScheme } from "../theme/colors";
 import { useAppTheme } from "../theme/useAppTheme";
@@ -183,7 +184,7 @@ function SubjectShortcutCard({
           { backgroundColor: scheme.bg, borderColor: scheme.border },
         ]}
       >
-        <Icon name={subject.icon} size={22} color={scheme.color} />
+        <SubjectLogo id={subject.id} size={30} />
       </View>
       <Text style={[styles.name, { color: colors.textDark }]} numberOfLines={1}>
         {subject.name}
@@ -223,7 +224,7 @@ function SubjectListRow({
           { backgroundColor: scheme.bg, borderColor: scheme.border },
         ]}
       >
-        <Icon name={subject.icon} size={20} color={scheme.color} />
+        <SubjectLogo id={subject.id} size={28} />
       </View>
       <View style={styles.listBody}>
         <Text style={[styles.listName, { color: colors.textDark }]} numberOfLines={1}>

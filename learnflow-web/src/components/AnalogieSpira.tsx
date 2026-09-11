@@ -11,7 +11,7 @@ export default function AnalogieSpira({ analogie }: { analogie: AnalogieSpiraDat
       <p className="text-[17px] font-extrabold" style={{ color: colors.textDark }}>
         {analogie.titre}
       </p>
-      <div className="mt-4 flex items-center gap-2.5">
+      <div className="mt-4 flex items-center gap-2.5 overflow-visible">
         <Spira scene="course.analogy" size={72} message="" />
         <div className="flex-1 rounded-[20px] px-4 py-3.5" style={{ background: colors.white }}>
           <p className="text-[16px] font-medium leading-6" style={{ color: colors.textDark }}>

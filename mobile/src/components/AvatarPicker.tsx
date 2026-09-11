@@ -1,5 +1,5 @@
 import React from "react";
-import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Modal, Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { AVATARS } from "../data/avatars";
 import { useAppTheme } from "../theme/useAppTheme";
@@ -35,8 +35,8 @@ function AvatarGrid({
             accessibilityState={{ selected: on }}
             accessibilityLabel={persona.label}
           >
-            <Avatar avatarId={persona.id} size={56} selected={on} />
-            <Text style={[styles.cellLabel, { color: on ? colors.primary : colors.textDark }]}>{persona.label}</Text>
+            <Avatar avatarId={persona.id} size={52} selected={on} />
+            <Text numberOfLines={1} style={[styles.cellLabel, { color: on ? colors.primary : colors.textDark }]}>{persona.label}</Text>
           </Pressable>
         );
       })}
@@ -47,6 +47,8 @@ function AvatarGrid({
 export default function AvatarPicker({ visible, selectedId, onSelect, onClose, required }: Props) {
   const { colors } = useAppTheme();
   const insets = useSafeAreaInsets();
+  const { height } = useWindowDimensions();
+  const listMax = Math.max(180, Math.min(360, height * 0.88 - 160));
 
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={required ? undefined : onClose}>
@@ -57,7 +59,16 @@ export default function AvatarPicker({ visible, selectedId, onSelect, onClose, r
           accessibilityRole="button"
           accessibilityLabel="Fermer"
         />
-        <View style={[styles.sheet, { backgroundColor: colors.white, paddingBottom: Math.max(insets.bottom, 16) }]}>
+        <View
+          style={[
+            styles.sheet,
+            {
+              backgroundColor: colors.white,
+              paddingBottom: Math.max(insets.bottom, 12),
+              maxHeight: height * 0.88,
+            },
+          ]}
+        >
           <View style={[styles.handle, { backgroundColor: colors.borderStrong }]} />
           <View style={styles.head}>
             <View style={{ flex: 1 }}>
@@ -78,7 +89,7 @@ export default function AvatarPicker({ visible, selectedId, onSelect, onClose, r
               </Pressable>
             )}
           </View>
-          <ScrollView showsVerticalScrollIndicator={false} style={styles.sheetList} contentContainerStyle={styles.sheetListContent}>
+          <ScrollView showsVerticalScrollIndicator={false} style={{ maxHeight: listMax }} contentContainerStyle={styles.sheetListContent}>
             <AvatarGrid
               selectedId={selectedId}
               onSelect={(id) => {
@@ -122,7 +133,6 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 28,
     paddingHorizontal: 16,
     paddingTop: 8,
-    maxHeight: "78%",
   },
   handle: {
     alignSelf: "center",
@@ -141,9 +151,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  sheetList: { maxHeight: 440 },
   sheetListContent: { paddingBottom: 8 },
-  embedList: { maxHeight: 280 },
+  embedList: { maxHeight: 220 },
   embedContent: { paddingBottom: 4 },
   grid: {
     flexDirection: "row",

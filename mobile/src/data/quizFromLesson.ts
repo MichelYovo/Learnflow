@@ -7,8 +7,6 @@ import {
   toLessonContent,
 } from "./lessonContent";
 import { findChapterMeta } from "./programme";
-import { PROGRAMME_3EME } from "./programme3eme";
-import { PROGRAMME_TLE } from "./programmeTle";
 
 export type GeneratedCloze = {
   id: string;
@@ -34,43 +32,68 @@ function seededShuffle<T>(arr: T[], seed: string): T[] {
   return a;
 }
 
-const DISTRACTORS_BY_SUBJECT: Record<string, string[]> = {
-  maths: ["u · v = 0 pour tous vecteurs", "une primitive de e^x est ln x", "card(E) = 0 si E est non vide", "i² = 1"],
-  svt: ["l'ADN humain est simple brin", "la méiose produit des cellules diploïdes", "l'insuline augmente la glycémie", "le pollen est un ovule"],
-  pc: ["un référentiel galiléen nie l'inertie", "un acide capte toujours H+", "T d'un satellite dépend de sa masse", "pH = 7 signifie acide fort"],
-  hg: ["l'ONU naît en 1919", "le Togo n'a pas de façade maritime", "la Guerre froide commence en 1991", "le Port de Lomé est enclavé"],
-};
-
-function distractorsFor(matiere: string): string[] {
-  const key = (matiere || "").toLowerCase();
-  if (key.includes("math")) return DISTRACTORS_BY_SUBJECT.maths;
-  if (key.includes("svt")) return DISTRACTORS_BY_SUBJECT.svt;
-  if (key.includes("pc") || key.includes("phys") || key.includes("chim")) return DISTRACTORS_BY_SUBJECT.pc;
-  if (key.includes("hist") || key.includes("géo") || key.includes("geo") || key.includes("hg")) return DISTRACTORS_BY_SUBJECT.hg;
-  return DISTRACTORS_BY_SUBJECT.maths;
+function fold(s: string) {
+  return s
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
-function siblingTitles(chapterId: string, titre: string): string[] {
-  const lists = [...PROGRAMME_3EME, ...PROGRAMME_TLE];
-  for (const subject of lists) {
-    const chapters = subject.themes.flatMap((t) => t.chapters);
-    if (!chapters.some((c) => c.id === chapterId)) continue;
-    return chapters.filter((c) => c.title !== titre).map((c) => c.title).slice(0, 6);
+function clip(s: string, n = 100) {
+  const t = s.replace(/\s+/g, " ").trim();
+  if (t.length <= n) return t;
+  return `${t.slice(0, n - 1).trim()}…`;
+}
+
+function sameChoice(a: string, b: string) {
+  const fa = fold(a);
+  const fb = fold(b);
+  if (!fa || !fb) return true;
+  return fa === fb || fa.includes(fb) || fb.includes(fa);
+}
+
+function pickWrongs(correct: string, pool: string[]): string[] {
+  const out: string[] = [];
+  const seen = new Set([fold(correct)]);
+  for (const raw of pool) {
+    const w = clip(raw, 110);
+    const key = fold(w);
+    if (!w || w.length < 8 || seen.has(key) || sameChoice(w, correct)) continue;
+    seen.add(key);
+    out.push(w);
+    if (out.length === 3) break;
   }
-  return [];
+  return out;
 }
 
-function mcq(id: string, enonce: string, correct: string, wrongs: string[], matiere: string): QCMData {
-  const pad = distractorsFor(matiere);
-  const pool = [...new Set(wrongs.map((w) => w.trim()).filter((w) => w && w !== correct))];
-  while (pool.length < 3) pool.push(pad[pool.length % pad.length]);
+function notesFor(options: string[], correct: string, explain: string): string[] {
+  return options.map((opt) =>
+    fold(opt) === fold(correct)
+      ? `Bonne réponse. ${explain}`
+      : `Faux. Ce choix ne répond pas à la question : on le confond souvent avec la bonne idée. Retiens : ${clip(explain, 140)}`,
+  );
+}
+
+export function withOptionNotes(q: QCMData): QCMData {
+  if (q.optionNotes && q.optionNotes.length === q.optionsProposees.length) return q;
+  const correct = q.optionsProposees[q.indexReponseCorrecte];
+  return { ...q, optionNotes: notesFor(q.optionsProposees, correct, q.explicationPedagogique) };
+}
+
+function mcq(id: string, enonce: string, correct: string, wrongs: string[], matiere: string, explain?: string): QCMData | null {
+  const pool = pickWrongs(correct, wrongs);
+  if (pool.length < 3) return null;
   const options = seededShuffle([correct, ...pool.slice(0, 3)], id);
+  const why = (explain || correct).trim();
   return {
     id,
     enonceQuestion: enonce,
     optionsProposees: options,
     indexReponseCorrecte: Math.max(0, options.indexOf(correct)),
-    explicationPedagogique: correct,
+    explicationPedagogique: why,
+    optionNotes: notesFor(options, correct, why),
     matiere,
     ancreCours: id,
   };
@@ -83,85 +106,109 @@ function cleanLine(s: string) {
     .trim();
 }
 
-/** QCM d'assimilation généré à partir de la fiche du chapitre — jamais le quiz Δ. */
+function stemFromPuce(text: string, titre: string, keywords: string[]): { stem: string; correct: string } | null {
+  const t = text.replace(/\s+/g, " ").trim();
+  if (t.length < 18) return null;
+  const labeled = t.match(/^(.{10,80}?)\s*[:：]\s+(.{12,})$/);
+  if (labeled) {
+    return {
+      stem: `Dans le chapitre « ${titre} », ${labeled[1].trim().replace(/\?$/, "")} ?`,
+      correct: clip(labeled[2], 110),
+    };
+  }
+  const iff = t.match(/^(.{16,100}?)\s+(si et seulement si|lorsque|quand|ssi)\s+(.{12,})$/i);
+  if (iff) {
+    return {
+      stem: `${iff[1].trim()} ${iff[2].toLowerCase()}…`,
+      correct: clip(iff[3], 110),
+    };
+  }
+  const kw = keywords.find((k) => t.toLowerCase().includes(k.toLowerCase()));
+  if (kw) {
+    return {
+      stem: `Dans « ${titre} », que retenir sur ${kw} ?`,
+      correct: clip(t, 110),
+    };
+  }
+  return {
+    stem: `Quelle affirmation est exacte dans le cours « ${titre} » ?`,
+    correct: clip(t, 110),
+  };
+}
+
+/** QCM d'assimilation : uniquement le contenu du chapitre, faux choix du même cours. */
 export function quizFromLesson(chapterId: string, classe?: string): QCMData[] {
   const fiche = ficheForChapter(chapterId, classe);
   const lesson = toLessonContent(fiche);
   const meta = findChapterMeta(chapterId);
   const matiere = meta?.subject.name ?? "Cours";
-  const puces = (fiche.pucesEssentiel ?? []).map(cleanLine).filter((p) => p.length > 12);
-  const fromText = essentialTextToPuces(lesson.essentialText).map(cleanLine).filter((p) => p.length > 12);
-  const facts = (puces.length >= 3 ? puces : fromText).slice(0, 8);
+  const titre = lesson.title;
+  const puces = (fiche.pucesEssentiel?.length ? fiche.pucesEssentiel : essentialTextToPuces(lesson.essentialText))
+    .map(cleanLine)
+    .filter((p) => p.length > 16);
   const keywords = extractBracketKeywords(lesson.essentialText);
-  const others = siblingTitles(chapterId, lesson.title);
   const out: QCMData[] = [];
 
-  out.push(
-    mcq(
-      `${chapterId}-titre`,
-      "Ce quiz d'assimilation porte sur quel chapitre ?",
-      lesson.title,
-      others.length ? others : distractorsFor(matiere),
+  puces.forEach((puce, i) => {
+    if (out.length >= 10) return;
+    const parsed = stemFromPuce(puce, titre, keywords);
+    if (!parsed) return;
+    const wrongs = puces.filter((p) => p !== puce).map((p) => clip(p, 110));
+    const q = mcq(
+      `${chapterId}-p${i}`,
+      parsed.stem,
+      parsed.correct,
+      wrongs,
       matiere,
-    ),
-  );
-
-  out.push(
-    mcq(
-      `${chapterId}-matiere`,
-      `Le chapitre « ${lesson.title} » appartient à quelle matière ?`,
-      matiere,
-      ["Mathématiques", "SVT", "PC", "PCT", "Histoire-Géographie", "Français"].filter((m) => m !== matiere),
-      matiere,
-    ),
-  );
-
-  facts.forEach((fact, i) => {
-    const wrongs = facts.filter((f) => f !== fact).concat(distractorsFor(matiere));
-    out.push(mcq(`${chapterId}-f${i}`, "Quelle affirmation est exacte pour ce cours ?", fact, wrongs, matiere));
+      `${parsed.correct} C'est un point du cours « ${titre} ».`,
+    );
+    if (q) out.push(q);
   });
 
   keywords.forEach((kw, i) => {
     if (out.length >= 10) return;
     const line = splitAroundKeyword(lesson.essentialText, kw);
     if (!line) return;
-    const wrongs = keywords.filter((k) => k !== kw).concat(distractorsFor(matiere));
-    out.push(
-      mcq(
-        `${chapterId}-k${i}`,
-        `Dans ce chapitre, quel mot complète : « ${line.prompt} » ?`,
-        kw,
-        wrongs,
-        matiere,
-      ),
+    const wrongs = keywords.filter((k) => k !== kw);
+    const q = mcq(
+      `${chapterId}-k${i}`,
+      `Dans « ${titre} », quel mot complète : « ${line.prompt} » ?`,
+      kw,
+      wrongs,
+      matiere,
+      `Le mot exact du cours est « ${kw} ». Les autres mots sont d'autres notions du même chapitre.`,
     );
+    if (q) out.push(q);
   });
 
-  if (out.length < 10) {
-    out.push(
-      mcq(
-        `${chapterId}-apc`,
-        "En Détails, le cours développé sert à…",
-        "Présenter la compétence, les savoirs et les savoir-faire APC",
-        [
-          "Raccourcir L'Essentiel en le coupant",
-          "Remplacer le quizz 10/10",
-          "Copier une autre matière",
-        ],
-        matiere,
-      ),
+  const ex = fiche.exempleResolu;
+  if (out.length < 10 && ex?.reponseFinale?.trim() && ex.enonce?.trim()) {
+    const wrongs = [
+      ...(ex.etapes ?? []).map((e) => e.texte),
+      ...puces,
+    ];
+    const q = mcq(
+      `${chapterId}-ex`,
+      `Exercice type de « ${titre} ». ${clip(ex.enonce, 140)} — quelle conclusion ?`,
+      clip(ex.reponseFinale, 110),
+      wrongs,
+      matiere,
+      ex.reponseFinale,
     );
+    if (q) out.push(q);
   }
-  if (out.length < 10) {
-    out.push(
-      mcq(
-        `${chapterId}-mask`,
-        "Les mots entre [crochets] dans L'Essentiel servent à…",
-        "Le rappel actif (texte masqué)",
-        ["Décorer le titre", "Remplacer En Détails", "Sauter le cours"],
-        matiere,
-      ),
+
+  const sit = fiche.situationProbleme;
+  if (out.length < 10 && sit?.question?.trim() && puces[0]) {
+    const q = mcq(
+      `${chapterId}-sit`,
+      sit.question,
+      clip(puces[0], 110),
+      puces.slice(1),
+      matiere,
+      sit.competenceVisee || puces[0],
     );
+    if (q) out.push(q);
   }
 
   const unique: QCMData[] = [];
@@ -172,10 +219,28 @@ export function quizFromLesson(chapterId: string, classe?: string): QCMData[] {
     unique.push({ ...q, id: `${chapterId}-${unique.length + 1}` });
     if (unique.length === 10) break;
   }
-  while (unique.length < 10 && unique.length > 0) {
-    const src = unique[unique.length % unique.length];
-    unique.push({ ...src, id: `${chapterId}-p${unique.length}` });
-  }
+
+  const extraParas = (fiche.sectionsDetaillees ?? [])
+    .flatMap((s) => s.paragraphes.map(cleanLine))
+    .filter((p) => p.length > 24);
+  extraParas.forEach((para, i) => {
+    if (unique.length >= 10) return;
+    const parsed = stemFromPuce(para, titre, keywords);
+    if (!parsed) return;
+    if (seen.has(parsed.stem)) return;
+    const q = mcq(
+      `${chapterId}-s${i}`,
+      parsed.stem,
+      parsed.correct,
+      extraParas.filter((p) => p !== para).concat(puces),
+      matiere,
+      `${parsed.correct} (cours « ${titre} »)`,
+    );
+    if (!q) return;
+    seen.add(q.enonceQuestion);
+    unique.push({ ...q, id: `${chapterId}-${unique.length + 1}` });
+  });
+
   return unique.slice(0, 10);
 }
 
@@ -205,7 +270,8 @@ export function clozeFromLesson(chapterId: string, classe?: string): GeneratedCl
     const idx = raw.indexOf(m[0]);
     const before = stripCardinalMarkup(raw.slice(0, idx)).replace(/^[•\-]\s+/, "");
     const after = stripCardinalMarkup(raw.slice(idx + m[0].length));
-    const wrongs = keywords.filter((k) => k !== answer).concat(distractorsFor(fiche.matiereId ?? "maths"));
+    const wrongs = keywords.filter((k) => k !== answer);
+    if (wrongs.length < 3) continue;
     const options = seededShuffle([answer, ...wrongs.slice(0, 3)], `${chapterId}-cloze-${i}`);
     items.push({
       id: `${chapterId}-cl${i}`,
@@ -220,15 +286,23 @@ export function clozeFromLesson(chapterId: string, classe?: string): GeneratedCl
 export function shuffleQuizOptions(bank: QCMData[]): QCMData[] {
   return bank.map((q) => {
     const correct = q.optionsProposees[q.indexReponseCorrecte];
-    const options = [...q.optionsProposees];
-    for (let i = options.length - 1; i > 0; i--) {
+    const paired = q.optionsProposees.map((opt, i) => ({
+      opt,
+      note: q.optionNotes?.[i] ?? "",
+    }));
+    for (let i = paired.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
-      [options[i], options[j]] = [options[j], options[i]];
+      [paired[i], paired[j]] = [paired[j], paired[i]];
     }
+    const options = paired.map((p) => p.opt);
+    const optionNotes = q.optionNotes?.length
+      ? paired.map((p) => p.note)
+      : undefined;
     return {
       ...q,
       optionsProposees: options,
       indexReponseCorrecte: Math.max(0, options.indexOf(correct)),
+      optionNotes,
     };
   });
 }
@@ -259,7 +333,7 @@ export const VECTEURS_QCM: QCMData[] = [
     enonceQuestion: "Deux vecteurs non nuls u et v sont colinéaires si et seulement s'il existe un réel k tel que…",
     optionsProposees: ["u · v = 0", "u = k v", "u + v = 0 uniquement", "||u|| = ||v||"],
     indexReponseCorrecte: 1,
-    explicationPedagogique: "Colinéarité : u = k v. Géométriquement, ils portent des droites parallèles.",
+    explicationPedagogique: "Colinéarité : u = k v. u · v = 0, c'est l'orthogonalité, pas la colinéarité.",
     matiere: "Maths",
   },
   {
@@ -291,7 +365,7 @@ export const VECTEURS_QCM: QCMData[] = [
     enonceQuestion: "Trois points A, B, C sont alignés si et seulement si…",
     optionsProposees: ["AB · AC = 0", "AB et AC sont colinéaires", "||AB|| = ||AC||", "A est le milieu de [BC]"],
     indexReponseCorrecte: 1,
-    explicationPedagogique: "Alignement ⇔ AB et AC colinéaires.",
+    explicationPedagogique: "Alignement ⇔ AB et AC colinéaires. AB · AC = 0 voudrait dire un angle droit, pas un alignement.",
     matiere: "Maths",
   },
   {

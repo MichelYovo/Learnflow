@@ -2,25 +2,15 @@
 
 import { Suspense, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import Icon, { type IconName } from "@/components/Icon";
+import Icon from "@/components/Icon";
 import Spira from "@/components/Spira";
+import SubjectLogo from "@/components/SubjectLogo";
 import { AppBar, AppMain } from "@/components/ui";
 import { usePublishedCatalog } from "@/data/publishedCache";
 import { programmeForLearner } from "@/data/programme";
 import { useLearnFlowStore } from "@/store/useLearnFlowStore";
 import { useAppTheme } from "@/theme/useAppTheme";
 import type { ProgrammeChapter, ProgrammeSubject, ProgrammeTheme } from "@/types/learnflow";
-
-const SUBJECT_ICON: Record<string, IconName> = {
-  calculator: "calculator",
-  leaf: "leaf",
-  flask: "flask",
-  globe: "globe",
-  book: "book",
-  chatbubble: "chatbubble",
-  heart: "heart",
-  brain: "brain",
-};
 
 function CoursInner() {
   const router = useRouter();
@@ -106,7 +96,7 @@ function CoursInner() {
         </div>
         {level > 0 && liveSubject ? (
           <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl" style={{ background: liveSubject.bg }}>
-            <Icon name={SUBJECT_ICON[liveSubject.icon] ?? "book"} size={15} color={liveSubject.color} />
+            <SubjectLogo id={liveSubject.id} size={22} />
           </span>
         ) : null}
       </AppBar>
@@ -128,7 +118,7 @@ function CoursInner() {
                   style={{ background: colors.white, borderColor: colors.border }}
                 >
                   <span className="flex h-[52px] w-[52px] items-center justify-center rounded-2xl border" style={{ background: s.bg, borderColor: s.border }}>
-                    <Icon name={SUBJECT_ICON[s.icon] ?? "book"} size={22} color={s.color} />
+                    <SubjectLogo id={s.id} size={32} />
                   </span>
                   <span className="min-w-0 flex-1">
                     <span className="block text-[16px] font-extrabold">{s.name}</span>

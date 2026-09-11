@@ -72,10 +72,10 @@ export function HomeMock() {
             {SUBJECTS.slice(0, 5).map((s) => (
               <div key={s.id} className="flex flex-col items-center gap-1.5">
                 <span
-                  className="flex h-12 w-12 items-center justify-center rounded-[18px] text-[11px] font-black"
-                  style={{ color: s.color, background: s.bg }}
+                  className="flex h-12 w-12 items-center justify-center rounded-[18px]"
+                  style={{ background: s.bg }}
                 >
-                  {s.label.slice(0, 2)}
+                  <img src={`/icons/subjects/${s.id}.png`} alt="" className="h-8 w-8 object-contain" />
                 </span>
                 <span className="w-full truncate text-center text-[10px] font-bold text-[#64748B]">{s.label}</span>
               </div>

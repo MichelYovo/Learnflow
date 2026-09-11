@@ -252,6 +252,8 @@ export interface QCMData {
   optionsProposees: string[];
   indexReponseCorrecte: number;
   explicationPedagogique: string;
+  /** Une note par choix, même ordre que optionsProposees (revue après réponse). */
+  optionNotes?: string[];
   ancreCours?: string;
   matiere?: string;
   /** Niveau Blitz (Facile / Moyen / Difficile). */

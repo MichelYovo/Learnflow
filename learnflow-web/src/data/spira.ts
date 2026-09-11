@@ -241,3 +241,23 @@ export function spiraForRatingStars(stars: number): SpiraMoodId {
   if (stars >= 1) return "triste";
   return "timide";
 }
+
+/** Répliques courtes au tap — comme Duo qui commente. */
+export const SPIRA_TAP_QUIPS = [
+  "Allez, on y va !",
+  "Tu gères.",
+  "Un petit tour ?",
+  "Je suis là.",
+  "On révise ?",
+  "Hihi !",
+  "Coup de boost ?",
+  "Je te suis.",
+  "Encore un peu.",
+  "T’es chaud ?",
+] as const;
+
+export const SPIRA_PEEK_MOODS: SpiraMoodId[] = ["timide", "surpris", "joyeux", "confiant"];
+
+export function pickSpiraQuip(): string {
+  return SPIRA_TAP_QUIPS[Math.floor(Math.random() * SPIRA_TAP_QUIPS.length)];
+}

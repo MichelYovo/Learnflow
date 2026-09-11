@@ -31,7 +31,7 @@ export default function LegalPage() {
             s’activent uniquement lorsque les URLs publiques sont configurées.
           </p>
           <p>
-            Marque, logo, mascotte Spira et captures d’interface : LearnFlow. Icônes de navigation de l’app : Icons8.
+            Marque, logo, mascotte Spira et captures d’interface : LearnFlow. Icônes de navigation et de matières : Icons8.
           </p>
           <p>Hébergement : selon le déploiement choisi (à renseigner lors de la mise en ligne).</p>
         </div>

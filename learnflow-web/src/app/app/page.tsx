@@ -17,6 +17,7 @@ import { useAppTheme } from "@/theme/useAppTheme";
 import { MODE_DEFAULT_TOOLS, appModeToSessionMode, type AppMode } from "@/types/modes";
 import { AGENDA_MODE_CONFIG } from "@/data/mock";
 import { AppBar, AppMain } from "@/components/ui";
+import Spira from "@/components/Spira";
 
 export default function AccueilPage() {
   const router = useRouter();
@@ -105,23 +106,30 @@ export default function AccueilPage() {
       </AppBar>
 
       <AppMain className="space-y-5 py-5 pb-8">
-        <Link
-          href={`/app/cours/${continueLesson.chapterId}`}
+        <div
           data-tour="continue"
-          className="flex min-w-0 flex-col gap-3 rounded-3xl px-4 py-4 text-white min-[380px]:px-5 min-[380px]:py-5 sm:flex-row sm:items-center sm:px-[22px] sm:py-[22px]"
+          className="overflow-visible rounded-3xl px-4 py-4 text-white min-[380px]:px-5 min-[380px]:py-5 sm:px-[22px] sm:py-[22px]"
           style={{ background: "linear-gradient(135deg, #1677FF 0%, #00B8F4 100%)" }}
         >
-          <div className="min-w-0 flex-1 sm:pr-3">
-            <p className="text-[17px] font-extrabold leading-snug sm:text-[20px]">{continueLesson.title}</p>
-            <p className="mt-1.5 text-[13px] font-semibold text-white/90 sm:text-[15px]">{continueLesson.lessonLabel}</p>
-            <div className="mt-3.5 h-2 overflow-hidden rounded-full bg-white/30">
-              <div className="h-full rounded-full bg-white" style={{ width: `${continueLesson.progress}%` }} />
+          <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center">
+            <Link href={`/app/cours/${continueLesson.chapterId}`} className="min-w-0 flex-1 text-white sm:pr-3">
+              <p className="text-[17px] font-extrabold leading-snug sm:text-[20px]">{continueLesson.title}</p>
+              <p className="mt-1.5 text-[13px] font-semibold text-white/90 sm:text-[15px]">{continueLesson.lessonLabel}</p>
+              <div className="mt-3.5 h-2 overflow-hidden rounded-full bg-white/30">
+                <div className="h-full rounded-full bg-white" style={{ width: `${continueLesson.progress}%` }} />
+              </div>
+            </Link>
+            <div className="flex shrink-0 items-center justify-between gap-3 sm:flex-col sm:justify-center">
+              <Spira scene="tab.home" size={72} message="" />
+              <Link
+                href={`/app/cours/${continueLesson.chapterId}`}
+                className="w-full rounded-2xl bg-white px-4 py-3 text-center text-[15px] font-extrabold text-[#1677FF] sm:w-auto sm:py-3.5 sm:text-[16px]"
+              >
+                Continuer
+              </Link>
             </div>
           </div>
-          <span className="w-full rounded-2xl bg-white px-4 py-3 text-center text-[15px] font-extrabold text-[#1677FF] sm:w-auto sm:py-3.5 sm:text-[16px]">
-            Continuer
-          </span>
-        </Link>
+        </div>
 
         <ModeWorkSelector selectedMode={selectedMode} guideInactive={dueCount === 0} onSelectMode={openMode} />
 

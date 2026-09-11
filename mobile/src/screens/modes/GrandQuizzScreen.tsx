@@ -108,6 +108,7 @@ export default function GrandQuizzScreen({ navigation, route }: Props) {
         onBack={() => navigation.goBack()}
         onContinue={continueQuiz}
         explanation={q.explicationPedagogique}
+        optionNotes={q.optionNotes}
         headerRight={<Spira scene="quiz.play" size={36} />}
       />
       <CorrectBurst trigger={burstKey} />

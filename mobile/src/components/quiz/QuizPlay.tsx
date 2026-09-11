@@ -18,6 +18,7 @@ export type QuizPlayProps = {
   onBack: () => void;
   onContinue: () => void;
   explanation?: string;
+  optionNotes?: string[];
   reviewLabel?: string;
   onReview?: () => void;
   headerRight?: React.ReactNode;
@@ -43,6 +44,7 @@ export default function QuizPlay({
   onBack,
   onContinue,
   explanation,
+  optionNotes,
   reviewLabel,
   onReview,
   headerRight,
@@ -88,6 +90,8 @@ export default function QuizPlay({
             const border = kind === "correct" ? colors.secondary : kind === "wrong" ? colors.danger : colors.borderStrong;
             const badgeBg = kind === "correct" ? colors.secondary : kind === "wrong" ? colors.danger : colors.surfaceAlt;
             const badgeFg = kind === "correct" || kind === "wrong" ? "#fff" : colors.textSecondary;
+            const note = answered ? optionNotes?.[i] : undefined;
+            const tag = kind === "correct" ? "Bonne réponse" : kind === "wrong" ? "Ton choix" : null;
             return (
               <Pressable
                 key={`${i}-${opt}`}
@@ -100,12 +104,12 @@ export default function QuizPlay({
                   {
                     backgroundColor: bg,
                     borderColor: border,
-                    opacity: kind === "dim" ? 0.42 : 1,
-                    transform: kind === "correct" ? [{ scale: 1.02 }] : undefined,
+                    opacity: kind === "dim" ? 0.72 : 1,
+                    alignItems: "flex-start",
                   },
                 ]}
               >
-                <View style={[styles.badge, { backgroundColor: badgeBg }]}>
+                <View style={[styles.badge, { backgroundColor: badgeBg, marginTop: 2 }]}>
                   {kind === "correct" ? (
                     <Icon name="check" size={16} color="#fff" />
                   ) : kind === "wrong" ? (
@@ -114,7 +118,13 @@ export default function QuizPlay({
                     <Text style={[styles.badgeLetter, { color: badgeFg }]}>{letter}</Text>
                   )}
                 </View>
-                <Text style={[styles.optText, { color: colors.textDark }]}>{opt}</Text>
+                <View style={{ flex: 1, minWidth: 0 }}>
+                  {tag ? (
+                    <Text style={[styles.optTag, { color: kind === "correct" ? colors.secondary : colors.danger }]}>{tag}</Text>
+                  ) : null}
+                  <Text style={[styles.optText, { color: colors.textDark }]}>{opt}</Text>
+                  {note ? <Text style={[styles.optNote, { color: colors.textSecondary }]}>{note}</Text> : null}
+                </View>
               </Pressable>
             );
           })}
@@ -139,6 +149,9 @@ export default function QuizPlay({
             </Text>
           </View>
           {explanation ? <Text style={[styles.explain, { color: colors.textSecondary }]}>{explanation}</Text> : null}
+          {!ok ? (
+            <Text style={[styles.correctReveal, { color: colors.textDark }]}>La bonne réponse était : {options[correctIndex]}</Text>
+          ) : null}
           {onReview && reviewLabel && !ok ? (
             <Pressable onPress={onReview} style={styles.linkBtn}>
               <Text style={[styles.linkText, { color: colors.primary }]}>{reviewLabel}</Text>
@@ -199,7 +212,9 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   badgeLetter: { fontSize: 13, fontWeight: "900" },
-  optText: { flex: 1, fontSize: 15, fontWeight: "700", lineHeight: 20 },
+  optText: { fontSize: 15, fontWeight: "700", lineHeight: 20 },
+  optTag: { fontSize: 10, fontWeight: "800", letterSpacing: 1.2, textTransform: "uppercase", marginBottom: 4 },
+  optNote: { marginTop: 6, fontSize: 12, fontWeight: "500", lineHeight: 18 },
   sheet: {
     borderTopWidth: 2,
     paddingHorizontal: 20,
@@ -209,6 +224,7 @@ const styles = StyleSheet.create({
   sheetTitleRow: { flexDirection: "row", alignItems: "center", gap: 8 },
   sheetTitle: { fontSize: 18, fontWeight: "800" },
   explain: { marginTop: 8, fontSize: 14, fontWeight: "500", lineHeight: 20 },
+  correctReveal: { marginTop: 8, fontSize: 13, fontWeight: "700", lineHeight: 20 },
   linkBtn: { marginTop: 8, paddingVertical: 4 },
   linkText: { fontSize: 13, fontWeight: "800" },
   continue: { marginTop: 14, borderRadius: 16, paddingVertical: 15, alignItems: "center" },

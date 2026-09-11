@@ -57,7 +57,10 @@ export default function SessionRecap({
   const { colors } = useAppTheme();
 
   return (
-    <div className="relative mx-auto flex min-h-dvh w-full max-w-xl flex-col overflow-hidden" style={{ background: colors.surface }}>
+    <div
+      className="relative mx-auto flex h-dvh max-h-dvh w-full max-w-xl flex-col overflow-hidden"
+      style={{ background: colors.surface }}
+    >
       {success ? (
         <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden>
           {["#F59E0B", "#10B981", "#1677FF", "#F97316", "#A78BFA", "#22D3EE"].map((c, i) => (
@@ -71,41 +74,53 @@ export default function SessionRecap({
       ) : null}
 
       <div
-        className="flex flex-col items-center gap-2 px-6 pb-8 pt-10 text-center text-white"
+        className="flex shrink-0 flex-col items-center gap-1 px-4 pb-3 pt-[max(0.7rem,env(safe-area-inset-top))] text-center text-white sm:gap-2 sm:px-6 sm:pb-5 sm:pt-8"
         style={{
           background: success ? "linear-gradient(160deg,#10B981,#059669)" : "linear-gradient(160deg,#F97316,#DC2626)",
         }}
       >
-        {success ? <SpiraCelebrate size={200} /> : <Spira scene="quiz.fail" size={96} message="" />}
-        <p className="lf-recap-pop text-[32px] font-black leading-none">{title}</p>
-        {subtitle ? <p className="max-w-sm text-[14px] font-semibold text-white/90">{subtitle}</p> : null}
+        <div className="flex h-[clamp(72px,22vh,168px)] w-[clamp(72px,22vh,168px)] items-center justify-center">
+          {success ? (
+            <SpiraCelebrate size={168} className="h-full w-full" />
+          ) : (
+            <Spira scene="quiz.fail" size={72} message="" />
+          )}
+        </div>
+        <p className="lf-recap-pop text-[clamp(1.25rem,5vw,2rem)] font-black leading-tight">{title}</p>
+        {subtitle ? (
+          <p className="max-w-sm text-[12px] font-semibold leading-snug text-white/90 sm:text-[14px]">{subtitle}</p>
+        ) : null}
       </div>
 
-      <div className="grid grid-cols-2 gap-2 px-5 pt-5">
-        {stats.map((s, i) => (
-          <div
-            key={s.label}
-            className="lf-recap-card flex flex-col items-center gap-1 rounded-[18px] border px-3 py-3.5"
-            style={{
-              background: colors.white,
-              borderColor: colors.border,
-              animationDelay: `${0.12 + i * 0.08}s`,
-            }}
-          >
-            <span className="flex h-8 w-8 items-center justify-center rounded-[10px]" style={{ background: s.bg }}>
-              <Icon name={s.icon} size={14} color={s.color} />
-            </span>
-            <p className="text-[18px] font-black" style={{ color: colors.textDark }}>
-              {s.value}
-            </p>
-            <p className="text-[11px] font-bold" style={{ color: colors.textMuted }}>
-              {s.label}
-            </p>
-          </div>
-        ))}
+      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-3 sm:px-5 sm:pt-5">
+        <div className="grid grid-cols-2 gap-2">
+          {stats.map((s, i) => (
+            <div
+              key={s.label}
+              className="lf-recap-card flex flex-col items-center gap-0.5 rounded-[16px] border px-2 py-2.5 sm:gap-1 sm:px-3 sm:py-3.5"
+              style={{
+                background: colors.white,
+                borderColor: colors.border,
+                animationDelay: `${0.12 + i * 0.08}s`,
+              }}
+            >
+              <span className="flex h-7 w-8 items-center justify-center rounded-[10px] sm:h-8" style={{ background: s.bg }}>
+                <Icon name={s.icon} size={14} color={s.color} />
+              </span>
+              <p className="text-[16px] font-black sm:text-[18px]" style={{ color: colors.textDark }}>
+                {s.value}
+              </p>
+              <p className="text-[10px] font-bold sm:text-[11px]" style={{ color: colors.textMuted }}>
+                {s.label}
+              </p>
+            </div>
+          ))}
+        </div>
       </div>
 
-      <div className="mt-auto space-y-3 px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-6">{children}</div>
+      <div className="shrink-0 space-y-2 px-4 pb-[max(0.85rem,env(safe-area-inset-bottom))] pt-2 sm:space-y-3 sm:px-5 sm:pt-4">
+        {children}
+      </div>
     </div>
   );
 }

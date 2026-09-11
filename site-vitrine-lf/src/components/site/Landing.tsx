@@ -147,9 +147,11 @@ export default function Landing() {
             {SUBJECTS.map((s) => (
               <span
                 key={s.id}
-                className="rounded-full px-3 py-1.5 text-sm font-extrabold"
+                className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-extrabold"
                 style={{ color: s.color, background: s.bg }}
               >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={`/icons/subjects/${s.id}.png`} alt="" className="h-4 w-4 object-contain" />
                 {s.label}
               </span>
             ))}

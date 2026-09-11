@@ -172,6 +172,7 @@ export default function AssimilationQuizScreen({ navigation, route }: Props) {
         onBack={() => navigation.goBack()}
         onContinue={advance}
         explanation={q.explicationPedagogique}
+        optionNotes={q.optionNotes}
         reviewLabel={q.ancreCours ? `Revoir ce point → ${q.ancreCours}` : "Revoir ce point → cours"}
         onReview={() => navigation.navigate("Course", { chapterId })}
         headerRight={<Spira scene="quiz.play" size={36} />}

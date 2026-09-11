@@ -18,6 +18,7 @@ export type QuizPlayProps = {
   onBack: () => void;
   onContinue: () => void;
   explanation?: string;
+  optionNotes?: string[];
   reviewLabel?: string;
   onReview?: () => void;
   headerRight?: ReactNode;
@@ -43,6 +44,7 @@ export default function QuizPlay({
   onBack,
   onContinue,
   explanation,
+  optionNotes,
   reviewLabel,
   onReview,
   headerRight,
@@ -121,6 +123,8 @@ export default function QuizPlay({
             const badgeBg =
               kind === "correct" ? colors.secondary : kind === "wrong" ? colors.danger : colors.surfaceAlt;
             const badgeFg = kind === "correct" || kind === "wrong" ? "#fff" : colors.textSecondary;
+            const note = answered ? optionNotes?.[i] : undefined;
+            const tag = kind === "correct" ? "Bonne réponse" : kind === "wrong" ? "Ton choix" : null;
             return (
               <button
                 key={`${i}-${opt}`}
@@ -131,24 +135,36 @@ export default function QuizPlay({
                   onPick(i);
                 }}
                 onClick={() => onPick(i)}
-                className={`flex w-full items-center gap-3 rounded-[18px] border-2 px-3.5 py-3.5 text-left transition-[transform,box-shadow,opacity] ${
+                className={`flex w-full items-start gap-3 rounded-[18px] border-2 px-3.5 py-3.5 text-left transition-[transform,box-shadow,opacity] ${
                   kind === "correct" ? "lf-quiz-ok" : ""
                 }`}
                 style={{
                   background: bg,
                   borderColor: border,
-                  opacity: kind === "dim" ? 0.42 : 1,
+                  opacity: kind === "dim" ? 0.72 : 1,
                   boxShadow: kind === "idle" ? "0 1px 0 rgba(15,23,42,0.04)" : "none",
                 }}
                 aria-pressed={selected === i}
               >
                 <span
-                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[13px] font-black"
+                  className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[13px] font-black"
                   style={{ background: badgeBg, color: badgeFg }}
                 >
                   {kind === "correct" ? <Icon name="check" size={16} color="#fff" /> : kind === "wrong" ? <Icon name="x" size={16} color="#fff" /> : letter}
                 </span>
-                <span className="min-w-0 flex-1 text-[15px] font-bold leading-snug sm:text-[16px]">{opt}</span>
+                <span className="min-w-0 flex-1">
+                  {tag ? (
+                    <span className="mb-1 block text-[10px] font-extrabold uppercase tracking-[0.12em]" style={{ color: kind === "correct" ? colors.secondary : colors.danger }}>
+                      {tag}
+                    </span>
+                  ) : null}
+                  <span className="block text-[15px] font-bold leading-snug sm:text-[16px]">{opt}</span>
+                  {note ? (
+                    <span className="mt-1.5 block text-[12px] font-medium leading-5" style={{ color: colors.textSecondary }}>
+                      {note}
+                    </span>
+                  ) : null}
+                </span>
               </button>
             );
           })}
@@ -175,6 +191,11 @@ export default function QuizPlay({
             {explanation ? (
               <p className="mt-1.5 text-[14px] font-medium leading-5" style={{ color: colors.textSecondary }}>
                 {explanation}
+              </p>
+            ) : null}
+            {!ok ? (
+              <p className="mt-2 text-[13px] font-semibold leading-5" style={{ color: colors.textDark }}>
+                La bonne réponse était : {options[correctIndex]}
               </p>
             ) : null}
             {onReview && reviewLabel && !ok ? (

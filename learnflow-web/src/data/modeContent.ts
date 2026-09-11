@@ -2,7 +2,7 @@ import type { QCMData } from "../types/learnflow";
 import { ASSIMILATION_QCM } from "./mock";
 import { findChapterMeta } from "./programme";
 import { overlayQuiz } from "./publishedCache";
-import { clozeFromLesson, isDeltaQuiz, quizFromLesson, shuffleClozeItems, shuffleQuizOptions, shuffleQuizOrder, VECTEURS_QCM } from "./quizFromLesson";
+import { clozeFromLesson, isDeltaQuiz, quizFromLesson, shuffleClozeItems, shuffleQuizOptions, shuffleQuizOrder, VECTEURS_QCM, withOptionNotes } from "./quizFromLesson";
 
 export type ClozeBlank = {
   id: string;
@@ -392,7 +392,7 @@ export function questionsForChapter(chapterId: string, classe?: string): QCMData
     const extra = quizFromLesson(chapterId, classe).filter((q) => !bank.some((b) => b.enonceQuestion === q.enonceQuestion));
     out = [...bank, ...extra].slice(0, 10);
   }
-  return shuffleQuizOptions(shuffleQuizOrder(out));
+  return shuffleQuizOptions(shuffleQuizOrder(out)).map(withOptionNotes);
 }
 
 export function questionsForGrandQuiz(chapterId: string, classe?: string): QCMData[] {

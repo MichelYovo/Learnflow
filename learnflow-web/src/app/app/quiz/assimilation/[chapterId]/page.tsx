@@ -121,15 +121,15 @@ function QuizInner() {
             <button
               type="button"
               onClick={() => router.replace(`/app/quiz/grand/${chapterId}`)}
-              className="flex w-full items-center gap-3 rounded-[20px] border-2 p-4 text-left"
+              className="flex w-full items-center gap-3 rounded-[18px] border-2 px-3 py-3 text-left sm:p-4"
               style={{ background: colors.mathsBg, borderColor: colors.mathsBorder }}
             >
-              <Icon name="zap" size={22} color={colors.primary} />
-              <span className="flex-1">
-                <span className="block text-[15px] font-extrabold" style={{ color: colors.primary }}>
+              <Icon name="zap" size={20} color={colors.primary} />
+              <span className="min-w-0 flex-1">
+                <span className="block text-[14px] font-extrabold sm:text-[15px]" style={{ color: colors.primary }}>
                   Option Sprint
                 </span>
-                <span className="text-[13px] font-medium" style={{ color: colors.textSecondary }}>
+                <span className="text-[12px] font-medium sm:text-[13px]" style={{ color: colors.textSecondary }}>
                   Enchaîner le Grand Quizz maintenant
                 </span>
               </span>
@@ -140,15 +140,15 @@ function QuizInner() {
                 lockGrandQuizzOneHour(chapterId);
                 router.push("/app");
               }}
-              className="flex w-full items-center gap-3 rounded-[20px] border-2 p-4 text-left"
+              className="flex w-full items-center gap-3 rounded-[18px] border-2 px-3 py-3 text-left sm:p-4"
               style={{ background: colors.white, borderColor: colors.border }}
             >
-              <Spira scene="quiz.rest" size={44} message="" />
-              <span className="flex-1">
-                <span className="block text-[15px] font-extrabold" style={{ color: colors.accent }}>
+              <Spira scene="quiz.rest" size={36} message="" />
+              <span className="min-w-0 flex-1">
+                <span className="block text-[14px] font-extrabold sm:text-[15px]" style={{ color: colors.accent }}>
                   Option Repos
                 </span>
-                <span className="text-[13px] font-medium" style={{ color: colors.textSecondary }}>
+                <span className="text-[12px] font-medium sm:text-[13px]" style={{ color: colors.textSecondary }}>
                   Verrouille 1h + rappel local (démo)
                 </span>
               </span>
@@ -199,6 +199,7 @@ function QuizInner() {
       onBack={() => router.back()}
       onContinue={advance}
       explanation={q.explicationPedagogique}
+      optionNotes={q.optionNotes}
       reviewLabel={q.ancreCours ? `Revoir ce point → ${q.ancreCours}` : "Revoir ce point → cours"}
       onReview={() => router.push(`/app/cours/${chapterId}`)}
       headerRight={<Spira scene="quiz.play" size={36} message="" />}

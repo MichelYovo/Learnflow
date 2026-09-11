@@ -47,7 +47,7 @@ export default function ModeWorkSelector({ selectedMode, guideInactive, onSelect
             >
               <div className="mb-3.5 flex items-start justify-between">
                 <span className="flex h-11 w-11 items-center justify-center overflow-visible min-[380px]:h-[52px] min-[380px]:w-[52px]">
-                  <Spira mood={spiraMoodForMode(def.id)} size={40} message="" />
+                  <Spira mood={spiraMoodForMode(def.id)} size={40} message="" interactive={false} />
                 </span>
                 {inactive ? <Icon name="alert-circle" size={16} color="#94A3B8" /> : null}
               </div>

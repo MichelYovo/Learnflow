@@ -6,6 +6,7 @@ import type { BottomTabScreenProps } from "@react-navigation/bottom-tabs";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import Icon from "../../components/Icon";
 import Spira from "../../components/Spira";
+import SubjectLogo from "../../components/SubjectLogo";
 import { CoursesSkeleton } from "../../components/ui";
 import { usePublishedCatalog } from "../../data/publishedCache";
 import { programmeForLearner } from "../../data/programme";
@@ -147,7 +148,7 @@ export default function ApprendreScreen() {
         </View>
         {level > 0 && liveSubject ? (
           <View style={[styles.subjectBadge, { backgroundColor: liveSubject.bg }]}>
-            <Icon name={liveSubject.icon} size={15} color={liveSubject.color} />
+            <SubjectLogo id={liveSubject.id} size={22} />
           </View>
         ) : null}
       </View>
@@ -167,7 +168,7 @@ export default function ApprendreScreen() {
                 style={[styles.card, { backgroundColor: colors.white, borderColor: colors.border }]}
               >
                 <View style={[styles.iconBox, { backgroundColor: s.bg, borderColor: s.border }]}>
-                  <Icon name={s.icon} size={22} color={s.color} />
+                  <SubjectLogo id={s.id} size={32} />
                 </View>
                 <View style={{ flex: 1, minWidth: 0 }}>
                   <Text style={[styles.cardTitle, { color: colors.textDark }]}>{s.name}</Text>

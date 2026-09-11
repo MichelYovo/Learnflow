@@ -1,21 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import Icon, { type IconName } from "@/components/Icon";
+import Icon from "@/components/Icon";
+import SubjectLogo from "@/components/SubjectLogo";
 import type { SubjectShortcut } from "@/types/learnflow";
 import { resolveSubjectScheme } from "@/theme/colors";
 import { useAppTheme } from "@/theme/useAppTheme";
-
-const ICON_MAP: Record<string, IconName> = {
-  calculator: "calculator",
-  atom: "atom",
-  microscope: "microscope",
-  globe: "globe",
-  quill: "quill",
-  chatbubble: "chatbubble",
-  brain: "brain",
-  heart: "heart",
-};
 
 export default function MesMatieres({
   subjects,
@@ -50,7 +40,7 @@ export default function MesMatieres({
                 className="flex h-12 w-12 items-center justify-center rounded-[18px] border sm:h-16 sm:w-16 sm:rounded-[20px]"
                 style={{ background: scheme.bg, borderColor: scheme.border }}
               >
-                <Icon name={ICON_MAP[s.icon] ?? "book"} size={20} color={scheme.color} />
+                <SubjectLogo id={s.id} size={32} />
               </span>
               <span className="w-full truncate text-center text-[11px] font-bold leading-tight sm:text-[13px]" style={{ color: colors.textDark }}>
                 {s.name}
@@ -85,7 +75,7 @@ export default function MesMatieres({
                     style={{ borderColor: colors.border, background: colors.white }}
                   >
                     <span className="flex h-12 w-12 items-center justify-center rounded-[14px] border-2" style={{ background: scheme.bg, borderColor: scheme.border }}>
-                      <Icon name={ICON_MAP[s.icon] ?? "book"} size={20} color={scheme.color} />
+                      <SubjectLogo id={s.id} size={28} />
                     </span>
                     <span className="min-w-0 flex-1">
                       <span className="block text-sm font-extrabold">{s.fullName ?? s.name}</span>
