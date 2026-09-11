@@ -4,9 +4,9 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import CorrectBurst from "../../components/CorrectBurst";
 import Icon from "../../components/Icon";
+import SessionRecap, { useSessionStats } from "../../components/SessionRecap";
 import Spira from "../../components/Spira";
 import { chapterTitle, clozeForChapter } from "../../data/modeContent";
-import { spiraForScore } from "../../data/spira";
 import { playSfx, preloadSfx } from "../../lib/sfx";
 import { colors } from "../../theme/colors";
 import type { RootStackParamList } from "../../navigation/types";
@@ -24,6 +24,7 @@ export default function FillBlanksScreen({ navigation, route }: Props) {
   const [wrong, setWrong] = useState<typeof items>([]);
   const [done, setDone] = useState(false);
   const [burstKey, setBurstKey] = useState(0);
+  const recapStats = useSessionStats({ score, total: queue.length });
 
   const item = queue[Math.min(idx, Math.max(queue.length - 1, 0))];
 
@@ -57,38 +58,33 @@ export default function FillBlanksScreen({ navigation, route }: Props) {
     const total = queue.length;
     const perfect = score === total;
     return (
-      <SafeAreaView style={styles.safe}>
-        <View style={styles.center}>
-          <Spira
-            mood={spiraForScore(score, total)}
-            size={88}
-            message={perfect ? "Textes à trous maîtrisés." : "On reprend uniquement les phrases ratées."}
-          />
-          <Text style={styles.title}>
-            {score}/{total}
-          </Text>
-          {!perfect && wrong.length > 0 ? (
-            <Pressable
-              style={styles.primary}
-              onPress={() => {
-                setQueue(wrong);
-                setIdx(0);
-                setPicked(null);
-                setLocked(false);
-                setScore(0);
-                setDone(false);
-                setWrong([]);
-              }}
-            >
-              <Text style={styles.primaryText}>Boucler sur les erreurs</Text>
-            </Pressable>
-          ) : (
-            <Pressable style={styles.primary} onPress={() => navigation.goBack()}>
-              <Text style={styles.primaryText}>Retour au Cramming</Text>
-            </Pressable>
-          )}
-        </View>
-      </SafeAreaView>
+      <SessionRecap
+        success={perfect}
+        title={perfect ? "Maîtrisé !" : `${score}/${total}`}
+        subtitle={perfect ? "Textes à trous maîtrisés." : "On reprend uniquement les phrases ratées."}
+        stats={recapStats}
+      >
+        {!perfect && wrong.length > 0 ? (
+          <Pressable
+            style={styles.primary}
+            onPress={() => {
+              setQueue(wrong);
+              setIdx(0);
+              setPicked(null);
+              setLocked(false);
+              setScore(0);
+              setDone(false);
+              setWrong([]);
+            }}
+          >
+            <Text style={styles.primaryText}>Boucler sur les erreurs</Text>
+          </Pressable>
+        ) : (
+          <Pressable style={styles.primary} onPress={() => navigation.goBack()}>
+            <Text style={styles.primaryText}>Retour au Cramming</Text>
+          </Pressable>
+        )}
+      </SessionRecap>
     );
   }
 

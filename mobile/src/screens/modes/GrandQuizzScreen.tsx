@@ -4,10 +4,10 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import CorrectBurst from "../../components/CorrectBurst";
 import QuizPlay from "../../components/quiz/QuizPlay";
+import SessionRecap, { useSessionStats } from "../../components/SessionRecap";
 import Spira from "../../components/Spira";
 import { questionsForGrandQuiz } from "../../data/modeContent";
 import { usePublishedCatalog } from "../../data/publishedCache";
-import { spiraForScore } from "../../data/spira";
 import { playSfx, preloadSfx } from "../../lib/sfx";
 import { useLearnFlowStore } from "../../store/useLearnFlowStore";
 import { calculerXP } from "../../engine/xp";
@@ -27,6 +27,8 @@ export default function GrandQuizzScreen({ navigation, route }: Props) {
   const [score, setScore] = useState(0);
   const [done, setDone] = useState(false);
   const [burstKey, setBurstKey] = useState(0);
+  const [xpGained, setXpGained] = useState(0);
+  const recapStats = useSessionStats({ xp: xpGained, score, total: questions.length });
 
   useEffect(() => {
     preloadSfx();
@@ -68,6 +70,7 @@ export default function GrandQuizzScreen({ navigation, route }: Props) {
         multiplicateurPrecision: 2,
       });
       accumulerXP(xp);
+      setXpGained(xp);
       setDone(true);
     } else {
       setCurrent((c) => c + 1);
@@ -76,23 +79,18 @@ export default function GrandQuizzScreen({ navigation, route }: Props) {
   };
 
   if (done) {
+    const perfect = score === questions.length;
     return (
-      <SafeAreaView style={styles.safe}>
-        <View style={styles.locked}>
-          <Spira
-            mood={spiraForScore(score, questions.length)}
-            size={96}
-            message={score === questions.length ? "Sprint parfait !" : "Grand Quizz terminé. XP sprint ×2 appliqué."}
-          />
-          <Text style={styles.lockedTitle}>
-            {score}/{questions.length}
-          </Text>
-          <Text style={styles.muted}>Grand Quizz terminé · XP sprint ×2 appliqué</Text>
-          <Pressable style={styles.primary} onPress={() => navigation.popToTop()}>
-            <Text style={styles.primaryText}>Retour</Text>
-          </Pressable>
-        </View>
-      </SafeAreaView>
+      <SessionRecap
+        success={perfect}
+        title={perfect ? "Sprint parfait !" : `${score}/${questions.length}`}
+        subtitle="Grand Quizz terminé · XP sprint ×2 appliqué"
+        stats={recapStats}
+      >
+        <Pressable style={styles.primary} onPress={() => navigation.popToTop()}>
+          <Text style={styles.primaryText}>Retour</Text>
+        </Pressable>
+      </SessionRecap>
     );
   }
 
