@@ -12,6 +12,7 @@ import ModeWorkSelector from "@/components/ModeWorkSelector";
 import { EMPTY_WEEK_CHART } from "@/data/mock";
 import { usePublishedCatalog } from "@/data/publishedCache";
 import { continueLessonForClass, continueLessonForLearner, programmeForLearner, subjectShortcutsForLearner } from "@/data/programme";
+import WeeklyReviewBar from "@/components/WeeklyReviewBar";
 import WidgetErrorBoundary from "@/components/WidgetErrorBoundary";
 import { cardsDueToday } from "@/engine/spacedRepetition";
 import { useLearnFlowStore } from "@/store/useLearnFlowStore";
@@ -92,6 +93,7 @@ export default function AccueilPage() {
   useEffect(() => {
     try {
       useLearnFlowStore.getState().ensureDailyChallenges();
+      useLearnFlowStore.getState().ensureWeeklyReviews();
     } catch {
       /* persisted rewards may be malformed */
     }
@@ -112,11 +114,17 @@ export default function AccueilPage() {
           </span>
         </Link>
         <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
-          <span className="flex items-center gap-1 rounded-[14px] bg-[#FEF3C7] px-2 py-1.5 text-[13px] font-extrabold text-[#D97706] sm:px-2.5 sm:py-2 sm:text-[14px]">
-            <Icon name="flame" size={16} color="#D97706" />
+          <span
+            className="flex items-center gap-1 rounded-[14px] px-2 py-1.5 text-[13px] font-extrabold sm:px-2.5 sm:py-2 sm:text-[14px]"
+            style={{ background: colors.hgBg, color: colors.accent }}
+          >
+            <Icon name="flame" size={16} color={colors.accent} />
             {profile?.streak ?? 0}
           </span>
-          <span className="hidden items-center gap-1 rounded-[14px] bg-[#FEF3C7] px-2.5 py-2 text-[14px] font-extrabold text-[#D97706] min-[420px]:flex">
+          <span
+            className="hidden items-center gap-1 rounded-[14px] px-2.5 py-2 text-[14px] font-extrabold min-[420px]:flex"
+            style={{ background: colors.hgBg, color: colors.accent }}
+          >
             <Icon name="zap" size={16} color="#D97706" />
             {Number(profile?.xpTotale ?? 0).toLocaleString("fr-FR")}
           </span>
@@ -143,12 +151,15 @@ export default function AccueilPage() {
             </Link>
             <Link
               href={continueHref}
-              className="w-full shrink-0 self-stretch rounded-2xl bg-white px-4 py-3 text-center text-[15px] font-extrabold text-[#1677FF] sm:w-auto sm:self-center sm:py-3.5 sm:text-[16px]"
+              className="w-full shrink-0 self-stretch rounded-2xl px-4 py-3 text-center text-[15px] font-extrabold sm:w-auto sm:self-center sm:py-3.5 sm:text-[16px]"
+              style={{ background: "#FFFFFF", color: "#1677FF" }}
             >
               Continuer
             </Link>
           </div>
         </div>
+
+        <WeeklyReviewBar />
 
         <WidgetErrorBoundary>
           <ModeWorkSelector selectedMode={selectedMode} guideInactive={dueCount === 0} onSelectMode={openMode} />
@@ -195,7 +206,7 @@ export default function AccueilPage() {
           </section>
         ) : null}
 
-        <section className="rounded-3xl border p-[22px]" style={{ background: colors.white, borderColor: darkMode ? colors.border : "#F1F5F9" }}>
+        <section className="rounded-3xl border p-[22px]" style={{ background: colors.white, borderColor: colors.border }}>
           <h2 className="text-[18px] font-extrabold">Ma progression</h2>
           <div className="mt-5 flex">
             {[
@@ -203,7 +214,7 @@ export default function AccueilPage() {
               ["0h", "d'étude", colors.textDark],
               [`+${weekXp}`, "XP", "#F59E0B"],
             ].map(([v, l, c], i) => (
-              <div key={l} className={`flex flex-1 flex-col items-center ${i < 2 ? "border-r" : ""}`} style={{ borderColor: darkMode ? colors.border : "#E5E7EB" }}>
+              <div key={l} className={`flex flex-1 flex-col items-center ${i < 2 ? "border-r" : ""}`} style={{ borderColor: colors.border }}>
                 <p className="text-[22px] font-extrabold" style={{ color: c }}>
                   {v}
                 </p>
@@ -231,13 +242,13 @@ export default function AccueilPage() {
           href="/app/ligue"
           className="flex items-center gap-3.5 rounded-3xl border p-[18px]"
           style={{
-            background: darkMode ? "#422006" : "#FFFBEB",
-            borderColor: darkMode ? "#78350F" : "#FDE68A",
+            background: colors.hgBg,
+            borderColor: colors.hgBorder,
           }}
         >
           <LeagueBadge nom={ligue?.nomLigue ?? "Bronze"} size={56} />
           <div className="min-w-0 flex-1">
-            <p className="text-[17px] font-extrabold" style={{ color: darkMode ? "#FDE68A" : "#1C1917" }}>
+            <p className="text-[17px] font-extrabold" style={{ color: colors.textDark }}>
               Ligue {ligue?.nomLigue ?? "Bronze"}
             </p>
             <p className="mt-0.5 text-[15px] font-semibold text-[#D97706]">#{ligue?.rangActuel ?? 1}</p>

@@ -33,7 +33,7 @@ export default function MesMatieres({
       </div>
       <div className="grid grid-cols-3 gap-2 min-[360px]:grid-cols-4 sm:grid-cols-5 sm:gap-2">
         {preview.map((s) => {
-          const scheme = resolveSubjectScheme(s.colorScheme);
+          const scheme = resolveSubjectScheme(s.colorScheme, colors);
           return (
             <button key={s.id} type="button" onClick={() => onSelect(s)} className="flex min-w-0 flex-col items-center gap-1.5 sm:gap-2">
               <span
@@ -62,7 +62,7 @@ export default function MesMatieres({
             </div>
             <div className="max-h-[440px] space-y-2 overflow-y-auto">
               {subjects.map((s) => {
-                const scheme = resolveSubjectScheme(s.colorScheme);
+                const scheme = resolveSubjectScheme(s.colorScheme, colors);
                 return (
                   <button
                     key={s.id}

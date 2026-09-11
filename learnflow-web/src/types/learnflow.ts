@@ -143,6 +143,7 @@ export interface InboxNotification {
   kind: InboxKind;
   title: string;
   body: string;
+  href?: string;
   createdAt: string;
   read: boolean;
 }

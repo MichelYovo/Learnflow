@@ -6,6 +6,7 @@ import Icon from "@/components/Icon";
 import Spira from "@/components/Spira";
 import SubjectLogo from "@/components/SubjectLogo";
 import { AppBar, AppMain } from "@/components/ui";
+import WeeklyReviewBar from "@/components/WeeklyReviewBar";
 import { usePublishedCatalog } from "@/data/publishedCache";
 import { programmeForLearner } from "@/data/programme";
 import { useLearnFlowStore } from "@/store/useLearnFlowStore";
@@ -107,6 +108,7 @@ function CoursInner() {
       </AppBar>
 
       <AppMain className="space-y-3 py-5 pb-8">
+        <WeeklyReviewBar chapterId={level === 3 ? liveChapter?.id : undefined} />
         {level === 0
           ? programme.map((s) => {
               const themes = s.themes ?? [];

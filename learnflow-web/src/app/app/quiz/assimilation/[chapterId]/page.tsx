@@ -17,6 +17,7 @@ function QuizInner() {
   const { chapterId } = useParams<{ chapterId: string }>();
   const search = useSearchParams();
   const loopErrors = search.get("loop") === "1";
+  const isReview = search.get("review") === "1";
   const router = useRouter();
   const { colors } = useAppTheme();
   const catalogEpoch = usePublishedCatalog();
@@ -52,6 +53,7 @@ function QuizInner() {
     setScore(nextScore);
     if (current + 1 >= queue.length) {
       const res = recordAssimilation(chapterId, nextScore, queue.length, firstTryRef.current);
+      if (isReview) useLearnFlowStore.getState().completeWeeklyReview(chapterId);
       setResult(res);
       setDone(true);
     } else {
@@ -90,6 +92,16 @@ function QuizInner() {
         }
         stats={recapStats}
       >
+        {isReview ? (
+          <button
+            type="button"
+            onClick={() => router.push("/app/revision")}
+            className="w-full rounded-[14px] py-3.5 text-[15px] font-extrabold text-white"
+            style={{ background: colors.primary }}
+          >
+            Retour aux révisions
+          </button>
+        ) : null}
         {loopErrors ? (
           !perfect && missed.length > 0 ? (
             <button

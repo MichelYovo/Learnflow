@@ -39,7 +39,8 @@ export default function InboxPage() {
 
   const open = (n: InboxNotification) => {
     markInboxRead(n.id);
-    if (n.kind === "study") router.push("/app/agenda");
+    if (n.href) router.push(n.href);
+    else if (n.kind === "study") router.push("/app/revision");
     else if (n.kind === "league") router.push("/app/ligue");
     else if (n.kind === "challenge" || n.kind === "badge") router.push("/app");
   };
@@ -70,6 +71,7 @@ export default function InboxPage() {
         ) : (
           inbox.map((n) => {
             const meta = KIND_META[n.kind] ?? KIND_META.system;
+            const chipBg = colors.surfaceAlt;
             return (
               <button
                 key={n.id}
@@ -81,7 +83,7 @@ export default function InboxPage() {
                   borderColor: n.read ? colors.border : colors.mathsBorder,
                 }}
               >
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl" style={{ background: meta.bg }}>
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl" style={{ background: colors.surfaceAlt }}>
                   <Icon name={meta.icon} size={18} color={meta.color} />
                 </span>
                 <span className="min-w-0 flex-1">

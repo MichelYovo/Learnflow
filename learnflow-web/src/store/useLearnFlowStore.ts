@@ -36,7 +36,7 @@ import { resolveAvatarId } from "@/data/avatars";
 import { applySelfRating } from "@/engine/spacedRepetition";
 import { xpAssimilation, xpBlitz } from "@/engine/xp";
 import {
-  CHALLENGES,
+  challengesOfTheDay,
   challengeById,
   emptyRewards,
   withDay,
@@ -50,7 +50,8 @@ import {
 } from "@/engine/rewards";
 import { createId, nowIso } from "@/lib/ids";
 import { AI_DAILY_QUOTA, remainingAiQuota, todayIsoDate } from "@/data/tutor";
-import { chapterActivityDone } from "@/data/programme";
+import { chapterActivityDone, findChapterMeta } from "@/data/programme";
+import { dueChapterIds, emptyWeeklyReview, isoWeekLome, withWeeklyReview, type WeeklyReviewState } from "@/data/weeklyReview";
 
 const LOCAL_PARENT_ID = "local-parent";
 
@@ -75,6 +76,7 @@ interface LearnFlowState {
   timetable: SchoolClass[];
   inbox: InboxNotification[];
   rewards: RewardsState;
+  weeklyReview: WeeklyReviewState;
 
   getActiveProfile: () => ProfileEleve;
   login: () => void;
@@ -150,7 +152,7 @@ interface LearnFlowState {
   gelerLigue: (jours: number) => void;
   envoyerSMSFelicitation: (msg: string) => Promise<boolean>;
   settings: AppSettings;
-  pushInbox: (item: { kind: InboxKind; title: string; body: string; id?: string }) => void;
+  pushInbox: (item: { kind: InboxKind; title: string; body: string; id?: string; href?: string }) => void;
   markInboxRead: (id: string) => void;
   markAllInboxRead: () => void;
   tickChallenge: (id: ChallengeId, amount?: number) => void;
@@ -159,6 +161,8 @@ interface LearnFlowState {
   clearRewardToast: () => void;
   hasEaseBoost: () => boolean;
   ensureDailyChallenges: () => void;
+  ensureWeeklyReviews: () => void;
+  completeWeeklyReview: (chapitreId: string) => void;
   updateNotificationPrefs: (patch: Partial<AppSettings["notifications"]>) => void;
   updatePrivacyPrefs: (patch: Partial<AppSettings["privacy"]>) => void;
   setAppRating: (rating: NonNullable<AppSettings["appRating"]>) => void;
@@ -300,6 +304,7 @@ export const useLearnFlowStore = create<LearnFlowState>()(
       timetable: INITIAL_TIMETABLE,
       inbox: INITIAL_INBOX,
       rewards: emptyRewards(),
+      weeklyReview: emptyWeeklyReview(),
       settings: DEFAULT_SETTINGS,
 
       getActiveProfile: () => {
@@ -692,7 +697,7 @@ export const useLearnFlowStore = create<LearnFlowState>()(
         return true;
       },
 
-      pushInbox: ({ kind, title, body, id }) => {
+      pushInbox: ({ kind, title, body, id, href }) => {
         const inbox = Array.isArray(get().inbox) ? get().inbox : [];
         if (id && inbox.some((n) => n.id === id)) return;
         set({
@@ -702,6 +707,7 @@ export const useLearnFlowStore = create<LearnFlowState>()(
               kind,
               title,
               body,
+              href,
               createdAt: nowIso(),
               read: false,
             },
@@ -812,14 +818,60 @@ export const useLearnFlowStore = create<LearnFlowState>()(
           if (get().rewards.day !== rewards.day) set({ rewards });
           return;
         }
-        const open = CHALLENGES.filter((c) => !rewards.completed.includes(c.id));
+        const open = challengesOfTheDay(rewards.day).filter((c) => !rewards.completed.includes(c.id));
         set({ rewards: { ...rewards, notifiedDay: rewards.day } });
         get().pushInbox({
+          id: `daily-challenges-${rewards.day}`,
           kind: "challenge",
+          href: "/app",
           title: "Défis du jour",
           body: open.length
             ? open.map((c) => `• ${c.title} (+${c.xp} XP)`).join("\n")
             : "Tous les défis du jour sont faits. Bravo.",
+        });
+      },
+
+      ensureWeeklyReviews: () => {
+        const week = isoWeekLome();
+        const state = withWeeklyReview(get().weeklyReview);
+        const due = dueChapterIds(get().chapterProgress, state.lastReviewed, week);
+        if (state.notifiedWeek === week) {
+          if (get().weeklyReview?.week !== week) set({ weeklyReview: { ...state, week } });
+          return;
+        }
+        set({ weeklyReview: { ...state, week, notifiedWeek: week } });
+        if (!due.length) return;
+        const first = findChapterMeta(due[0])?.chapter.title;
+        get().pushInbox({
+          id: `weekly-review-${week}`,
+          kind: "study",
+          href: "/app/revision",
+          title: "Révision de la semaine",
+          body:
+            due.length === 1
+              ? `Rappel : révise « ${first ?? "ton chapitre"} ».`
+              : `${due.length} chapitres t’attendent pour le rappel hebdomadaire.`,
+        });
+      },
+
+      completeWeeklyReview: (chapitreId) => {
+        if (!chapitreId) return;
+        const week = isoWeekLome();
+        const state = withWeeklyReview(get().weeklyReview);
+        if (state.lastReviewed[chapitreId] === week) return;
+        set({
+          weeklyReview: {
+            ...state,
+            week,
+            lastReviewed: { ...state.lastReviewed, [chapitreId]: week },
+          },
+        });
+        get().accumulerXP(40, { chapterId: chapitreId, chapterTitle: findChapterMeta(chapitreId)?.chapter.title });
+        get().pushInbox({
+          kind: "study",
+          href: "/app/revision",
+          title: "Révision faite",
+          body: `+40 XP · ${findChapterMeta(chapitreId)?.chapter.title ?? "Chapitre"} est à jour pour cette semaine.`,
         });
       },
 
@@ -979,6 +1031,7 @@ export const useLearnFlowStore = create<LearnFlowState>()(
             timetable: Array.isArray(p.timetable) ? p.timetable : current.timetable,
             inbox: Array.isArray(p.inbox) ? p.inbox : current.inbox,
             rewards: withDay(p.rewards),
+            weeklyReview: withWeeklyReview(p.weeklyReview),
             settings: {
               ...DEFAULT_SETTINGS,
               ...settingsPatch,
@@ -1014,6 +1067,7 @@ export const useLearnFlowStore = create<LearnFlowState>()(
         timetable: s.timetable,
         inbox: s.inbox,
         rewards: s.rewards,
+        weeklyReview: s.weeklyReview,
         settings: s.settings,
       }),
     }

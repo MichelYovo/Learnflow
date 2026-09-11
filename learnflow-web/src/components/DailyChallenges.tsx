@@ -1,6 +1,6 @@
 "use client";
 
-import { CHALLENGES, withDay, type ChallengeId } from "@/engine/rewards";
+import { challengesOfTheDay, withDay, type ChallengeId } from "@/engine/rewards";
 import { useLearnFlowStore } from "@/store/useLearnFlowStore";
 import { useAppTheme } from "@/theme/useAppTheme";
 
@@ -8,8 +8,9 @@ export default function DailyChallenges({ onOpen }: { onOpen: (id: ChallengeId) 
   const { colors } = useAppTheme();
   const rawRewards = useLearnFlowStore((s) => s.rewards);
   const rewards = withDay(rawRewards);
-  const ease = useLearnFlowStore((s) => Boolean(s.rewards?.easeBoostUntil && s.rewards.easeBoostUntil > Date.now()));
-  const open = CHALLENGES.filter((c) => !rewards.completed.includes(c.id));
+  const ease = Boolean(rewards.easeBoostUntil && rewards.easeBoostUntil > Date.now());
+  const today = challengesOfTheDay(rewards.day);
+  const open = today.filter((c) => !rewards.completed.includes(c.id));
 
   return (
     <article className="rounded-[22px] border-2 p-4" style={{ background: colors.white, borderColor: colors.border }}>
@@ -19,7 +20,7 @@ export default function DailyChallenges({ onOpen }: { onOpen: (id: ChallengeId) 
       <p className="mt-1 text-xs font-semibold leading-4" style={{ color: colors.textMuted }}>
         {ease
           ? "Boost actif : les prochaines questions sont plus faciles."
-          : "Réussis un défi : plus d’XP et des questions plus faciles."}
+          : "Réussis un défi : il disparaît, tu gagnes de l’XP."}
       </p>
       {open.length === 0 ? (
         <p className="mt-2 text-sm font-extrabold" style={{ color: colors.secondary }}>
@@ -27,10 +28,10 @@ export default function DailyChallenges({ onOpen }: { onOpen: (id: ChallengeId) 
         </p>
       ) : (
         <ul className="mt-3 space-y-2">
-          {open.slice(0, 3).map((c) => {
+          {open.map((c) => {
             const progress = rewards.progress[c.id] ?? 0;
             return (
-              <li key={c.id}>
+              <li key={c.id} className="lf-slide-in">
                 <button
                   type="button"
                   onClick={() => onOpen(c.id)}

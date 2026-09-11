@@ -18,27 +18,28 @@ export type RecapStat = {
 export function useSessionStats(opts: { xp?: number; score?: number; total?: number; cards?: number }): RecapStat[] {
   const profile = useLearnFlowStore((s) => s.getActiveProfile());
   const ligue = useLearnFlowStore((s) => s.ligue);
+  const { colors } = useAppTheme();
   return useMemo(() => {
     const rows: RecapStat[] = [];
     if (opts.xp != null) {
-      rows.push({ label: "XP gagné", value: `+${opts.xp}`, icon: "zap", color: "#F59E0B", bg: "#FFFBEB" });
+      rows.push({ label: "XP gagné", value: `+${opts.xp}`, icon: "zap", color: colors.accent, bg: colors.hgBg });
     }
     if (opts.score != null && opts.total) {
       rows.push({
         label: "Précision",
         value: `${Math.round((opts.score / Math.max(1, opts.total)) * 100)}%`,
         icon: "target",
-        color: "#1677FF",
-        bg: "#E6F4FF",
+        color: colors.primary,
+        bg: colors.mathsBg,
       });
     }
     if (opts.cards != null) {
-      rows.push({ label: "Cartes", value: String(opts.cards), icon: "layers", color: "#8B5CF6", bg: "#F5F3FF" });
+      rows.push({ label: "Cartes", value: String(opts.cards), icon: "layers", color: colors.violet, bg: colors.frBg });
     }
-    rows.push({ label: "Série", value: `${profile?.streak ?? 0} j`, icon: "flame", color: "#EF4444", bg: "#FEF2F2" });
-    rows.push({ label: "Ligue", value: ligue.nomLigue, icon: "trophy", color: "#D97706", bg: "#FFFBEB" });
+    rows.push({ label: "Série", value: `${profile?.streak ?? 0} j`, icon: "flame", color: colors.danger, bg: colors.angBg });
+    rows.push({ label: "Ligue", value: ligue.nomLigue, icon: "trophy", color: colors.accent, bg: colors.hgBg });
     return rows;
-  }, [opts.xp, opts.score, opts.total, opts.cards, profile?.streak, ligue.nomLigue]);
+  }, [opts.xp, opts.score, opts.total, opts.cards, profile?.streak, ligue.nomLigue, colors]);
 }
 
 export default function SessionRecap({

@@ -103,7 +103,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                 }
                 className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-bold"
                 style={{
-                  background: active ? (darkMode ? "#0C1A33" : "#E6F4FF") : "transparent",
+                  background: active ? (darkMode ? "#1C1C1E" : "#E6F4FF") : "transparent",
                   color: active ? colors.primary : colors.textSecondary,
                 }}
               >

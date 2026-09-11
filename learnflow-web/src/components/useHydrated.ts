@@ -24,7 +24,12 @@ export function useHydrated() {
 export function ThemeSync() {
   const darkMode = useLearnFlowStore((s) => Boolean(s.settings?.darkMode));
   useEffect(() => {
-    document.documentElement.classList.toggle("dark", darkMode);
+    const root = document.documentElement;
+    root.classList.toggle("dark", darkMode);
+    root.style.colorScheme = darkMode ? "dark" : "light";
+    root.dataset.theme = darkMode ? "dark" : "light";
+    const meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.setAttribute("content", darkMode ? "#000000" : "#1677FF");
   }, [darkMode]);
   return null;
 }

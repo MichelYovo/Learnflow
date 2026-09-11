@@ -92,7 +92,7 @@ export default function LiguePage() {
                 onClick={() => setTab(t)}
                 className="flex min-h-11 flex-1 items-center justify-center gap-1.5 rounded-[14px] border-[1.5px] px-3 text-[13px] font-extrabold"
                 style={{
-                  background: active ? (darkMode ? "#0C1A33" : "#E6F4FF") : colors.surfaceAlt,
+                  background: active ? colors.mathsBg : colors.surfaceAlt,
                   borderColor: active ? colors.primary : "transparent",
                   color: active ? colors.primary : colors.textMuted,
                 }}
@@ -236,7 +236,7 @@ export default function LiguePage() {
                   key={`${player.studentId ?? player.name}-${player.rank}`}
                   className="mb-2 flex min-h-16 items-center gap-3 rounded-[20px] border px-4 py-3"
                   style={{
-                    background: player.you ? (darkMode ? "#0C1A33" : "#E6F4FF") : colors.white,
+                    background: player.you ? colors.mathsBg : colors.white,
                     borderColor: player.you ? colors.primary : colors.border,
                     borderWidth: player.you ? 1.5 : 1,
                   }}
@@ -322,7 +322,7 @@ export default function LiguePage() {
                   className="flex min-h-[140px] flex-col items-center gap-2 rounded-[20px] border p-4"
                   style={{ background: colors.white, borderColor: colors.border, opacity: earned ? 1 : 0.45 }}
                 >
-                  <span className="flex h-11 w-11 items-center justify-center rounded-[14px]" style={{ background: darkMode ? "#0F172A" : "#F8FAFC" }}>
+                  <span className="flex h-11 w-11 items-center justify-center rounded-[14px]" style={{ background: colors.surfaceAlt }}>
                     <Icon name={b.icon} size={22} color={b.color} />
                   </span>
                   <p className="text-sm font-extrabold">{b.label}</p>

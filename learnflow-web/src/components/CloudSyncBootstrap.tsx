@@ -44,6 +44,8 @@ export default function CloudSyncBootstrap() {
           title: "Message de l’éditeur",
           body: "L’accueil et les cours sont de nouveau disponibles. Bonne révision — l’équipe LearnFlow.",
         });
+        useLearnFlowStore.getState().ensureDailyChallenges();
+        useLearnFlowStore.getState().ensureWeeklyReviews();
         await pullEditorNotices();
 
         const supabase = getBrowserSupabase();

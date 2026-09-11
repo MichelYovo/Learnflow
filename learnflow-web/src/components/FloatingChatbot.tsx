@@ -7,7 +7,7 @@ import Icon from "./Icon";
 import Spira from "./Spira";
 
 export default function FloatingChatbot() {
-  const { colors, darkMode } = useAppTheme();
+  const { colors } = useAppTheme();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [answer, setAnswer] = useState<string | null>(null);
@@ -51,7 +51,7 @@ export default function FloatingChatbot() {
           </div>
           <div className="max-h-72 space-y-2 overflow-y-auto p-4">
             {answer ? (
-              <p className="rounded-2xl px-3 py-2 text-sm font-medium" style={{ background: darkMode ? "#0C1A33" : "#E6F4FF" }}>
+              <p className="rounded-2xl px-3 py-2 text-sm font-medium" style={{ background: colors.mathsBg, color: colors.textDark }}>
                 {answer}
               </p>
             ) : (

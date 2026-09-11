@@ -129,6 +129,15 @@ export function challengeById(id: ChallengeId): ChallengeDef {
   return CHALLENGES.find((c) => c.id === id) ?? CHALLENGES[0];
 }
 
+/** Trois défis stables pour la journée — un défi réussi disparaît, sans être remplacé. */
+export function challengesOfTheDay(day = lomeDay()): ChallengeDef[] {
+  const n = CHALLENGES.length;
+  let h = 2166136261;
+  for (let i = 0; i < day.length; i++) h = Math.imul(h ^ day.charCodeAt(i), 16777619);
+  const start = n ? (h >>> 0) % n : 0;
+  return [0, 1, 2].map((i) => CHALLENGES[(start + i) % n]).filter(Boolean);
+}
+
 export function hasEaseBoost(r: RewardsState): boolean {
   return withDay(r).easeBoostUntil > Date.now();
 }

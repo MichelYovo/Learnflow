@@ -162,7 +162,7 @@ export function CardButton({
   return (
     <Link
       href={href}
-      className="flex min-w-0 items-center gap-3 rounded-2xl border bg-white p-4 [@media(hover:hover)]:hover:brightness-[.98]"
+      className="flex min-w-0 items-center gap-3 rounded-2xl border p-4 [@media(hover:hover)]:hover:brightness-[.98]"
       style={{ borderColor: border ?? colors.border, background: colors.white }}
     >
       <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl" style={{ background: iconBg }}>

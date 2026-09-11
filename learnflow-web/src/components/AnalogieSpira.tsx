@@ -7,7 +7,7 @@ import { useAppTheme } from "@/theme/useAppTheme";
 export default function AnalogieSpira({ analogie }: { analogie: AnalogieSpiraData }) {
   const { colors } = useAppTheme();
   return (
-    <section className="rounded-3xl p-5" style={{ background: "#EEF4FF" }}>
+    <section className="rounded-3xl p-5" style={{ background: colors.mathsBg }}>
       <p className="text-[17px] font-extrabold" style={{ color: colors.textDark }}>
         {analogie.titre}
       </p>

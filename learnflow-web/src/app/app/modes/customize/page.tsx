@@ -58,7 +58,7 @@ function CustomizeInner() {
               type="button"
               onClick={() => setSelected((prev) => (prev.includes(t.id) ? prev.filter((x) => x !== t.id) : [...prev, t.id]))}
               className="flex w-full items-center gap-3 rounded-2xl border p-4"
-              style={{ borderColor: on ? colors.primary : colors.border, background: on ? "#E6F4FF" : colors.white }}
+              style={{ borderColor: on ? colors.primary : colors.border, background: on ? colors.mathsBg : colors.white }}
             >
               <Icon name={t.icon} size={20} color={on ? colors.primary : colors.textSecondary} />
               <span className="flex-1 text-left font-extrabold">{t.label}</span>

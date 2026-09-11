@@ -5,6 +5,7 @@ import Spira from "@/components/Spira";
 import Icon from "@/components/Icon";
 import { MODE_DEFINITIONS, type AppMode } from "@/types/modes";
 import { spiraMoodForMode } from "@/data/spira";
+import { modeCardSurface } from "@/theme/palette";
 import { useAppTheme } from "@/theme/useAppTheme";
 
 type Props = {
@@ -14,7 +15,7 @@ type Props = {
 };
 
 export default function ModeWorkSelector({ selectedMode, guideInactive, onSelectMode }: Props) {
-  const { colors } = useAppTheme();
+  const { colors, darkMode } = useAppTheme();
   const [help, setHelp] = useState<string | null>(null);
 
   return (
@@ -26,6 +27,7 @@ export default function ModeWorkSelector({ selectedMode, guideInactive, onSelect
         {MODE_DEFINITIONS.map((def) => {
           const inactive = def.id === "guide" && guideInactive;
           const selected = selectedMode === def.id;
+          const surface = modeCardSurface(def.bg, def.border, def.color, darkMode);
           return (
             <button
               key={def.id}
@@ -40,8 +42,8 @@ export default function ModeWorkSelector({ selectedMode, guideInactive, onSelect
               }}
               className="min-h-[92px] min-w-0 rounded-3xl p-2.5 text-left min-[380px]:min-h-[100px] min-[380px]:p-3 sm:min-h-[128px] sm:p-[18px] [@media(hover:hover)]:hover:brightness-[.98] [@media(hover:hover)]:active:scale-[0.97]"
               style={{
-                background: def.bg,
-                border: `${selected ? 2 : 1}px solid ${selected ? def.color : def.border}`,
+                background: surface.background,
+                border: `${selected ? 2 : 1}px solid ${selected ? def.color : surface.border}`,
                 opacity: inactive ? 0.5 : 1,
               }}
             >
@@ -59,11 +61,13 @@ export default function ModeWorkSelector({ selectedMode, guideInactive, onSelect
         })}
       </div>
       {help ? (
-        <div className="mt-3.5 flex items-start gap-2 rounded-2xl border border-[#FDE68A] bg-[#FFFBEB] p-3.5">
-          <Icon name="lightbulb" size={14} color="#F59E0B" />
-          <p className="flex-1 text-sm font-semibold text-[#92400E]">{help}</p>
+        <div className="mt-3.5 flex items-start gap-2 rounded-2xl border p-3.5" style={{ borderColor: colors.hgBorder, background: colors.hgBg }}>
+          <Icon name="lightbulb" size={14} color={colors.accent} />
+          <p className="flex-1 text-sm font-semibold" style={{ color: colors.accent }}>
+            {help}
+          </p>
           <button type="button" onClick={() => setHelp(null)} aria-label="Fermer">
-            <Icon name="x" size={14} color="#92400E" />
+            <Icon name="x" size={14} color={colors.accent} />
           </button>
         </div>
       ) : null}

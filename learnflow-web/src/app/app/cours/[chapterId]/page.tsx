@@ -7,6 +7,7 @@ import CourseDetailBlocks from "@/components/course/CourseDetailBlocks";
 import Icon from "@/components/Icon";
 import InteractiveLessonText from "@/components/InteractiveLessonText";
 import { AppMain, ScreenHeader } from "@/components/ui";
+import WeeklyReviewBar from "@/components/WeeklyReviewBar";
 import { ficheForChapter } from "@/data/fiches";
 import { normalizeKeyword, toDetailBlocks, toLessonContent } from "@/data/lessonContent";
 import { usePublishedCatalog } from "@/data/publishedCache";
@@ -71,6 +72,7 @@ export default function CoursePage() {
     <div>
       <ScreenHeader title={lesson.title} backHref="/app/cours" />
       <AppMain className="space-y-4 py-5 pb-10">
+        {chapterId ? <WeeklyReviewBar chapterId={chapterId} compact /> : null}
         <div className="flex flex-col gap-2 sm:flex-row sm:gap-2.5">
           <button type="button" onClick={() => selectTab("essentiel")} className="min-w-0 flex-1 rounded-[18px] border px-3 py-3" style={tabStyle("essentiel")}>
             <p className="text-center text-[16px] font-extrabold" style={{ color: tabStyle("essentiel").color }}>

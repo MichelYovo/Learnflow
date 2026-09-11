@@ -129,15 +129,15 @@ export default function ProfilPage() {
             <p className="max-w-full px-2 text-center text-[20px] font-extrabold sm:text-[20px]">{profile.nom}</p>
           )}
           <div className="mt-2.5 flex flex-wrap justify-center gap-2">
-            <span className="rounded-full border-2 border-[#BAE0FF] bg-[#E6F4FF] px-3 py-1 text-[13px] font-extrabold text-[#1677FF]">{grade}</span>
-            <span className="rounded-full border-2 border-[#FDE68A] bg-[#FFFBEB] px-3 py-1 text-[13px] font-extrabold text-[#F59E0B]">Ligue {ligue.nomLigue}</span>
+            <span className="rounded-full border-2 px-3 py-1 text-[13px] font-extrabold" style={{ borderColor: colors.mathsBorder, background: colors.mathsBg, color: colors.primary }}>{grade}</span>
+            <span className="rounded-full border-2 px-3 py-1 text-[13px] font-extrabold" style={{ borderColor: colors.hgBorder, background: colors.hgBg, color: colors.accent }}>Ligue {ligue.nomLigue}</span>
           </div>
         </div>
 
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
           {STATS_META.map((s) => (
             <div key={s.label} className="flex flex-1 flex-col items-center gap-1 rounded-[18px] border py-3.5" style={{ background: colors.white, borderColor: colors.border }}>
-              <span className="flex h-8 w-8 items-center justify-center rounded-[10px]" style={{ background: s.bg }}>
+              <span className="flex h-8 w-8 items-center justify-center rounded-[10px]" style={{ background: colors.surfaceAlt }}>
                 <Icon name={s.icon} size={14} color={s.color} />
               </span>
               <p className="text-[15px] font-extrabold">{stats[s.key]}</p>
@@ -155,7 +155,7 @@ export default function ProfilPage() {
           type="button"
           onClick={() => router.push("/app/ligue")}
           className="mt-3 flex w-full items-center gap-3 rounded-3xl border p-4"
-          style={{ background: "#FFFBEB", borderColor: "#FDE68A" }}
+          style={{ background: colors.hgBg, borderColor: colors.hgBorder }}
         >
           <LeagueBadge nom={ligue.nomLigue} size={64} />
           <span className="min-w-0 flex-1 text-left">
@@ -214,7 +214,7 @@ export default function ProfilPage() {
         <h2 className="mt-6 text-[18px] font-extrabold">Apparence</h2>
         <div className="mt-3 overflow-hidden rounded-3xl border" style={{ background: colors.white, borderColor: colors.border }}>
           <label className="flex items-center gap-3 px-3.5 py-3.5">
-            <span className="flex h-9 w-9 items-center justify-center rounded-xl" style={{ background: darkMode ? "#0C1A33" : colors.mathsBg }}>
+            <span className="flex h-9 w-9 items-center justify-center rounded-xl" style={{ background: colors.surfaceAlt }}>
               <Icon name={darkMode ? "moon" : "sun"} size={16} color={colors.primary} />
             </span>
               <span className="min-w-0 flex-1 text-[16px] font-extrabold">Mode sombre</span>
