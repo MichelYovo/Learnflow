@@ -29,8 +29,15 @@ export default async function DashboardPage() {
         <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <StatCard label="Élèves" value={String(data.stats.students)} hint="Profils suivis" tone="blue" />
           <StatCard label="Actifs 24 h" value={String(data.stats.active24h)} hint="Mouvements récents" tone="green" />
+          <Link href="/dashboard/relances">
+            <StatCard
+              label="Inactifs"
+              value={String(data.stats.inactive)}
+              hint="À relancer par mail"
+              tone="red"
+            />
+          </Link>
           <StatCard label="Messages" value={String(newMessages)} hint="Non lus · site vitrine" tone="violet" />
-          <StatCard label="XP total" value={data.stats.xpTotal.toLocaleString("fr-FR")} hint="Cumul des comptes" tone="amber" />
         </section>
 
         <ActivityCharts stats={data.stats} />

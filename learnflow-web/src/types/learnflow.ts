@@ -176,6 +176,25 @@ export interface SectionCoursAPC {
 /** Schémas interactifs — réservés à la SVT. */
 export type SchemaCoursKind = "2d" | "3d" | "both";
 
+/** Bloc 1 d'En Détails — exemple du quotidien + compétence APC. */
+export interface SituationProbleme {
+  recit: string;
+  question: string;
+  competenceVisee: string;
+}
+
+export interface ExempleResoluEtape {
+  titre: string;
+  texte: string;
+}
+
+/** Bloc 3 d'En Détails — exercice type mené pas à pas. */
+export interface ExempleResolu {
+  enonce: string;
+  etapes: ExempleResoluEtape[];
+  reponseFinale: string;
+}
+
 /**
  * Deux corps de leçon sémantiquement distincts.
  * L'Essentiel n'est jamais une troncature d'En Détails.
@@ -183,9 +202,9 @@ export type SchemaCoursKind = "2d" | "3d" | "both";
 export interface LessonContent {
   id: string;
   title: string;
-  /** Synthèse < 300 mots, puces, [mots] à masquer pour le rappel actif. */
+  /** Fiche réflexe < 300 mots, puces, [mots] à masquer pour le rappel actif. */
   essentialText: string;
-  /** Cours APC complet, lecture continue, sans masquage. */
+  /** Cours APC développé (savoirs + savoir-faire), lecture continue. */
   detailedText: string;
 }
 
@@ -193,9 +212,9 @@ export interface FicheCoursData {
   chapitreId: string;
   titre: string;
   matiereId: string;
-  /** Synthèse manuelle — jamais un extrait d'En Détails. */
+  /** Fiche réflexe — jamais un extrait d'En Détails. */
   essentialText?: string;
-  /** Cours APC développé, lecture continue. */
+  /** Savoirs + savoir-faire, lecture continue. */
   detailedText?: string;
   /** Compat catalogue / tutor / Prof — dérivé de essentialText si absent. */
   pucesEssentiel: string[];
@@ -204,6 +223,10 @@ export interface FicheCoursData {
   motsClesMasques: string[];
   analogie?: AnalogieSpiraData;
   schema?: SchemaCoursKind;
+  situationProbleme?: SituationProbleme;
+  exempleResolu?: ExempleResolu;
+  /** 2 QCM formatifs, avant le quiz d'assimilation. */
+  miniQuiz?: QCMData[];
   estBioniqueActive?: boolean;
   ancreId?: string;
   /** @deprecated préfère essentialText */

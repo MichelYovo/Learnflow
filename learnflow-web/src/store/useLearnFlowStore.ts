@@ -45,6 +45,7 @@ interface LearnFlowState {
   isAuthenticated: boolean;
   onboardingCompleted: boolean;
   focusPromptPending: boolean;
+  appTourCompleted: boolean;
   profiles: ProfileEleve[];
   activeProfileId: string;
   leagueBoard: LeaguePlayer[];
@@ -98,6 +99,7 @@ interface LearnFlowState {
   }) => void;
   selectProfile: (id: string) => void;
   dismissFocusPrompt: () => void;
+  completeAppTour: () => void;
   setLeagueBoard: (players: LeaguePlayer[]) => void;
   applyRemoteLeague: (studentId: string, weeklyXp: number, rank: number, tier?: string) => void;
   signUp: (data: {
@@ -227,6 +229,7 @@ export const useLearnFlowStore = create<LearnFlowState>()(
       isAuthenticated: false,
       onboardingCompleted: false,
       focusPromptPending: true,
+      appTourCompleted: false,
       profiles: [],
       activeProfileId: "",
       leagueBoard: LEAGUE_PLAYERS,
@@ -253,9 +256,9 @@ export const useLearnFlowStore = create<LearnFlowState>()(
         return s.profiles.find((p) => p.id === s.activeProfileId) ?? s.profiles[0] ?? FALLBACK_PROFILE;
       },
 
-      login: () => set({ isAuthenticated: true, focusPromptPending: true }),
+      login: () => set({ isAuthenticated: true }),
       logout: () => {
-        set({ isAuthenticated: false, focusPromptPending: true });
+        set({ isAuthenticated: false });
         void import("@/lib/supabase").then((m) => m.getBrowserSupabase()?.auth.signOut());
       },
       applyCloudUser: (user, opts) => {
@@ -292,7 +295,6 @@ export const useLearnFlowStore = create<LearnFlowState>()(
           profiles: keepLocalTestProfiles([...others, profile]),
           activeProfileId: user.id,
           isAuthenticated: opts?.authenticate !== false,
-          focusPromptPending: true,
           suiviParental: user.parentPhone
             ? { ...get().suiviParental, telParent: user.parentPhone }
             : get().suiviParental,
@@ -309,6 +311,8 @@ export const useLearnFlowStore = create<LearnFlowState>()(
                 leagueBoard: beginnerLeagueBoard(profile.nom, avatarId, firstName.slice(0, 2).toUpperCase()),
                 inbox: [],
                 agendaSessions: [],
+                appTourCompleted: false,
+                focusPromptPending: true,
               }
             : {}),
         });
@@ -348,9 +352,9 @@ export const useLearnFlowStore = create<LearnFlowState>()(
         set({
           activeProfileId: resolveLocalTestActiveId(get().profiles, id),
           isAuthenticated: true,
-          focusPromptPending: true,
         }),
       dismissFocusPrompt: () => set({ focusPromptPending: false }),
+      completeAppTour: () => set({ appTourCompleted: true }),
       setLeagueBoard: (players) => set({ leagueBoard: players }),
       applyRemoteLeague: (studentId, weeklyXp, rank, tier) => {
         const { ligue, profiles, activeProfileId } = get();
@@ -770,6 +774,13 @@ export const useLearnFlowStore = create<LearnFlowState>()(
             ...current,
             isAuthenticated: Boolean(p.isAuthenticated ?? current.isAuthenticated),
             onboardingCompleted: Boolean(p.onboardingCompleted ?? current.onboardingCompleted),
+            focusPromptPending:
+              typeof p.focusPromptPending === "boolean"
+                ? p.focusPromptPending
+                : Boolean(p.isAuthenticated)
+                  ? false
+                  : current.focusPromptPending,
+            appTourCompleted: Boolean(p.appTourCompleted),
             profiles,
             activeProfileId: resolveLocalTestActiveId(profiles, p.activeProfileId ?? current.activeProfileId),
             ligue: p.ligue ?? current.ligue,
@@ -802,6 +813,8 @@ export const useLearnFlowStore = create<LearnFlowState>()(
       partialize: (s) => ({
         isAuthenticated: s.isAuthenticated,
         onboardingCompleted: s.onboardingCompleted,
+        focusPromptPending: s.focusPromptPending,
+        appTourCompleted: s.appTourCompleted,
         profiles: s.profiles,
         activeProfileId: s.activeProfileId,
         ligue: s.ligue,

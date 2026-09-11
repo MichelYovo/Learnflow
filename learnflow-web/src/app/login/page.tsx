@@ -24,6 +24,7 @@ function LoginInner() {
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const googleError = params.get("error");
+  const fromRelance = params.get("from") === "relance";
 
   const goApp = async () => {
     setError("");
@@ -75,10 +76,12 @@ function LoginInner() {
         <div className="flex flex-col items-center text-center">
           <Logo height="auth" />
           <h1 className="mt-6 text-xl font-black sm:text-[28px]" style={{ color: colors.primary }}>
-            Bon retour !
+            {fromRelance ? "Reviens continuer !" : "Bon retour !"}
           </h1>
           <p className="mt-1 text-sm font-semibold" style={{ color: colors.textSecondary }}>
-            Reprends là où tu t&apos;es arrêté.
+            {fromRelance
+              ? "Tes cours t’attendent. Connecte-toi pour reprendre exactement où tu t’étais arrêté."
+              : "Reprends là où tu t'es arrêté."}
           </p>
         </div>
 

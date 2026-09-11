@@ -7,6 +7,7 @@ import { useAppTheme } from "@/theme/useAppTheme";
 import type { IconName } from "./Icon";
 import FloatingChatbot from "./FloatingChatbot";
 import AvatarGate from "./AvatarGate";
+import AppTour from "./AppTour";
 
 const NAV: { href: string; label: string; icon: IconName; fill: string; outline: string }[] = [
   { href: "/app", label: "Accueil", icon: "home", fill: "/icons/home-fill.png", outline: "/icons/home.png" },
@@ -35,6 +36,7 @@ function TabLink({
     <Link
       href={item.href}
       prefetch
+      data-tour={item.href === "/app/cours" ? "nav-cours" : item.href === "/app/ligue" ? "nav-ligue" : undefined}
       className="lf-tabbar-slot flex flex-col items-center justify-end gap-0.5 px-0.5 pb-1 pt-1.5 no-underline"
       style={{ WebkitTapHighlightColor: "transparent" }}
     >
@@ -92,6 +94,15 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                 key={item.href}
                 href={item.href}
                 prefetch
+                data-tour={
+                  item.href === "/app/cours"
+                    ? "nav-cours-side"
+                    : item.href === "/app/ligue"
+                      ? "nav-ligue-side"
+                      : item.href === "/app/agenda"
+                        ? "nav-agenda-side"
+                        : undefined
+                }
                 className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-bold"
                 style={{
                   background: active ? (darkMode ? "#0C1A33" : "#E6F4FF") : "transparent",
@@ -139,7 +150,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             />
           ))}
         </div>
-        <Link href="/app/agenda" prefetch aria-label="Ouvrir l'agenda" className="lf-tabbar-fab">
+        <Link href="/app/agenda" prefetch aria-label="Ouvrir l'agenda" className="lf-tabbar-fab" data-tour="agenda">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/brand/logo-mark.png" alt="" width={56} height={56} draggable={false} />
         </Link>
@@ -147,6 +158,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
       <FloatingChatbot />
       <AvatarGate />
+      <AppTour />
     </div>
   );
 }

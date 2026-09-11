@@ -1,9 +1,11 @@
 import TopBar from "@/components/TopBar";
 import { getAdminSession } from "@/lib/auth";
-import { adminHasOpenAi, cloudStatusLabel, isAdminCloudReady, isSupabaseConfigured } from "@/lib/supabase";
+import { isMailConfigured } from "@/lib/mail";
+import { adminHasGemini, cloudStatusLabel, isAdminCloudReady, isSupabaseConfigured } from "@/lib/supabase";
 
 export default async function SettingsPage() {
   const session = await getAdminSession();
+  const groqOk = Boolean(process.env.GROQ_API_KEY?.trim());
 
   return (
     <>
@@ -25,15 +27,23 @@ export default async function SettingsPage() {
               <dt className="font-semibold text-[#64748B]">Cloud Supabase</dt>
               <dd className="font-extrabold text-[#1C1917]">{cloudStatusLabel()}</dd>
             </div>
+            <div className="flex justify-between gap-4 border-b border-[#F0EFEE] pb-3">
+              <dt className="font-semibold text-[#64748B]">Gemini (Super Prof)</dt>
+              <dd className="font-extrabold text-[#1C1917]">{adminHasGemini() ? "GEMINI_API_KEY ok" : "Clé absente"}</dd>
+            </div>
+            <div className="flex justify-between gap-4 border-b border-[#F0EFEE] pb-3">
+              <dt className="font-semibold text-[#64748B]">Groq (Prof / cours)</dt>
+              <dd className="font-extrabold text-[#1C1917]">{groqOk ? "GROQ_API_KEY ok" : "Clé absente"}</dd>
+            </div>
             <div className="flex justify-between gap-4">
-              <dt className="font-semibold text-[#64748B]">IA Prof / Super Prof</dt>
-              <dd className="font-extrabold text-[#1C1917]">{adminHasOpenAi() ? "GROQ_API_KEY ok" : "Clé absente"}</dd>
+              <dt className="font-semibold text-[#64748B]">Mails de relance</dt>
+              <dd className="font-extrabold text-[#1C1917]">{isMailConfigured() ? "SMTP / Resend ok" : "Non configuré"}</dd>
             </div>
           </dl>
           <p className="mt-5 text-sm font-medium leading-relaxed text-[#64748B]">
             {isSupabaseConfigured && !isAdminCloudReady
               ? "La lecture élèves a besoin de SUPABASE_SECRET_KEY (service_role), pas seulement la clé anon."
-              : "Studio Prof, schémas et suppression d’élèves passent par la clé secrète, jamais exposée au navigateur."}
+              : "Super Prof rédige et envoie les relances. Prof (cours) et schémas restent sur Groq. Les clés ne sont jamais exposées au navigateur."}
           </p>
         </article>
       </main>

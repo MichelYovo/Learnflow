@@ -18,7 +18,7 @@ export default function ModeWorkSelector({ selectedMode, guideInactive, onSelect
   const [help, setHelp] = useState<string | null>(null);
 
   return (
-    <section>
+    <section data-tour="modes">
       <h2 className="mb-3.5 text-[18px] font-extrabold" style={{ color: colors.textDark }}>
         Modes
       </h2>

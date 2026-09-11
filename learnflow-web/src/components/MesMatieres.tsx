@@ -31,7 +31,7 @@ export default function MesMatieres({
   const preview = subjects.slice(0, 5);
 
   return (
-    <section>
+    <section data-tour="matieres">
       <div className="mb-3.5 flex items-center justify-between">
         <h2 className="text-[18px] font-extrabold" style={{ color: colors.textDark }}>
           Mes matières

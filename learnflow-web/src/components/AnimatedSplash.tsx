@@ -4,12 +4,12 @@ import { useEffect, useRef, useState } from "react";
 import Logo from "./Logo";
 import LogoIntro from "./LogoIntro";
 
-const STORAGE_KEY = "lf-intro-logo-v3";
+export const INTRO_SESSION_KEY = "lf-intro-logo-v3";
 /** Durée de la vidéo source (~10 s), filet de sécurité. */
 export const LOGO_INTRO_MS = 10_400;
 
 type Props = {
-  /** Animation logo (premier lancement). Sinon logo stagnant, pour le chargement. */
+  /** Animation logo (chaque visite). Sinon logo stagnant, pour le chargement. */
   cinematic?: boolean;
   onFinish?: () => void;
 };
@@ -22,7 +22,7 @@ export default function AnimatedSplash({ cinematic = false, onFinish }: Props) {
     if (finished.current) return;
     finished.current = true;
     try {
-      sessionStorage.setItem(STORAGE_KEY, "1");
+      sessionStorage.setItem(INTRO_SESSION_KEY, "1");
     } catch {
       /* ignore */
     }
@@ -35,7 +35,7 @@ export default function AnimatedSplash({ cinematic = false, onFinish }: Props) {
 
     const force = new URLSearchParams(window.location.search).has("intro");
     try {
-      if (!force && sessionStorage.getItem(STORAGE_KEY) === "1") {
+      if (!force && sessionStorage.getItem(INTRO_SESSION_KEY) === "1") {
         finish();
         return;
       }

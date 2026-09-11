@@ -14,6 +14,9 @@ export type AdminStudent = {
   parentPhone?: string;
   status?: "actif" | "suspendu" | string;
   createdAt?: string;
+  updatedAt?: string;
+  progressUpdatedAt?: string;
+  lastSeenAt?: string;
 };
 
 export const SEED_STUDENTS: AdminStudent[] = [];

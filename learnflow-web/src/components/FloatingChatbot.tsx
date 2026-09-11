@@ -28,6 +28,7 @@ export default function FloatingChatbot() {
           className="fixed right-[max(12px,env(safe-area-inset-right))] bottom-[calc(5.25rem+env(safe-area-inset-bottom,0px))] z-50 flex h-12 w-12 items-center justify-center rounded-full shadow-lg sm:h-14 sm:w-14 lg:bottom-6 lg:right-6"
           style={{ background: colors.primary }}
           aria-label="Tuteur local"
+          data-tour="tuteur"
         >
           <Icon name={open ? "x" : "message"} size={22} color="#fff" />
         </button>

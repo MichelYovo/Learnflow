@@ -1,5 +1,6 @@
 import { classLabel, initialsFromName, LEAGUE_TIERS } from "./brand";
 import { type AdminStudent } from "../data/seed";
+import { INACTIVITY_DAYS, withLastSeen } from "./inactivity";
 import {
   fetchCloudEvents,
   fetchCloudLeagues,
@@ -54,6 +55,7 @@ export type DashboardData = {
     avgXp: number;
     activeStreaks: number;
     active24h: number;
+    inactive: number;
     sessions: number;
     webEvents: number;
     mobileEvents: number;
@@ -158,6 +160,12 @@ function buildStats(students: AdminStudent[], leagues: AdminLeagueRow[], events:
     avgXp: students.length ? Math.round(xpTotal / students.length) : 0,
     activeStreaks: students.filter((s) => s.streak >= 3).length,
     active24h: activeIds.size,
+    inactive: students.filter((s) => {
+      if (s.status === "suspendu") return false;
+      const last = s.lastSeenAt || s.createdAt;
+      if (!last) return true;
+      return Date.now() - new Date(last).getTime() >= INACTIVITY_DAYS * 86_400_000;
+    }).length,
     sessions: events.filter((e) => ["login", "quiz_complete", "blitz_complete", "mode_start"].includes(e.type)).length,
     webEvents: events.filter((e) => e.platform === "web").length,
     mobileEvents: events.filter((e) => e.platform === "mobile").length,
@@ -192,6 +200,8 @@ function mapStudent(row: CloudStudent, i: number, weeklyXp: number, leagueTier: 
     parentPhone: row.parent_phone ?? undefined,
     status: row.status === "suspendu" ? "suspendu" : "actif",
     createdAt: row.created_at ?? undefined,
+    updatedAt: row.updated_at ?? undefined,
+    progressUpdatedAt: row.progress_updated_at ?? undefined,
   };
 }
 
@@ -211,12 +221,13 @@ export async function loadDashboardData(): Promise<DashboardData> {
   if (!cloudStudents) {
     return emptyDashboard("local", cloudError);
   }
-  const students: AdminStudent[] = cloudStudents.map((row, i) => {
+  const mapped: AdminStudent[] = cloudStudents.map((row, i) => {
     const league = cloudLeagues?.find((l) => l.student_id === row.id);
     return mapStudent(row, i, league?.weekly_xp ?? 0, league?.league_tier ?? "Bronze");
   });
-  const leagues = toLeagueRows(students, cloudLeagues ?? undefined);
-  const events = mapEvents(cloudEvents ?? [], students);
+  const leagues = toLeagueRows(mapped, cloudLeagues ?? undefined);
+  const events = mapEvents(cloudEvents ?? [], mapped);
+  const students = withLastSeen(mapped, events);
   return { source: "cloud", cloudError, students, leagues, events, stats: buildStats(students, leagues, events) };
 }
 

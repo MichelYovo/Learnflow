@@ -107,6 +107,7 @@ export default function AccueilPage() {
       <AppMain className="space-y-5 py-5 pb-8">
         <Link
           href={`/app/cours/${continueLesson.chapterId}`}
+          data-tour="continue"
           className="flex min-w-0 flex-col gap-3 rounded-3xl px-4 py-4 text-white min-[380px]:px-5 min-[380px]:py-5 sm:flex-row sm:items-center sm:px-[22px] sm:py-[22px]"
           style={{ background: "linear-gradient(135deg, #1677FF 0%, #00B8F4 100%)" }}
         >

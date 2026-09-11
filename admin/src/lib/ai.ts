@@ -20,7 +20,7 @@ const AI_VISION_MAX_TOKENS = Number(process.env.GROQ_VISION_MAX_TOKENS) || 800;
 type ChatResult = { json?: unknown; error?: string; text?: string };
 
 export function isAiConfigured() {
-  return AI_KEY.length > 8;
+  return AI_KEY.length > 8 || (process.env.GEMINI_API_KEY ?? "").trim().length > 8;
 }
 
 function parseAiHttpError(raw: string, status: number) {
@@ -166,13 +166,19 @@ export async function chatJson(
 }
 
 export async function chatText(system: string, user: string): Promise<{ text?: string; error?: string }> {
-  if (!isAiConfigured()) {
-    return { error: "Ajoute GROQ_API_KEY dans admin/.env.local pour activer Super Prof." };
+  const { isGeminiConfigured, geminiChat } = await import("./gemini");
+  if (isGeminiConfigured()) {
+    const gemini = await geminiChat(system, user);
+    if (gemini.text) return gemini;
+    if (!AI_KEY) return { error: gemini.error || "Gemini n’a pas répondu." };
+  }
+  if (AI_KEY.length <= 8) {
+    return { error: "Ajoute GEMINI_API_KEY (ou GROQ_API_KEY) dans admin/.env.local pour Super Prof." };
   }
   const res = await groqChat({
     model: AI_MODEL,
     temperature: 0.4,
-    max_completion_tokens: 1024,
+    max_completion_tokens: 2048,
     messages: [
       { role: "system", content: system },
       { role: "user", content: user },

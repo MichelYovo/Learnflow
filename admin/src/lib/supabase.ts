@@ -80,6 +80,7 @@ export type CloudStudent = {
   lessons_done?: number | null;
   avatar_id?: string | null;
   status?: string | null;
+  progress_updated_at?: string | null;
   created_at?: string | null;
   updated_at?: string | null;
 };
@@ -126,7 +127,7 @@ export async function fetchCloudLeagues() {
 
 export async function fetchCloudEvents(studentId?: string) {
   const filter = studentId ? `&student_id=eq.${encodeURIComponent(studentId)}` : "";
-  return restGet<CloudEvent>(`activity_events?select=*&order=created_at.desc&limit=500${filter}`);
+  return restGet<CloudEvent>(`activity_events?select=*&order=created_at.desc&limit=2000${filter}`);
 }
 
 export async function fetchSupportMessages() {
@@ -172,10 +173,15 @@ export async function deleteAuthUser(id: string): Promise<{ ok: boolean; error?:
 
 export function adminHasOpenAi() {
   return Boolean(
-    process.env.GROQ_API_KEY?.trim() ||
+    process.env.GEMINI_API_KEY?.trim() ||
+      process.env.GROQ_API_KEY?.trim() ||
       process.env.OPENAI_API_KEY?.trim() ||
-      process.env.OPENAI_COMPATIBLE_API_KEY?.trim()
+      process.env.OPENAI_COMPATIBLE_API_KEY?.trim(),
   );
+}
+
+export function adminHasGemini() {
+  return Boolean(process.env.GEMINI_API_KEY?.trim());
 }
 
 export { supabaseUrl };

@@ -9,6 +9,7 @@ const ICONS: Record<string, typeof OverviewIcon> = {
   "/dashboard": OverviewIcon,
   "/dashboard/activite": ActivityIcon,
   "/dashboard/messages": MailIcon,
+  "/dashboard/relances": RelanceIcon,
   "/dashboard/eleves": StudentsIcon,
   "/dashboard/ligues": LeagueIcon,
   "/dashboard/cours": ProfIcon,
@@ -91,6 +92,20 @@ function MailIcon({ active }: { active: boolean }) {
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
       <rect x="3" y="5" width="18" height="14" rx="2.5" stroke={active ? "#1677FF" : "#94A3B8"} strokeWidth="1.8" />
       <path d="M4 7l8 6 8-6" stroke={active ? "#1677FF" : "#94A3B8"} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function RelanceIcon({ active }: { active: boolean }) {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
+      <path
+        d="M6 9a6 6 0 1 1 12 0c0 4 1.5 5.5 2 6.5H4c.5-1 2-2.5 2-6.5zM10 19a2 2 0 0 0 4 0"
+        stroke={active ? "#1677FF" : "#94A3B8"}
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </svg>
   );
 }

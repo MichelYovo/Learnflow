@@ -22,6 +22,7 @@ export default function StudentDetail({
   const [status, setStatus] = useState(student.status === "suspendu" ? "suspendu" : "actif");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [flash, setFlash] = useState("");
   const [showPhone, setShowPhone] = useState(false);
 
   const save = async () => {
@@ -39,6 +40,28 @@ export default function StudentDetail({
       return;
     }
     router.refresh();
+  };
+
+  const relance = async () => {
+    setBusy(true);
+    setError("");
+    setFlash("");
+    const res = await fetch("/api/relances/send", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ studentIds: [student.id] }),
+    });
+    const json = (await res.json()) as { error?: string; sent?: { name: string }[]; skipped?: { reason: string }[] };
+    setBusy(false);
+    if (!res.ok) {
+      setError(json.error || "Relance impossible.");
+      return;
+    }
+    if (json.sent?.length) {
+      setFlash("Mail de relance envoyé.");
+      return;
+    }
+    setError(json.skipped?.[0]?.reason || "Relance impossible.");
   };
 
   const remove = async () => {
@@ -88,6 +111,14 @@ export default function StudentDetail({
           <Info label="Série" value={`${student.streak} j`} />
           <Info label="Leçons" value={String(student.lessonsDone)} />
           <Info label="App" value={student.platform || "—"} />
+          <Info
+            label="Dernière activité"
+            value={
+              student.lastSeenAt
+                ? new Date(student.lastSeenAt).toLocaleString("fr-FR")
+                : "Jamais"
+            }
+          />
           <Info
             label="Parent"
             value={
@@ -139,6 +170,7 @@ export default function StudentDetail({
           </label>
         </div>
         {error ? <p className="mt-3 text-sm font-bold text-red-500">{error}</p> : null}
+        {flash ? <p className="mt-3 text-sm font-bold text-[#10B981]">{flash}</p> : null}
         <div className="mt-4 flex flex-wrap gap-3">
           <button
             type="button"
@@ -147,6 +179,14 @@ export default function StudentDetail({
             className="rounded-2xl bg-[#1677FF] px-5 py-2.5 text-sm font-extrabold text-white disabled:opacity-60"
           >
             {busy ? "Enregistrement…" : "Enregistrer"}
+          </button>
+          <button
+            type="button"
+            disabled={busy || !student.email}
+            onClick={() => void relance()}
+            className="rounded-2xl bg-[#10B981] px-5 py-2.5 text-sm font-extrabold text-white disabled:opacity-60"
+          >
+            Envoyer une relance
           </button>
           <button
             type="button"

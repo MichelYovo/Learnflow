@@ -7,13 +7,14 @@ export default function StatCard({
   label: string;
   value: string;
   hint?: string;
-  tone?: "blue" | "green" | "amber" | "violet";
+  tone?: "blue" | "green" | "amber" | "violet" | "red";
 }) {
   const tones = {
     blue: "bg-[#E6F4FF] text-[#1677FF]",
     green: "bg-[#ECFDF5] text-[#10B981]",
     amber: "bg-[#FFFBEB] text-[#F59E0B]",
     violet: "bg-[#F5F3FF] text-[#8B5CF6]",
+    red: "bg-[#FEF2F2] text-[#EF4444]",
   };
   return (
     <article className="rounded-[22px] border-2 border-[#F0EFEE] bg-white p-5">
