@@ -5,8 +5,6 @@ import { adminHasGemini, cloudStatusLabel, isAdminCloudReady, isSupabaseConfigur
 
 export default async function SettingsPage() {
   const session = await getAdminSession();
-  const groqOk = Boolean(process.env.GROQ_API_KEY?.trim());
-
   return (
     <>
       <TopBar title="Paramètres" email={session?.email ?? ""} />
@@ -28,12 +26,8 @@ export default async function SettingsPage() {
               <dd className="font-extrabold text-[#1C1917]">{cloudStatusLabel()}</dd>
             </div>
             <div className="flex justify-between gap-4 border-b border-[#F0EFEE] pb-3">
-              <dt className="font-semibold text-[#64748B]">Gemini (Super Prof)</dt>
+              <dt className="font-semibold text-[#64748B]">Gemini (Prof, schémas, Super Prof)</dt>
               <dd className="font-extrabold text-[#1C1917]">{adminHasGemini() ? "GEMINI_API_KEY ok" : "Clé absente"}</dd>
-            </div>
-            <div className="flex justify-between gap-4 border-b border-[#F0EFEE] pb-3">
-              <dt className="font-semibold text-[#64748B]">Groq (Prof / cours)</dt>
-              <dd className="font-extrabold text-[#1C1917]">{groqOk ? "GROQ_API_KEY ok" : "Clé absente"}</dd>
             </div>
             <div className="flex justify-between gap-4">
               <dt className="font-semibold text-[#64748B]">Mails de relance</dt>
@@ -43,7 +37,7 @@ export default async function SettingsPage() {
           <p className="mt-5 text-sm font-medium leading-relaxed text-[#64748B]">
             {isSupabaseConfigured && !isAdminCloudReady
               ? "La lecture élèves a besoin de SUPABASE_SECRET_KEY (service_role), pas seulement la clé anon."
-              : "Super Prof rédige et envoie les relances. Prof (cours) et schémas restent sur Groq. Les clés ne sont jamais exposées au navigateur."}
+              : "Toute l’IA admin (Prof, schémas, Super Prof) passe par Gemini. La clé n’est jamais exposée au navigateur."}
           </p>
         </article>
       </main>

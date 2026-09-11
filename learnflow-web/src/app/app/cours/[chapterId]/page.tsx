@@ -3,11 +3,13 @@
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import AnalogieSpira from "@/components/AnalogieSpira";
+import CourseDetailBlocks from "@/components/course/CourseDetailBlocks";
 import Icon from "@/components/Icon";
 import InteractiveLessonText from "@/components/InteractiveLessonText";
 import { AppMain, ScreenHeader } from "@/components/ui";
 import { ficheForChapter } from "@/data/fiches";
-import { countWords, isDetailHeading, normalizeKeyword, toLessonContent } from "@/data/lessonContent";
+import { normalizeKeyword, toDetailBlocks, toLessonContent } from "@/data/lessonContent";
+import { questionsForChapter } from "@/data/modeContent";
 import { usePublishedCatalog } from "@/data/publishedCache";
 import { chapterHas3dImage } from "@/data/schemas3d";
 import { useLearnFlowStore } from "@/store/useLearnFlowStore";
@@ -21,6 +23,12 @@ export default function CoursePage() {
   const catalogEpoch = usePublishedCatalog();
   const fiche = useMemo(() => ficheForChapter(chapterId), [chapterId, catalogEpoch]);
   const lesson = useMemo(() => toLessonContent(fiche), [fiche]);
+  const classe = useLearnFlowStore((s) => s.getActiveProfile()?.classe);
+  const quizFallback = useMemo(
+    () => (chapterId ? questionsForChapter(chapterId, classe) : []),
+    [chapterId, classe, catalogEpoch],
+  );
+  const detailBlocks = useMemo(() => toDetailBlocks(fiche, quizFallback), [fiche, quizFallback]);
   const { colors } = useAppTheme();
   const markChapterPart = useLearnFlowStore((s) => s.markChapterPart);
 
@@ -33,13 +41,8 @@ export default function CoursePage() {
   const [activeTab, setActiveTab] = useState<ActiveTab>("essentiel");
   const [masked, setMasked] = useState(false);
   const [revealed, setRevealed] = useState<Set<string>>(new Set());
-  const words = countWords(lesson.essentialText);
   const show2d = fiche.schema === "2d" || fiche.schema === "both";
   const show3d = fiche.schema === "3d" || fiche.schema === "both" || chapterHas3dImage(chapterId);
-  const detailParas = useMemo(
-    () => lesson.detailedText.split(/\n\n+/).map((p) => p.trim()).filter(Boolean),
-    [lesson.detailedText],
-  );
 
   const analogieBox = fiche.analogie ? <AnalogieSpira analogie={fiche.analogie} /> : null;
 
@@ -73,7 +76,7 @@ export default function CoursePage() {
               L&apos;Essentiel
             </p>
             <p className="text-center text-[11px] font-semibold" style={{ color: tabStyle("essentiel").color }}>
-              Synthèse · {words} mots
+              Fiche réflexe · ~5 min
             </p>
           </button>
           <button type="button" onClick={() => selectTab("details")} className="min-w-0 flex-1 rounded-[18px] border px-3 py-3" style={tabStyle("details")}>
@@ -122,19 +125,7 @@ export default function CoursePage() {
             {analogieBox}
           </>
         ) : (
-          <article className="space-y-4 rounded-3xl px-5 py-[22px]" style={{ background: colors.white }}>
-            {detailParas.map((para, i) =>
-              isDetailHeading(para) ? (
-                <h2 key={i} className="text-base font-extrabold leading-relaxed" style={{ color: colors.primary }}>
-                  {para}
-                </h2>
-              ) : (
-                <p key={i} className="whitespace-pre-wrap text-base font-medium leading-relaxed sm:text-lg" style={{ color: colors.textDark }}>
-                  {para}
-                </p>
-              ),
-            )}
-          </article>
+          <CourseDetailBlocks blocks={detailBlocks} />
         )}
 
         {show2d || show3d ? (
