@@ -15,11 +15,16 @@ export default function HomeGate() {
 
   useEffect(() => {
     if (!ready) return;
-    if (!onboardingCompleted) router.replace("/onboarding");
-    else if (!isAuthenticated) router.replace("/splash");
-    else if (focusPromptPending) router.replace("/focus");
-    else router.replace("/app");
-  }, [ready, onboardingCompleted, isAuthenticated, focusPromptPending, router]);
+    const href = !onboardingCompleted
+      ? "/onboarding"
+      : !isAuthenticated
+        ? "/splash"
+        : focusPromptPending
+          ? "/focus"
+          : "/app";
+    router.replace(href);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ready, onboardingCompleted, isAuthenticated, focusPromptPending]);
 
   return <AnimatedSplash />;
 }

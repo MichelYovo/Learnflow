@@ -54,7 +54,7 @@ export default function LiguePage() {
   const ligue = useLearnFlowStore((s) => s.ligue);
   const leagueBoard = useLearnFlowStore((s) => s.leagueBoard);
   const gelerLigue = useLearnFlowStore((s) => s.gelerLigue);
-  const badges = useLearnFlowStore((s) => s.getActiveProfile()?.badgesDebloques ?? []);
+  const badges = useLearnFlowStore((s) => s.getActiveProfile().badgesDebloques);
   const myAvatarId = useLearnFlowStore((s) => s.getActiveProfile()?.avatarId);
   const { colors, darkMode } = useAppTheme();
   const [selectedTier, setSelectedTier] = useState<LigueNom>(ligue.nomLigue);

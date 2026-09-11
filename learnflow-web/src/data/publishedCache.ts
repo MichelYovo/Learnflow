@@ -50,9 +50,13 @@ function subscribeCatalog(listener: () => void) {
   };
 }
 
+function getCatalogEpoch() {
+  return catalogEpoch;
+}
+
 /** Force un re-render quand le catalogue cloud change. */
 export function usePublishedCatalog() {
-  return useSyncExternalStore(subscribeCatalog, () => catalogEpoch, () => 0);
+  return useSyncExternalStore(subscribeCatalog, getCatalogEpoch, getCatalogEpoch);
 }
 
 export function setPublishedCatalog(next: { lessons?: PublishedLessonRow[]; schemas?: PublishedSchemaRow[] }) {

@@ -39,38 +39,17 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!ready || !bootDone) return;
 
-    const go = (href: string) => {
-      if (pathname !== href) router.replace(href);
-    };
-
-    if (!onboardingCompleted && pathname !== "/onboarding") {
-      go("/onboarding");
-      return;
+    let href: string | null = null;
+    if (!onboardingCompleted && pathname !== "/onboarding") href = "/onboarding";
+    else if (onboardingCompleted && !isAuthenticated && (isApp || pathname === "/profiles")) href = "/splash";
+    else if (isAuthenticated && focusPromptPending && isApp) href = "/focus";
+    else if (isAuthenticated && !focusPromptPending && !isComplete && (isAuthRoute || isFocus || pathname === "/")) {
+      href = "/app";
     }
-    if (onboardingCompleted && !isAuthenticated && (isApp || pathname === "/profiles")) {
-      go("/splash");
-      return;
-    }
-    if (isAuthenticated && focusPromptPending && isApp) {
-      go("/focus");
-      return;
-    }
-    if (isAuthenticated && !focusPromptPending && !isComplete && (isAuthRoute || isFocus || pathname === "/")) {
-      go("/app");
-    }
-  }, [
-    ready,
-    bootDone,
-    pathname,
-    onboardingCompleted,
-    isAuthenticated,
-    focusPromptPending,
-    router,
-    isApp,
-    isAuthRoute,
-    isFocus,
-    isComplete,
-  ]);
+    if (href && href !== pathname) router.replace(href);
+    // router identity changes after replace() and must not retrigger this effect.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ready, bootDone, pathname, onboardingCompleted, isAuthenticated, focusPromptPending, isApp, isAuthRoute, isFocus, isComplete]);
 
   if (!ready) {
     return <AnimatedSplash />;

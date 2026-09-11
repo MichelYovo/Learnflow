@@ -32,7 +32,6 @@ export default function AccueilPage() {
   const agendaSessions = useLearnFlowStore((s) => (Array.isArray(s.agendaSessions) ? s.agendaSessions : EMPTY_LIST));
   const flashcards = useLearnFlowStore((s) => (Array.isArray(s.flashcards) ? s.flashcards : EMPTY_LIST));
   const inbox = useLearnFlowStore((s) => (Array.isArray(s.inbox) ? s.inbox : EMPTY_LIST));
-  const ensureDailyChallenges = useLearnFlowStore((s) => s.ensureDailyChallenges);
   const { colors, darkMode } = useAppTheme();
   const catalogEpoch = usePublishedCatalog();
   const weekXp = ligue?.scoreHebdo ?? 0;
@@ -89,11 +88,11 @@ export default function AccueilPage() {
 
   useEffect(() => {
     try {
-      ensureDailyChallenges();
+      useLearnFlowStore.getState().ensureDailyChallenges();
     } catch {
       /* persisted rewards may be malformed */
     }
-  }, [ensureDailyChallenges]);
+  }, []);
 
   return (
     <div>

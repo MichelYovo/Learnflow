@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useEffect } from "react";
 import { useAppTheme } from "@/theme/useAppTheme";
 import type { IconName } from "./Icon";
@@ -64,7 +64,6 @@ function TabLink({
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname() ?? "";
-  const router = useRouter();
   const { colors, darkMode } = useAppTheme();
   const fullscreen =
     pathname.startsWith("/app/blitz") ||
@@ -74,10 +73,6 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     document.documentElement.classList.toggle("dark", darkMode);
   }, [darkMode]);
-
-  useEffect(() => {
-    SIDE_NAV.forEach((item) => router.prefetch(item.href));
-  }, [router]);
 
   if (fullscreen) {
     return <div className="h-dvh min-h-dvh overflow-hidden">{children}</div>;

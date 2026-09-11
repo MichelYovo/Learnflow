@@ -211,6 +211,34 @@ const FALLBACK_PROFILE: ProfileEleve = {
   hasPin: false,
 };
 
+/** Same input object → same output reference. A fresh object every call trips React 19 error #185. */
+const normalizedProfiles = new WeakMap<object, ProfileEleve>();
+
+function normalizeProfile(raw: Partial<ProfileEleve> | null | undefined): ProfileEleve {
+  if (!raw) return FALLBACK_PROFILE;
+  const cached = normalizedProfiles.get(raw);
+  if (cached) return cached;
+  const nom = String(raw.nom || FALLBACK_PROFILE.nom).trim();
+  const next: ProfileEleve = {
+    ...FALLBACK_PROFILE,
+    ...raw,
+    id: String(raw.id ?? ""),
+    compteId: String(raw.compteId ?? LOCAL_PARENT_ID),
+    nom,
+    firstName: String(raw.firstName || nom || FALLBACK_PROFILE.firstName).trim(),
+    classe: raw.classe || FALLBACK_PROFILE.classe,
+    xpTotale: Number(raw.xpTotale) || 0,
+    streak: Number(raw.streak) || 0,
+    rang: Number(raw.rang) || 1,
+    lessonsDone: Number(raw.lessonsDone) || 0,
+    badgesDebloques: Array.isArray(raw.badgesDebloques) ? raw.badgesDebloques : [],
+    avatarId: resolveAvatarId(raw.avatarId) ?? raw.avatarId,
+    hasPin: raw.hasPin ?? false,
+  };
+  normalizedProfiles.set(raw, next);
+  return next;
+}
+
 const DEFAULT_SETTINGS: AppSettings = {
   notifications: {
     studyReminders: true,
@@ -274,21 +302,7 @@ export const useLearnFlowStore = create<LearnFlowState>()(
 
       getActiveProfile: () => {
         const s = get();
-        const raw = s.profiles.find((p) => p.id === s.activeProfileId) ?? s.profiles[0] ?? FALLBACK_PROFILE;
-        return {
-          ...FALLBACK_PROFILE,
-          ...raw,
-          id: String(raw.id ?? ""),
-          compteId: String(raw.compteId ?? LOCAL_PARENT_ID),
-          nom: (raw.nom || FALLBACK_PROFILE.nom).trim(),
-          firstName: (raw.firstName || raw.nom || FALLBACK_PROFILE.firstName).trim(),
-          classe: raw.classe || FALLBACK_PROFILE.classe,
-          xpTotale: Number(raw.xpTotale) || 0,
-          streak: Number(raw.streak) || 0,
-          rang: Number(raw.rang) || 1,
-          lessonsDone: Number(raw.lessonsDone) || 0,
-          badgesDebloques: Array.isArray(raw.badgesDebloques) ? raw.badgesDebloques : [],
-        };
+        return normalizeProfile(s.profiles.find((p) => p.id === s.activeProfileId) ?? s.profiles[0] ?? FALLBACK_PROFILE);
       },
 
       login: () => set({ isAuthenticated: true }),

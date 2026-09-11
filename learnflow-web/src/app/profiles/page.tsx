@@ -8,6 +8,7 @@ export default function ProfilesPage() {
   const router = useRouter();
   useEffect(() => {
     router.replace("/login");
-  }, [router]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   return null;
 }
