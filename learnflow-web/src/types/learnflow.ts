@@ -136,7 +136,7 @@ export interface SuiviParental {
   dernierSMSNotification: string | null;
 }
 
-export type InboxKind = "study" | "streak" | "league" | "repos" | "system";
+export type InboxKind = "study" | "streak" | "league" | "repos" | "system" | "badge" | "challenge";
 
 export interface InboxNotification {
   id: string;

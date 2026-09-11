@@ -11,6 +11,7 @@ import NotificationBell from "../../components/NotificationBell";
 import LeagueBadge from "../../components/league/LeagueBadge";
 import MesMatieres from "../../components/MesMatieres";
 import ModeWorkSelector from "../../components/ModeWorkSelector";
+import DailyChallenges from "../../components/DailyChallenges";
 import FloatingChatbot from "../../components/FloatingChatbot";
 import { HomeSkeleton } from "../../components/ui";
 import { AGENDA_MODE_CONFIG, EMPTY_WEEK_CHART } from "../../data/mock";
@@ -39,6 +40,7 @@ export default function HomeScreen() {
   const agendaSessions = useLearnFlowStore((s) => s.agendaSessions);
   const flashcards = useLearnFlowStore((s) => s.flashcards);
   const inbox = useLearnFlowStore((s) => s.inbox);
+  const ensureDailyChallenges = useLearnFlowStore((s) => s.ensureDailyChallenges);
   const { colors, darkMode } = useAppTheme();
   const catalogEpoch = usePublishedCatalog();
   const weekXp = ligue.scoreHebdo;
@@ -80,6 +82,10 @@ export default function HomeScreen() {
     const t = setTimeout(() => setBooting(false), 650);
     return () => clearTimeout(t);
   }, []);
+
+  useEffect(() => {
+    ensureDailyChallenges();
+  }, [ensureDailyChallenges]);
 
   const unreadInbox = useMemo(() => inbox.filter((n) => !n.read), [inbox]);
   const greetingName = (profile.firstName || profile.nom || "").trim() || "toi";
@@ -184,6 +190,15 @@ export default function HomeScreen() {
           selectedMode={selectedMode}
           availability={modeAvailability}
           onSelectMode={openMode}
+        />
+
+        <DailyChallenges
+          onOpen={(id) => {
+            if (id === "flash") nav.navigate("Flashcards", { chapterId: continueLesson.chapterId });
+            else if (id === "qcm") nav.navigate("AssimilationQuiz", { chapterId: continueLesson.chapterId });
+            else if (id === "duel_win") nav.navigate("Blitz");
+            else nav.navigate("Course", { chapterId: continueLesson.chapterId });
+          }}
         />
 
         <MesMatieres

@@ -148,6 +148,14 @@ export default function CoursePage() {
         >
           Passer le quizz d&apos;assimilation
         </button>
+        <button
+          type="button"
+          onClick={() => router.push("/app/blitz")}
+          className="w-full rounded-[18px] border-2 py-3.5 text-sm font-extrabold"
+          style={{ background: colors.white, borderColor: colors.border, color: colors.textDark }}
+        >
+          Défi Blitz duo · plus d’XP
+        </button>
       </AppMain>
     </div>
   );

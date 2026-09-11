@@ -8,6 +8,7 @@ import type { IconName } from "./Icon";
 import FloatingChatbot from "./FloatingChatbot";
 import ParentConfirmModal from "./ParentConfirmModal";
 import AvatarGate from "./AvatarGate";
+import RewardToast from "./RewardToast";
 import AppTour from "./AppTour";
 
 const NAV: { href: string; label: string; icon: IconName; fill: string; outline: string }[] = [
@@ -159,6 +160,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
       <FloatingChatbot />
       <ParentConfirmModal />
+      <RewardToast />
       <AvatarGate />
       <AppTour />
     </div>

@@ -1,11 +1,12 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Avatar from "@/components/Avatar";
 import Icon from "@/components/Icon";
 import LeagueBadge from "@/components/LeagueBadge";
+import DailyChallenges from "@/components/DailyChallenges";
 import MesMatieres from "@/components/MesMatieres";
 import ModeWorkSelector from "@/components/ModeWorkSelector";
 import { EMPTY_WEEK_CHART } from "@/data/mock";
@@ -28,6 +29,7 @@ export default function AccueilPage() {
   const agendaSessions = useLearnFlowStore((s) => s.agendaSessions);
   const flashcards = useLearnFlowStore((s) => s.flashcards);
   const inbox = useLearnFlowStore((s) => s.inbox);
+  const ensureDailyChallenges = useLearnFlowStore((s) => s.ensureDailyChallenges);
   const { colors, darkMode } = useAppTheme();
   const catalogEpoch = usePublishedCatalog();
   const weekXp = ligue.scoreHebdo;
@@ -73,6 +75,10 @@ export default function AccueilPage() {
     else if (mode === "guide") router.push("/app/modes/guide");
     else router.push(`/app/modes/cramming?chapterId=${continueLesson.chapterId}`);
   };
+
+  useEffect(() => {
+    ensureDailyChallenges();
+  }, [ensureDailyChallenges]);
 
   return (
     <div>
@@ -128,6 +134,15 @@ export default function AccueilPage() {
         </div>
 
         <ModeWorkSelector selectedMode={selectedMode} guideInactive={dueCount === 0} onSelectMode={openMode} />
+
+        <DailyChallenges
+          onOpen={(id) => {
+            if (id === "flash") router.push(`/app/flashcards?chapterId=${continueLesson.chapterId}`);
+            else if (id === "qcm") router.push(`/app/quiz/assimilation/${continueLesson.chapterId}`);
+            else if (id === "duel_win") router.push("/app/blitz");
+            else router.push(`/app/cours/${continueLesson.chapterId}`);
+          }}
+        />
 
         <MesMatieres
           subjects={shortcuts}

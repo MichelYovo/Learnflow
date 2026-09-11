@@ -14,6 +14,8 @@ const KIND_META: Record<InboxKind, { icon: IconName; color: string; bg: string; 
   league: { icon: "trophy", color: "#D97706", bg: "#FFFBEB", label: "Ligue" },
   repos: { icon: "moon", color: "#8B5CF6", bg: "#F5F3FF", label: "Repos" },
   system: { icon: "bell", color: "#1677FF", bg: "#E6F4FF", label: "LearnFlow" },
+  badge: { icon: "award", color: "#F59E0B", bg: "#FFFBEB", label: "Badge" },
+  challenge: { icon: "target", color: "#1677FF", bg: "#E6F4FF", label: "Défi" },
 };
 
 function formatWhen(iso: string) {
@@ -39,6 +41,7 @@ export default function InboxPage() {
     markInboxRead(n.id);
     if (n.kind === "study") router.push("/app/agenda");
     else if (n.kind === "league") router.push("/app/ligue");
+    else if (n.kind === "challenge" || n.kind === "badge") router.push("/app");
   };
 
   return (
@@ -66,7 +69,7 @@ export default function InboxPage() {
           </div>
         ) : (
           inbox.map((n) => {
-            const meta = KIND_META[n.kind];
+            const meta = KIND_META[n.kind] ?? KIND_META.system;
             return (
               <button
                 key={n.id}

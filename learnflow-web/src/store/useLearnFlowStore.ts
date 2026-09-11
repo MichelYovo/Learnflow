@@ -35,6 +35,19 @@ import type { LeaguePlayer } from "@/data/mock";
 import { resolveAvatarId } from "@/data/avatars";
 import { applySelfRating } from "@/engine/spacedRepetition";
 import { xpAssimilation, xpBlitz } from "@/engine/xp";
+import {
+  CHALLENGES,
+  challengeById,
+  emptyRewards,
+  withDay,
+  nextStreak,
+  hasEaseBoost as easeActive,
+  DUEL_DRAW_XP,
+  DUEL_LOSE_XP,
+  type ChallengeId,
+  type DuelOutcome,
+  type RewardsState,
+} from "@/engine/rewards";
 import { createId, nowIso } from "@/lib/ids";
 import { AI_DAILY_QUOTA, remainingAiQuota, todayIsoDate } from "@/data/tutor";
 import { chapterActivityDone } from "@/data/programme";
@@ -61,6 +74,7 @@ interface LearnFlowState {
   agendaSessions: AgendaSession[];
   timetable: SchoolClass[];
   inbox: InboxNotification[];
+  rewards: RewardsState;
 
   getActiveProfile: () => ProfileEleve;
   login: () => void;
@@ -137,6 +151,12 @@ interface LearnFlowState {
   pushInbox: (item: { kind: InboxKind; title: string; body: string }) => void;
   markInboxRead: (id: string) => void;
   markAllInboxRead: () => void;
+  tickChallenge: (id: ChallengeId, amount?: number) => void;
+  unlockBadge: (key: string, body?: string) => boolean;
+  recordDuelResult: (code: string, outcome: DuelOutcome, rivalName: string) => { xp: number; badge?: string };
+  clearRewardToast: () => void;
+  hasEaseBoost: () => boolean;
+  ensureDailyChallenges: () => void;
   updateNotificationPrefs: (patch: Partial<AppSettings["notifications"]>) => void;
   updatePrivacyPrefs: (patch: Partial<AppSettings["privacy"]>) => void;
   setAppRating: (rating: NonNullable<AppSettings["appRating"]>) => void;
@@ -249,6 +269,7 @@ export const useLearnFlowStore = create<LearnFlowState>()(
       agendaSessions: INITIAL_AGENDA,
       timetable: INITIAL_TIMETABLE,
       inbox: INITIAL_INBOX,
+      rewards: emptyRewards(),
       settings: DEFAULT_SETTINGS,
 
       getActiveProfile: () => {
@@ -451,6 +472,7 @@ export const useLearnFlowStore = create<LearnFlowState>()(
           flashcards: get().flashcards.map((c) => (c.id === id ? applySelfRating(c, rating) : c)),
         });
         void import("@/lib/progressSync").then((m) => m.requestProgressSync());
+        get().tickChallenge("flash");
       },
 
       markChapterPart: (chapitreId, part) => {
@@ -476,6 +498,8 @@ export const useLearnFlowStore = create<LearnFlowState>()(
               : get().profiles,
         });
         void import("@/lib/progressSync").then((m) => m.requestProgressSync());
+        if (part === "essential") get().tickChallenge("lesson");
+        if (part === "details") get().tickChallenge("reader");
       },
 
       recordAssimilation: (chapitreId, score, total, firstTry) => {
@@ -490,22 +514,22 @@ export const useLearnFlowStore = create<LearnFlowState>()(
           void import("@/lib/cloud").then((m) =>
             m.trackActivity("quiz_complete", { chapterId: chapitreId, score, total, firstTry })
           );
-          if (challenger && !profile.badgesDebloques.includes("CHALLENGER")) {
-            set({
-              profiles: get().profiles.map((p) =>
-                p.id === profile.id
-                  ? { ...p, badgesDebloques: [...p.badgesDebloques, "CHALLENGER"] }
-                  : p
-              ),
-            });
+          if (challenger) {
+            get().unlockBadge("CHALLENGER", `${profile.firstName} a décroché le 10/10 au 1er essai.`);
             void get().envoyerSMSFelicitation(
               `${profile.firstName} a décroché le badge Challenger (10/10 au 1er essai) !`
             );
           } else {
+            get().pushInbox({
+              kind: "badge",
+              title: "10/10 validé",
+              body: `Bravo ${profile.firstName} ! +${xp} XP sur ce chapitre.`,
+            });
             void get().envoyerSMSFelicitation(
               `${profile.firstName} a validé le 10/10 sur un chapitre LearnFlow !`
             );
           }
+          get().tickChallenge("qcm");
         }
 
         const next = {
@@ -647,6 +671,119 @@ export const useLearnFlowStore = create<LearnFlowState>()(
             },
             ...get().inbox,
           ].slice(0, 50),
+        });
+      },
+
+      hasEaseBoost: () => easeActive(get().rewards),
+
+      clearRewardToast: () => {
+        set({ rewards: { ...withDay(get().rewards), lastUnlock: null } });
+      },
+
+      unlockBadge: (key, body) => {
+        const profile = get().getActiveProfile();
+        if (!profile.id || profile.badgesDebloques.includes(key)) return false;
+        const toast = {
+          title: `Nouveau badge : ${key}`,
+          body: body || `Tu as débloqué ${key}.`,
+          badge: key,
+        };
+        set({
+          profiles: get().profiles.map((p) =>
+            p.id === profile.id ? { ...p, badgesDebloques: [...p.badgesDebloques, key] } : p,
+          ),
+          rewards: { ...withDay(get().rewards), lastUnlock: toast },
+        });
+        get().pushInbox({ kind: "badge", title: toast.title, body: toast.body });
+        return true;
+      },
+
+      tickChallenge: (id, amount = 1) => {
+        const def = challengeById(id);
+        const rewards0 = withDay(get().rewards);
+        if (rewards0.completed.includes(id)) return;
+        const profile = get().getActiveProfile();
+        const streak = nextStreak(profile.streak, rewards0.lastStreakDay);
+        const progressVal = (rewards0.progress[id] ?? 0) + amount;
+        const reached = progressVal >= def.target;
+        let rewards: RewardsState = {
+          ...rewards0,
+          progress: { ...rewards0.progress, [id]: progressVal },
+          lastStreakDay: streak.lastStreakDay,
+        };
+        if (reached) {
+          rewards = {
+            ...rewards,
+            completed: [...rewards.completed, id],
+            lifetimeCompleted: rewards.lifetimeCompleted + 1,
+            easeBoostUntil: Math.max(rewards.easeBoostUntil, Date.now() + def.easeMinutes * 60_000),
+            lastUnlock: {
+              title: `Défi réussi : ${def.title}`,
+              body: `+${def.xp} XP. Tes prochaines questions sont plus faciles.`,
+              xp: def.xp,
+              badge: def.badge,
+            },
+          };
+        }
+        set({
+          rewards,
+          profiles: get().profiles.map((p) => (p.id === profile.id ? { ...p, streak: streak.streak } : p)),
+        });
+        if (streak.streak >= 7) get().unlockBadge("Série 7", "7 jours d’affilée. Continue comme ça.");
+        if (get().ligue.nomLigue === "Diamant") get().unlockBadge("Diamant", "Tu es en ligue Diamant.");
+        if (!reached) return;
+        get().accumulerXP(def.xp);
+        get().pushInbox({
+          kind: "challenge",
+          title: `Défi réussi : ${def.title}`,
+          body: `+${def.xp} XP. Questions plus faciles pendant ${def.easeMinutes} min.`,
+        });
+        if (def.badge) get().unlockBadge(def.badge, `Défi « ${def.title} » validé.`);
+        if (get().rewards.lifetimeCompleted >= 3) {
+          get().unlockBadge("Étoile d'Or", "3 défis réussis. Tu es lancé.");
+        }
+      },
+
+      recordDuelResult: (code, outcome, rivalName) => {
+        const rewards = withDay(get().rewards);
+        if (rewards.awardedDuels.includes(code)) return { xp: 0 };
+        set({ rewards: { ...rewards, awardedDuels: [code, ...rewards.awardedDuels].slice(0, 40) } });
+        if (outcome === "win") {
+          get().tickChallenge("duel_win");
+          get().pushInbox({
+            kind: "league",
+            title: "Tu as gagné le Blitz duo",
+            body: `Victoire contre ${rivalName}. +XP et badge Blitz King.`,
+          });
+          return { xp: challengeById("duel_win").xp, badge: "Blitz King" };
+        }
+        const xp = outcome === "draw" ? DUEL_DRAW_XP : DUEL_LOSE_XP;
+        get().accumulerXP(xp);
+        get().pushInbox({
+          kind: "league",
+          title: outcome === "draw" ? "Match nul en Blitz duo" : "Le rival a gagné",
+          body:
+            outcome === "draw"
+              ? `Même score que ${rivalName}. +${xp} XP.`
+              : `${rivalName} a pris l’arène. +${xp} XP — reviens le battre.`,
+        });
+        return { xp };
+      },
+
+      ensureDailyChallenges: () => {
+        const rewards = withDay(get().rewards);
+        if (rewards.notifiedDay === rewards.day) {
+          if (get().rewards.day !== rewards.day) set({ rewards });
+          return;
+        }
+        const open = CHALLENGES.filter((c) => !rewards.completed.includes(c.id));
+        set({ rewards: { ...rewards, notifiedDay: rewards.day } });
+        get().pushInbox({
+          kind: "challenge",
+          title: "Défis du jour",
+          body: open.length
+            ? open.map((c) => `• ${c.title} (+${c.xp} XP)`).join("\n")
+            : "Tous les défis du jour sont faits. Bravo.",
         });
       },
 
@@ -793,6 +930,7 @@ export const useLearnFlowStore = create<LearnFlowState>()(
             agendaSessions: Array.isArray(p.agendaSessions) ? p.agendaSessions : current.agendaSessions,
             timetable: Array.isArray(p.timetable) ? p.timetable : current.timetable,
             inbox: Array.isArray(p.inbox) ? p.inbox : current.inbox,
+            rewards: withDay(p.rewards),
             settings: {
               ...DEFAULT_SETTINGS,
               ...settingsPatch,
@@ -827,6 +965,7 @@ export const useLearnFlowStore = create<LearnFlowState>()(
         agendaSessions: s.agendaSessions,
         timetable: s.timetable,
         inbox: s.inbox,
+        rewards: s.rewards,
         settings: s.settings,
       }),
     }

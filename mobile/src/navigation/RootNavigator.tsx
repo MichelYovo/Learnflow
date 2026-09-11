@@ -7,6 +7,7 @@ import { useLearnFlowStore } from "../store/useLearnFlowStore";
 import LearnFlowTabBar from "../components/TabBar";
 import AvatarGate from "../components/AvatarGate";
 import ParentConfirmModal from "../components/ParentConfirmModal";
+import RewardToast from "../components/RewardToast";
 import { useAppTheme } from "../theme/useAppTheme";
 import { appNavFonts } from "../theme/typography";
 import type { AuthStackParamList, MainTabParamList, RootStackParamList } from "./types";
@@ -117,6 +118,7 @@ function MainTabs() {
     </Tab.Navigator>
     <AvatarGate />
     <ParentConfirmModal />
+    <RewardToast />
     </>
   );
 }

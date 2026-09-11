@@ -172,6 +172,12 @@ export default function CourseScreen({ navigation, route }: Props) {
         >
           <Text style={styles.primaryText}>Passer le quizz d'assimilation</Text>
         </Pressable>
+        <Pressable
+          style={[styles.challengeBtn, { backgroundColor: colors.white, borderColor: colors.border }]}
+          onPress={() => navigation.navigate("Blitz")}
+        >
+          <Text style={[styles.challengeBtnText, { color: colors.textDark }]}>Défi Blitz duo · plus d’XP</Text>
+        </Pressable>
       </ScrollView>
     </SafeAreaView>
   );
@@ -235,4 +241,6 @@ const styles = StyleSheet.create({
   schemaBtnText: { fontFamily: appFont, fontWeight: "800", fontSize: 15 },
   primary: { borderRadius: 18, paddingVertical: 18, alignItems: "center" },
   primaryText: { fontFamily: appFont, color: "#FFFFFF", fontWeight: "800", fontSize: 17 },
+  challengeBtn: { borderRadius: 18, paddingVertical: 14, alignItems: "center", borderWidth: 2 },
+  challengeBtnText: { fontFamily: appFont, fontWeight: "800", fontSize: 14 },
 });

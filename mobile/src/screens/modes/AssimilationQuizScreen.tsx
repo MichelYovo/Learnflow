@@ -8,6 +8,7 @@ import QuizPlay from "../../components/quiz/QuizPlay";
 import SessionRecap, { useSessionStats } from "../../components/SessionRecap";
 import Spira from "../../components/Spira";
 import { questionsForChapter } from "../../data/modeContent";
+import { preferEasierQcm } from "../../engine/rewards";
 import { usePublishedCatalog } from "../../data/publishedCache";
 import { playSfx, preloadSfx } from "../../lib/sfx";
 import { useLearnFlowStore } from "../../store/useLearnFlowStore";
@@ -21,7 +22,8 @@ export default function AssimilationQuizScreen({ navigation, route }: Props) {
   const loopErrors = route.params?.loopErrors === true;
   usePublishedCatalog();
   const classe = useLearnFlowStore((s) => s.getActiveProfile()?.classe);
-  const bank = questionsForChapter(chapterId, classe);
+  const ease = useLearnFlowStore((s) => s.hasEaseBoost());
+  const bank = preferEasierQcm(questionsForChapter(chapterId, classe), ease);
   const [queue, setQueue] = useState(bank);
   const questions = queue;
   const recordAssimilation = useLearnFlowStore((s) => s.recordAssimilation);

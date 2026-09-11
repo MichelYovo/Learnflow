@@ -168,9 +168,12 @@ export default function LigueScreen() {
           </View>
 
           <Text style={[styles.section, { color: colors.textDark, marginTop: 8 }]}>Succès</Text>
+          <Text style={[styles.hint, { color: colors.textMuted, marginTop: -4 }]}>
+            Ils se débloquent tout seuls : 10/10, défis, Blitz duo, série de 7 jours.
+          </Text>
           <View style={styles.badges}>
             {ACHIEVEMENTS.map((b) => {
-              const earned = badgesDebloques.includes(b.key) || ["Série 7", "Blitz King", "Lecteur Pro"].includes(b.key);
+              const earned = badgesDebloques.includes(b.key);
               return (
                 <View
                   key={b.label}

@@ -59,6 +59,7 @@ const DIFF_META: Record<DifficulteFlash, { color: string; hint: string }> = {
 
 export default function BlitzScreen({ navigation, route }: Props) {
   const recordBlitz = useLearnFlowStore((s) => s.recordBlitz);
+  const recordDuelResult = useLearnFlowStore((s) => s.recordDuelResult);
   const setBlitzDifficulte = useLearnFlowStore((s) => s.setBlitzDifficulte);
   const incoming = route.params?.duelCode ?? route.params?.challengeCode;
   const startDeck = useMemo(() => {
@@ -84,11 +85,14 @@ export default function BlitzScreen({ navigation, route }: Props) {
   const [score, setScore] = useState(0);
   const [answered, setAnswered] = useState(0);
   const [xp, setXp] = useState(0);
+  const [duelBonus, setDuelBonus] = useState(0);
+  const [duelBadge, setDuelBadge] = useState<string | undefined>();
   const [burstKey, setBurstKey] = useState(0);
   const [ringing, setRinging] = useState(false);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const endedRef = useRef(false);
   const warnedRef = useRef(false);
+  const duelAwarded = useRef(false);
   const duelSessionRef = useRef<BlitzDuelSession | null>(null);
   const playStartedFor = useRef<number | null>(null);
   const autoJoinRef = useRef(false);
@@ -103,6 +107,9 @@ export default function BlitzScreen({ navigation, route }: Props) {
     setDuel(null);
     setCountLeft(3);
     playStartedFor.current = null;
+    duelAwarded.current = false;
+    setDuelBonus(0);
+    setDuelBadge(undefined);
   };
 
   useEffect(() => {
@@ -239,6 +246,18 @@ export default function BlitzScreen({ navigation, route }: Props) {
       void duelSessionRef.current?.report(score, answered, true);
     }
   }, [phase]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (phase !== "done" || !duel) return;
+    const rivalScore = duel.rival?.score;
+    const rivalDone = duel.rival?.done;
+    if (rivalScore == null || !rivalDone || duelAwarded.current) return;
+    const outcome = score > rivalScore ? "win" : score < rivalScore ? "lose" : "draw";
+    duelAwarded.current = true;
+    const extra = recordDuelResult(duel.code, outcome, duel.rival?.name ?? "Rival");
+    setDuelBonus(extra.xp);
+    setDuelBadge(extra.badge);
+  }, [phase, duel, score, recordDuelResult]);
 
   useEffect(() => {
     if (!duel || (phase !== "playing" && phase !== "done")) return;
@@ -549,7 +568,19 @@ export default function BlitzScreen({ navigation, route }: Props) {
             {score}/{answered}
           </Text>
           <Text style={styles.doneSub}>
-            {duel ? "Duel Blitz" : survived ? "Le mix n'a pas eu ta peau." : "Trop lent sur cette série."} · {deck.difficulte} · +{xp} XP
+            {duel
+              ? duelOutcome === "pending"
+                ? "En attente du score rival."
+                : duelOutcome === "win"
+                  ? `Gagnant : ${duel.me.name}`
+                  : duelOutcome === "lose"
+                    ? `Gagnant : ${duel.rival?.name ?? "Rival"}`
+                    : "Match nul"
+              : survived
+                ? "Le mix n'a pas eu ta peau."
+                : "Trop lent sur cette série."}{" "}
+            · {deck.difficulte} · +{xp + duelBonus} XP
+            {duelBadge ? ` · Badge ${duelBadge}` : ""}
           </Text>
           {duel ? <Text style={styles.doneCode}>{duel.code}</Text> : null}
           {duel ? (

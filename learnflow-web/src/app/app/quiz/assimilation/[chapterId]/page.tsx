@@ -7,6 +7,7 @@ import QuizPlay from "@/components/quiz/QuizPlay";
 import SessionRecap, { useSessionStats } from "@/components/SessionRecap";
 import Spira from "@/components/Spira";
 import { questionsForChapter } from "@/data/modeContent";
+import { preferEasierQcm } from "@/engine/rewards";
 import { usePublishedCatalog } from "@/data/publishedCache";
 import { playSfx, preloadSfx } from "@/lib/sfx";
 import { useLearnFlowStore } from "@/store/useLearnFlowStore";
@@ -20,7 +21,11 @@ function QuizInner() {
   const { colors } = useAppTheme();
   const catalogEpoch = usePublishedCatalog();
   const classe = useLearnFlowStore((s) => s.getActiveProfile()?.classe);
-  const bank = useMemo(() => questionsForChapter(chapterId, classe), [chapterId, classe, catalogEpoch]);
+  const ease = useLearnFlowStore((s) => s.hasEaseBoost());
+  const bank = useMemo(
+    () => preferEasierQcm(questionsForChapter(chapterId, classe), ease),
+    [chapterId, classe, catalogEpoch, ease],
+  );
   const [queue, setQueue] = useState(bank);
   const recordAssimilation = useLearnFlowStore((s) => s.recordAssimilation);
   const lockGrandQuizzOneHour = useLearnFlowStore((s) => s.lockGrandQuizzOneHour);

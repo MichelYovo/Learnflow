@@ -113,6 +113,7 @@ function BlitzInner() {
   const router = useRouter();
   const search = useSearchParams();
   const recordBlitz = useLearnFlowStore((s) => s.recordBlitz);
+  const recordDuelResult = useLearnFlowStore((s) => s.recordDuelResult);
   const setBlitzDifficulte = useLearnFlowStore((s) => s.setBlitzDifficulte);
   const shareOk = useLearnFlowStore((s) => s.settings.privacy.shareBlitzScores);
   const incomingDuel = search.get("duel") ?? undefined;
@@ -137,6 +138,8 @@ function BlitzInner() {
   const [score, setScore] = useState(0);
   const [answered, setAnswered] = useState(0);
   const [xp, setXp] = useState(0);
+  const [duelBonus, setDuelBonus] = useState(0);
+  const [duelBadge, setDuelBadge] = useState<string | undefined>();
   const [ringing, setRinging] = useState(false);
   const q = deck.questions[qIdx % deck.questions.length];
   const critical = phase === "playing" && timeLeft <= 10;
@@ -147,6 +150,7 @@ function BlitzInner() {
   const answeredRef = useRef(answered);
   const duelSessionRef = useRef<BlitzDuelSession | null>(null);
   const playStartedFor = useRef<number | null>(null);
+  const duelAwarded = useRef(false);
   const autoJoinRef = useRef(false);
   scoreRef.current = score;
   answeredRef.current = answered;
@@ -157,6 +161,9 @@ function BlitzInner() {
     setDuel(null);
     setCountLeft(3);
     playStartedFor.current = null;
+    duelAwarded.current = false;
+    setDuelBonus(0);
+    setDuelBadge(undefined);
   };
 
   useEffect(() => {
@@ -299,6 +306,18 @@ function BlitzInner() {
     if (!duel || (phase !== "playing" && phase !== "done")) return;
     void duelSessionRef.current?.report(score, answered, phase === "done");
   }, [score, answered, phase, duel]);
+
+  useEffect(() => {
+    if (phase !== "done" || !duel) return;
+    const rivalScore = duel.rival?.score;
+    const rivalDone = duel.rival?.done;
+    if (rivalScore == null || !rivalDone || duelAwarded.current) return;
+    const outcome = score > rivalScore ? "win" : score < rivalScore ? "lose" : "draw";
+    duelAwarded.current = true;
+    const extra = recordDuelResult(duel.code, outcome, duel.rival?.name ?? "Rival");
+    setDuelBonus(extra.xp);
+    setDuelBadge(extra.badge);
+  }, [phase, duel, score, recordDuelResult]);
 
   const pick = (i: number) => {
     if (selected !== null || phase !== "playing" || ringing) return;
@@ -562,7 +581,19 @@ function BlitzInner() {
             {score}/{answered}
           </p>
           <p className="mt-2 text-sm font-semibold text-red-200/70 sm:text-base md:text-lg">
-            {duel ? "Duel Blitz" : survived ? "Le mix n'a pas eu ta peau." : "Trop lent sur cette série."} · {deck.difficulte} · +{xp} XP
+            {duel
+              ? duelOutcome === "pending"
+                ? "En attente du score rival."
+                : duelOutcome === "win"
+                  ? `Gagnant : ${duel.me.name}`
+                  : duelOutcome === "lose"
+                    ? `Gagnant : ${duel.rival?.name ?? "Rival"}`
+                    : "Match nul"
+              : survived
+                ? "Le mix n'a pas eu ta peau."
+                : "Trop lent sur cette série."}{" "}
+            · {deck.difficulte} · +{xp + duelBonus} XP
+            {duelBadge ? ` · Badge ${duelBadge}` : ""}
           </p>
           {duel ? <p className="mt-3 break-all font-black tracking-[0.18em] text-amber-300">{duel.code}</p> : null}
           <div className="mt-6 flex w-full flex-col gap-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] sm:mt-8 sm:gap-3">

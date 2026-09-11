@@ -310,9 +310,12 @@ export default function LiguePage() {
             })}
           </div>
           <p className="pt-4 text-[18px] font-extrabold">Succès</p>
+          <p className="text-xs font-semibold" style={{ color: colors.textMuted }}>
+            Ils se débloquent tout seuls : 10/10, défis, Blitz duo, série de 7 jours.
+          </p>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
             {ACHIEVEMENTS.map((b) => {
-              const earned = badges.includes(b.key) || ["Série 7", "Blitz King", "Lecteur Pro"].includes(b.key);
+              const earned = badges.includes(b.key);
               return (
                 <div
                   key={b.label}

@@ -18,6 +18,8 @@ const KIND_META: Record<InboxKind, { icon: string; color: string; bg: string; la
   league: { icon: "trophy", color: "#D97706", bg: "#FFFBEB", label: "Ligue" },
   repos: { icon: "moon", color: "#8B5CF6", bg: "#F5F3FF", label: "Repos" },
   system: { icon: "bell", color: "#1677FF", bg: "#E6F4FF", label: "LearnFlow" },
+  badge: { icon: "award", color: "#F59E0B", bg: "#FFFBEB", label: "Badge" },
+  challenge: { icon: "target", color: "#1677FF", bg: "#E6F4FF", label: "Défi" },
 };
 
 function formatWhen(iso: string) {
@@ -42,6 +44,7 @@ export default function NotificationsInboxScreen({ navigation }: Props) {
     markInboxRead(n.id);
     if (n.kind === "study") navigation.navigate("Agenda");
     else if (n.kind === "league") navigation.navigate("Main", { screen: "Ligue" });
+    else if (n.kind === "challenge" || n.kind === "badge") navigation.navigate("Main", { screen: "Accueil" });
   };
 
   return (
@@ -69,7 +72,7 @@ export default function NotificationsInboxScreen({ navigation }: Props) {
           </View>
         ) : (
           inbox.map((n) => {
-            const meta = KIND_META[n.kind];
+            const meta = KIND_META[n.kind] ?? KIND_META.system;
             return (
               <Pressable
                 key={n.id}
