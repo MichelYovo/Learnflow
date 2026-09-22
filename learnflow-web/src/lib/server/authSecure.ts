@@ -147,13 +147,30 @@ function otpPlainText(code: string) {
   return `LearnFlow — code de confirmation : ${code}\nValable 10 minutes. Aucun lien à cliquer. Ne partage ce code avec personne.`;
 }
 
+function emailOf(raw: string, fallback: string) {
+  const trimmed = raw.trim();
+  const bracket = trimmed.match(/<([^>]+)>/)?.[1]?.trim();
+  if (bracket?.includes("@")) return bracket;
+  if (trimmed.includes("@") && !trimmed.includes(" ")) return trimmed;
+  return fallback;
+}
+
+function brandedFrom(raw: string, fallbackEmail: string) {
+  return { name: "LearnFlow", address: emailOf(raw, fallbackEmail) };
+}
+
+function brandedFromHeader(raw: string, fallbackEmail: string) {
+  const { name, address } = brandedFrom(raw, fallbackEmail);
+  return `${name} <${address}>`;
+}
+
 async function sendSmtp(to: string, subject: string, html: string, text?: string): Promise<{ ok: boolean; error?: string }> {
   const user = (process.env.SMTP_USER ?? "").trim();
   const pass = (process.env.SMTP_PASS ?? "").replace(/\s/g, "").trim();
   if (!user || !pass) return { ok: false, error: "no_smtp" };
   const host = (process.env.SMTP_HOST ?? "smtp.gmail.com").trim();
   const preferred = Number(process.env.SMTP_PORT || 465);
-  const from = (process.env.SMTP_FROM ?? `LearnFlow <${user}>`).trim();
+  const from = brandedFrom(process.env.SMTP_FROM?.trim() || user, user);
   const ports = preferred === 587 ? [587, 465] : [465, 587];
   let lastError = "smtp_error";
   for (const port of ports) {
@@ -168,7 +185,14 @@ async function sendSmtp(to: string, subject: string, html: string, text?: string
         socketTimeout: 20000,
         auth: { user, pass },
       });
-      await transporter.sendMail({ from, to, subject, html, text: text || subject });
+      await transporter.sendMail({
+        from,
+        to,
+        subject,
+        html,
+        text: text || subject,
+        replyTo: from,
+      });
       return { ok: true };
     } catch (err) {
       lastError = err instanceof Error ? err.message : "smtp_error";
@@ -183,10 +207,10 @@ async function sendHtmlEmail(
   html: string,
   text?: string,
 ): Promise<{ ok: boolean; error?: string; via?: string }> {
-  const smtp = await sendSmtp(to, subject, html, text);
-  if (smtp.ok) return { ok: true, via: "smtp" };
   const resend = await sendResend(to, subject, html);
   if (resend.ok) return { ok: true, via: "resend" };
+  const smtp = await sendSmtp(to, subject, html, text);
+  if (smtp.ok) return { ok: true, via: "smtp" };
   const smtpHint = smtp.error && smtp.error !== "no_smtp" ? smtp.error : "";
   return { ok: false, error: smtpHint || resend.error };
 }
@@ -199,7 +223,7 @@ async function sendResend(to: string, subject: string, html: string): Promise<{ 
       error: "Ajoute RESEND_API_KEY dans learnflow-web/.env.local pour envoyer le code à 6 chiffres.",
     };
   }
-  const from = (process.env.RESEND_FROM ?? "LearnFlow <noreply@learnflow.tg>").trim();
+  const from = brandedFromHeader(process.env.RESEND_FROM?.trim() || "LearnFlow <noreply@learnflow.tg>", "noreply@learnflow.tg");
   const res = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: {

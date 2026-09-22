@@ -45,6 +45,7 @@ export type CloudProgress = {
   xpTotale: number;
   streak: number;
   lessonsDone: number;
+  studyMs?: number;
   badgesDebloques: string[];
   avatarId?: string | null;
   ligue: CloudLigueState;

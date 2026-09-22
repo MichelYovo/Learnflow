@@ -11,10 +11,11 @@ import MesMatieres from "@/components/MesMatieres";
 import ModeWorkSelector from "@/components/ModeWorkSelector";
 import { EMPTY_WEEK_CHART } from "@/data/mock";
 import { usePublishedCatalog } from "@/data/publishedCache";
-import { continueLessonForClass, continueLessonForLearner, programmeForLearner, subjectShortcutsForLearner } from "@/data/programme";
+import { continueLessonForClass, continueLessonForLearner, programmeForLearner, subjectShortcutsForLearner, chapterActivityDone } from "@/data/programme";
 import WeeklyReviewBar from "@/components/WeeklyReviewBar";
 import WidgetErrorBoundary from "@/components/WidgetErrorBoundary";
 import { cardsDueToday } from "@/engine/spacedRepetition";
+import { formatStudyHours } from "@/engine/rewards";
 import { useLearnFlowStore } from "@/store/useLearnFlowStore";
 import { useAppTheme } from "@/theme/useAppTheme";
 import { MODE_DEFAULT_TOOLS, appModeToSessionMode, type AppMode } from "@/types/modes";
@@ -38,6 +39,16 @@ export default function AccueilPage() {
   const catalogEpoch = usePublishedCatalog();
   const weekXp = ligue?.scoreHebdo ?? 0;
   const weekChart = EMPTY_WEEK_CHART;
+  const goalChapters = useLearnFlowStore((s) => s.settings.weeklyGoalChapters ?? 5);
+  const goalHours = useLearnFlowStore((s) => s.settings.weeklyGoalHours ?? 3);
+  const weekChaptersDone = useMemo(() => {
+    return Object.values(chapterProgress).filter((p) => p && chapterActivityDone(p) >= 3).length;
+  }, [chapterProgress]);
+  const weekStudyMs = profile?.studyMs ?? 0;
+  const goalProgress =
+    (Math.min(1, weekChaptersDone / Math.max(1, goalChapters)) +
+      Math.min(1, weekStudyMs / Math.max(1, goalHours * 3_600_000))) /
+    2;
   const continueLesson = useMemo(() => {
     try {
       return continueLessonForLearner(profile?.classe, profile?.id, chapterProgress);
@@ -211,7 +222,7 @@ export default function AccueilPage() {
           <div className="mt-5 flex">
             {[
               [String(totalDone), "leçons", colors.textDark],
-              ["0h", "d'étude", colors.textDark],
+              [formatStudyHours(profile?.studyMs ?? 0), "d'étude", colors.textDark],
               [`+${weekXp}`, "XP", "#F59E0B"],
             ].map(([v, l, c], i) => (
               <div key={l} className={`flex flex-1 flex-col items-center ${i < 2 ? "border-r" : ""}`} style={{ borderColor: colors.border }}>
@@ -222,6 +233,45 @@ export default function AccueilPage() {
               </div>
             ))}
           </div>
+
+          <div className="mt-5 rounded-2xl p-3.5" style={{ background: colors.surfaceAlt }}>
+            <div className="mb-2 flex items-center justify-between gap-2">
+              <p className="text-[13px] font-extrabold" style={{ color: colors.textDark }}>
+                Objectif de la semaine
+              </p>
+              <button
+                type="button"
+                className="text-[12px] font-bold"
+                style={{ color: colors.primary }}
+                onClick={() => {
+                  const chapters = window.prompt("Chapitres à valider cette semaine ?", String(goalChapters));
+                  const hours = window.prompt("Heures d'étude cette semaine ?", String(goalHours));
+                  if (chapters || hours) {
+                    useLearnFlowStore.getState().setWeeklyGoals({
+                      weeklyGoalChapters: chapters ? Number(chapters) : goalChapters,
+                      weeklyGoalHours: hours ? Number(hours) : goalHours,
+                    });
+                  }
+                }}
+              >
+                Modifier
+              </button>
+            </div>
+            <p className="text-[12px] font-semibold" style={{ color: colors.textMuted }}>
+              {Math.min(weekChaptersDone, goalChapters)}/{goalChapters} chapitres ·{" "}
+              {formatStudyHours(Math.min(weekStudyMs, goalHours * 3_600_000))} / {goalHours}h
+            </p>
+            <div className="mt-2.5 h-2 overflow-hidden rounded-full" style={{ background: colors.border }}>
+              <div
+                className="h-full rounded-full transition-[width]"
+                style={{
+                  width: `${Math.min(100, Math.round(goalProgress * 100))}%`,
+                  background: colors.primary,
+                }}
+              />
+            </div>
+          </div>
+
           <div className="mt-5 flex h-[88px] items-end">
             {weekChart.map((b, i) => (
               <div key={`${b.label}-${i}`} className="flex flex-1 flex-col items-center justify-end">

@@ -18,6 +18,7 @@ import { AGENDA_MODE_CONFIG, EMPTY_WEEK_CHART } from "../../data/mock";
 import { usePublishedCatalog } from "../../data/publishedCache";
 import { continueLessonForLearner, programmeForLearner, subjectShortcutsForLearner } from "../../data/programme";
 import { cardsDueToday } from "../../engine/spacedRepetition";
+import { formatStudyHours } from "../../engine/rewards";
 import { useLearnFlowStore } from "../../store/useLearnFlowStore";
 import { colors } from "../../theme/colors";
 import { useAppTheme } from "../../theme/useAppTheme";
@@ -252,7 +253,7 @@ export default function HomeScreen() {
             </View>
             <View style={[styles.statCell, styles.statBorder, { borderRightColor: darkMode ? colors.border : "#E5E7EB" }]}>
               <Text style={[styles.statValue, { color: darkMode ? colors.textDark : "#0F172A" }]}>
-                { "0h" }
+                {formatStudyHours(profile?.studyMs ?? 0)}
               </Text>
               <Text style={styles.statLabel}>d'étude</Text>
             </View>

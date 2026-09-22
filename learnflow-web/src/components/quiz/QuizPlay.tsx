@@ -18,6 +18,10 @@ export type QuizPlayProps = {
   onBack: () => void;
   onContinue: () => void;
   explanation?: string;
+  /** Indice pédagogique (boost défi) — affiché avant réponse si fourni. */
+  freeHint?: string | null;
+  onRevealHint?: () => void;
+  hintAvailable?: boolean;
   optionNotes?: string[];
   reviewLabel?: string;
   onReview?: () => void;
@@ -44,6 +48,9 @@ export default function QuizPlay({
   onBack,
   onContinue,
   explanation,
+  freeHint,
+  onRevealHint,
+  hintAvailable,
   reviewLabel,
   onReview,
   headerRight,
@@ -110,6 +117,27 @@ export default function QuizPlay({
           </p>
         ) : null}
         <h1 className="mt-2 text-[clamp(1.15rem,4vw+0.6rem,1.5rem)] font-extrabold leading-snug">{question}</h1>
+
+        {!answered && hintAvailable && !freeHint && onRevealHint ? (
+          <button
+            type="button"
+            onClick={onRevealHint}
+            className="mt-3 inline-flex items-center gap-2 self-start rounded-full border px-3 py-1.5 text-[12px] font-extrabold"
+            style={{ borderColor: colors.hgBorder, background: colors.hgBg, color: colors.accent }}
+          >
+            <Icon name="lightbulb" size={14} color={colors.accent} />
+            Indice gratuit
+          </button>
+        ) : null}
+        {freeHint && !answered ? (
+          <p
+            role="status"
+            className="mt-3 rounded-2xl border px-3 py-2.5 text-[13px] font-semibold leading-snug"
+            style={{ borderColor: colors.hgBorder, background: colors.hgBg, color: colors.accent }}
+          >
+            {freeHint}
+          </p>
+        ) : null}
 
         <div className="mt-6 flex flex-col gap-3 pb-4">
           {options.map((opt, i) => {

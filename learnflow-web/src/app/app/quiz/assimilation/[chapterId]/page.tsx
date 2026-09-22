@@ -7,7 +7,7 @@ import QuizPlay from "@/components/quiz/QuizPlay";
 import SessionRecap, { useSessionStats } from "@/components/SessionRecap";
 import Spira from "@/components/Spira";
 import { questionsForChapter } from "@/data/modeContent";
-import { preferEasierQcm } from "@/engine/rewards";
+import { pedagogicalHint } from "@/engine/rewards";
 import { usePublishedCatalog } from "@/data/publishedCache";
 import { playSfx, preloadSfx } from "@/lib/sfx";
 import { useLearnFlowStore } from "@/store/useLearnFlowStore";
@@ -22,11 +22,8 @@ function QuizInner() {
   const { colors } = useAppTheme();
   const catalogEpoch = usePublishedCatalog();
   const classe = useLearnFlowStore((s) => s.getActiveProfile()?.classe);
-  const ease = useLearnFlowStore((s) => s.hasEaseBoost());
-  const bank = useMemo(
-    () => preferEasierQcm(questionsForChapter(chapterId, classe), ease),
-    [chapterId, classe, catalogEpoch, ease],
-  );
+  const hintBoost = useLearnFlowStore((s) => s.hasHintBoost());
+  const bank = useMemo(() => questionsForChapter(chapterId, classe), [chapterId, classe, catalogEpoch]);
   const [queue, setQueue] = useState(bank);
   const recordAssimilation = useLearnFlowStore((s) => s.recordAssimilation);
   const lockGrandQuizzOneHour = useLearnFlowStore((s) => s.lockGrandQuizzOneHour);
@@ -36,6 +33,7 @@ function QuizInner() {
   const [selected, setSelected] = useState<number | null>(null);
   const [score, setScore] = useState(0);
   const [done, setDone] = useState(false);
+  const [hintShown, setHintShown] = useState<string | null>(null);
   const [result, setResult] = useState<{ xp: number; unlocked: boolean; challenger: boolean } | null>(null);
   const q = queue[current];
   const recapStats = useSessionStats({
@@ -59,6 +57,7 @@ function QuizInner() {
     } else {
       setCurrent((c) => c + 1);
       setSelected(null);
+      setHintShown(null);
     }
   };
 
@@ -216,6 +215,9 @@ function QuizInner() {
       onBack={() => router.back()}
       onContinue={advance}
       explanation={q.explicationPedagogique}
+      freeHint={hintShown}
+      hintAvailable={hintBoost && !hintShown}
+      onRevealHint={() => setHintShown(pedagogicalHint(q.explicationPedagogique))}
       reviewLabel="Revoir le cours"
       onReview={() => router.push(`/app/cours/${chapterId}`)}
       headerRight={<Spira scene="quiz.play" size={36} message="" animated={false} />}

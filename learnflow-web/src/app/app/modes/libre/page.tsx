@@ -1,11 +1,12 @@
 "use client";
 
-import { Suspense } from "react";
+import { Suspense, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Icon from "@/components/Icon";
 import Spira from "@/components/Spira";
 import { AppMain, ScreenHeader, CardButton } from "@/components/ui";
 import { chapterHas3dImage } from "@/data/schemas3d";
+import { searchChapters } from "@/data/programme";
 import { usePublishedCatalog } from "@/data/publishedCache";
 import { useLearnFlowStore } from "@/store/useLearnFlowStore";
 import { useAppTheme } from "@/theme/useAppTheme";
@@ -15,8 +16,17 @@ function LibreInner() {
   const router = useRouter();
   const { colors } = useAppTheme();
   const tools = useLearnFlowStore((s) => s.customTools);
+  const profile = useLearnFlowStore((s) => s.getActiveProfile());
+  const chapterProgress = useLearnFlowStore((s) => s.chapterProgress);
   const chapterId = search.get("chapterId") ?? "circulation";
+  const [query, setQuery] = useState("");
   usePublishedCatalog();
+
+  const hits = useMemo(
+    () => searchChapters(query, profile?.classe, profile?.id, chapterProgress, 10),
+    [query, profile?.classe, profile?.id, chapterProgress],
+  );
+
   const open = tools.length === 0;
   const showFiche = open || tools.includes("fiche");
   const showFlash = open || tools.includes("flashcards");
@@ -35,6 +45,7 @@ function LibreInner() {
             onClick={() => router.push(`/app/modes/customize?mode=Libre&chapterId=${chapterId}`)}
             className="flex h-10 w-10 items-center justify-center rounded-2xl"
             style={{ background: colors.white }}
+            aria-label="Personnaliser"
           >
             <Icon name="settings" size={16} color={colors.textDark} />
           </button>
@@ -44,6 +55,65 @@ function LibreInner() {
         <div className="flex justify-center py-3">
           <Spira scene="mode.libre" size={96} message="" />
         </div>
+
+        <label className="block">
+          <span className="mb-1.5 block text-[12px] font-extrabold uppercase tracking-wide" style={{ color: colors.textMuted }}>
+            Rechercher un cours
+          </span>
+          <div
+            className="flex items-center gap-2 rounded-2xl border px-3 py-2.5"
+            style={{ background: colors.white, borderColor: colors.border }}
+          >
+            <Icon name="search" size={16} color={colors.textMuted} />
+            <input
+              type="search"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Ex. digestion, équations…"
+              className="min-w-0 flex-1 bg-transparent text-[15px] font-semibold outline-none"
+              style={{ color: colors.textDark }}
+              aria-label="Rechercher un cours"
+            />
+          </div>
+        </label>
+
+        {hits.length > 0 ? (
+          <ul className="space-y-2" role="listbox" aria-label="Résultats de recherche">
+            {hits.map((h) => (
+              <li key={h.chapterId}>
+                <button
+                  type="button"
+                  role="option"
+                  onClick={() => router.replace(`/app/modes/libre?chapterId=${h.chapterId}`)}
+                  className="flex w-full items-center justify-between rounded-2xl border px-3.5 py-3 text-left"
+                  style={{
+                    background: h.chapterId === chapterId ? colors.mathsBg : colors.white,
+                    borderColor: h.chapterId === chapterId ? colors.primary : colors.border,
+                  }}
+                >
+                  <span>
+                    <span className="block text-[14px] font-extrabold" style={{ color: colors.textDark }}>
+                      {h.title}
+                    </span>
+                    <span className="text-[11px] font-semibold" style={{ color: colors.textMuted }}>
+                      {h.subject} · {h.theme}
+                    </span>
+                  </span>
+                  <Icon name="chevron-right" size={16} color={colors.textMuted} />
+                </button>
+              </li>
+            ))}
+          </ul>
+        ) : query.trim() ? (
+          <p className="text-sm font-semibold" style={{ color: colors.textMuted }}>
+            Aucun chapitre trouvé.
+          </p>
+        ) : null}
+
+        <p className="text-[12px] font-bold" style={{ color: colors.textMuted }}>
+          Chapitre actif · outils ci-dessous
+        </p>
+
         {showFiche ? (
           <CardButton href={`/app/cours/${chapterId}`} icon="book" iconBg={colors.mathsBg} iconColor={colors.primary} title="Fiche de cours" />
         ) : null}

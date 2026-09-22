@@ -1,9 +1,11 @@
-import { createHmac, randomBytes, timingSafeEqual } from "node:crypto";
+import { createHmac, randomBytes, scryptSync, timingSafeEqual } from "node:crypto";
 import { cookies } from "next/headers";
 import { ADMIN_EMAIL_DEFAULT } from "./brand";
 
 export const SESSION_COOKIE = "lf_admin_session";
 const SESSION_TTL_SEC = 60 * 60 * 24 * 7;
+
+const SCRYPT_OPTS = { N: 16384, r: 8, p: 1 } as const;
 
 export type AdminSession = {
   email: string;
@@ -16,7 +18,12 @@ function adminEmail() {
   return (process.env.ADMIN_EMAIL ?? ADMIN_EMAIL_DEFAULT).trim().toLowerCase();
 }
 
-function adminPassword() {
+function adminPasswordHash() {
+  return process.env.ADMIN_PASSWORD_HASH?.trim() ?? "";
+}
+
+/** @deprecated Prefer ADMIN_PASSWORD_HASH — plaintext only for local migration. */
+function adminPasswordLegacy() {
   return process.env.ADMIN_PASSWORD ?? "";
 }
 
@@ -35,14 +42,43 @@ function safeEqual(a: string, b: string) {
   return timingSafeEqual(left, right);
 }
 
+/** Format: scrypt$<saltHex>$<hashHex> */
+export function hashAdminPassword(password: string): string {
+  const salt = randomBytes(16).toString("hex");
+  const hash = scryptSync(password, salt, 64, SCRYPT_OPTS).toString("hex");
+  return `scrypt$${salt}$${hash}`;
+}
+
+export function verifyPasswordAgainstHash(password: string, encoded: string): boolean {
+  const parts = encoded.split("$");
+  if (parts.length !== 3 || parts[0] !== "scrypt") return false;
+  const [, salt, expectedHex] = parts;
+  if (!salt || !expectedHex || expectedHex.length % 2 !== 0) return false;
+  try {
+    const computed = scryptSync(password, salt, 64, SCRYPT_OPTS);
+    const expected = Buffer.from(expectedHex, "hex");
+    if (computed.length !== expected.length) return false;
+    return timingSafeEqual(computed, expected);
+  } catch {
+    return false;
+  }
+}
+
 export function verifyAdminCredentials(email: string, password: string) {
   const expectedEmail = adminEmail();
-  const expectedPassword = adminPassword();
-  if (!expectedPassword) return false;
   const givenEmail = email.trim().toLowerCase();
   const emailOk = safeEqual(givenEmail, expectedEmail);
-  const passwordOk = safeEqual(password, expectedPassword);
-  return emailOk && passwordOk;
+  if (!emailOk) return false;
+
+  const hashed = adminPasswordHash();
+  if (hashed) {
+    return verifyPasswordAgainstHash(password, hashed);
+  }
+
+  const legacy = adminPasswordLegacy();
+  if (!legacy) return false;
+  // Migration locale uniquement — produire un hash avec scripts/hash-admin-password.mjs
+  return safeEqual(password, legacy);
 }
 
 function sign(payloadB64: string) {

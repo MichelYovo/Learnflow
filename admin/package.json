@@ -6,7 +6,9 @@
     "dev": "next dev --webpack --port 3001",
     "build": "next build",
     "start": "next start --port 3001",
-    "lint": "eslint"
+    "lint": "eslint",
+    "hash-password": "node scripts/hash-admin-password.mjs",
+    "migrate-password-hash": "node scripts/migrate-admin-password-to-hash.mjs"
   },
   "dependencies": {
     "next": "16.3.4",

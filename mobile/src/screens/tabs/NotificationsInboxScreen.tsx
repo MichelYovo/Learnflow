@@ -42,8 +42,10 @@ export default function NotificationsInboxScreen({ navigation }: Props) {
 
   const open = (n: InboxNotification) => {
     markInboxRead(n.id);
-    if (n.kind === "study") navigation.navigate("Agenda");
-    else if (n.kind === "league") navigation.navigate("Main", { screen: "Ligue" });
+    if (n.href === "Agenda" || n.kind === "study") navigation.navigate("Agenda");
+    else if (n.href === "Ligue" || n.kind === "league") navigation.navigate("Main", { screen: "Ligue" });
+    else if (n.href === "Flashcards") navigation.navigate("Flashcards");
+    else if (n.href === "Course") navigation.navigate("Course", {});
     else if (n.kind === "challenge" || n.kind === "badge") navigation.navigate("Main", { screen: "Accueil" });
   };
 

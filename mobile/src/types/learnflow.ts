@@ -20,7 +20,7 @@ export type TypeQuizz = "Assimilation" | "GrandQuizzChapitre";
 export interface CompteUtilisateur {
   id: string;
   email: string;
-  motDePasse: string;
+  /** Auth via Supabase Auth uniquement — aucun mot de passe stocké dans l’app. */
   cleOTP2FA?: string;
 }
 
@@ -37,6 +37,7 @@ export interface ProfileEleve {
   streak: number;
   rang: number;
   lessonsDone: number;
+  studyMs: number;
   badgesDebloques: string[];
   suiviParentalId?: number;
   color?: string;
@@ -143,6 +144,8 @@ export interface InboxNotification {
   kind: InboxKind;
   title: string;
   body: string;
+  /** Deep link route name or path hint (ex. Course, Flashcards). */
+  href?: string;
   createdAt: string;
   read: boolean;
 }

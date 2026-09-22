@@ -19,19 +19,28 @@ export default function ModeWorkSelector({ selectedMode, guideInactive, onSelect
   const [help, setHelp] = useState<string | null>(null);
 
   return (
-    <section data-tour="modes">
-      <h2 className="mb-3.5 text-[18px] font-extrabold" style={{ color: colors.textDark }}>
+    <section data-tour="modes" aria-labelledby="modes-heading">
+      <h2 id="modes-heading" className="mb-3.5 text-[18px] font-extrabold" style={{ color: colors.textDark }}>
         Modes
       </h2>
-      <div className="grid grid-cols-2 gap-2.5 min-[380px]:gap-3 md:grid-cols-4">
+      <div
+        className="grid grid-cols-2 gap-2.5 min-[380px]:gap-3 md:grid-cols-4"
+        role="radiogroup"
+        aria-label="Mode de travail"
+      >
         {MODE_DEFINITIONS.map((def) => {
           const inactive = def.id === "guide" && guideInactive;
           const selected = selectedMode === def.id;
           const surface = modeCardSurface(def.bg, def.border, def.color, darkMode);
+          const label = def.label.replace("Mode ", "").replace(" 60s", "");
           return (
             <button
               key={def.id}
               type="button"
+              role="radio"
+              aria-checked={selected}
+              aria-disabled={inactive}
+              aria-label={inactive ? `${label} — indisponible : aucune carte due` : label}
               onClick={() => {
                 if (inactive) {
                   setHelp("Aucune carte due aujourd'hui.");
@@ -48,20 +57,24 @@ export default function ModeWorkSelector({ selectedMode, guideInactive, onSelect
               }}
             >
               <div className="mb-3.5 flex items-start justify-between">
-                <span className="flex h-11 w-11 items-center justify-center overflow-visible min-[380px]:h-[52px] min-[380px]:w-[52px]">
+                <span className="flex h-11 w-11 items-center justify-center overflow-visible min-[380px]:h-[52px] min-[380px]:w-[52px]" aria-hidden>
                   <Spira mood={spiraMoodForMode(def.id)} size={40} message="" animated={false} interactive={false} />
                 </span>
                 {inactive ? <Icon name="alert-circle" size={16} color="#94A3B8" /> : null}
               </div>
               <p className="truncate text-[15px] font-extrabold sm:text-[16px]" style={{ color: inactive ? "#94A3B8" : def.color }}>
-                {def.label.replace("Mode ", "").replace(" 60s", "")}
+                {label}
               </p>
             </button>
           );
         })}
       </div>
       {help ? (
-        <div className="mt-3.5 flex items-start gap-2 rounded-2xl border p-3.5" style={{ borderColor: colors.hgBorder, background: colors.hgBg }}>
+        <div
+          role="status"
+          className="mt-3.5 flex items-start gap-2 rounded-2xl border p-3.5"
+          style={{ borderColor: colors.hgBorder, background: colors.hgBg }}
+        >
           <Icon name="lightbulb" size={14} color={colors.accent} />
           <p className="flex-1 text-sm font-semibold" style={{ color: colors.accent }}>
             {help}

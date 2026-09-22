@@ -1,8 +1,26 @@
+function emailOf(raw: string, fallback: string) {
+  const trimmed = raw.trim();
+  const bracket = trimmed.match(/<([^>]+)>/)?.[1]?.trim();
+  if (bracket?.includes("@")) return bracket;
+  if (trimmed.includes("@") && !trimmed.includes(" ")) return trimmed;
+  return fallback;
+}
+
+/** Toujours « LearnFlow » — jamais le nom / la photo d’un compte perso. */
+function brandedFrom(raw: string, fallbackEmail: string) {
+  return { name: "LearnFlow", address: emailOf(raw, fallbackEmail) };
+}
+
+function brandedFromHeader(raw: string, fallbackEmail: string) {
+  const { name, address } = brandedFrom(raw, fallbackEmail);
+  return `${name} <${address}>`;
+}
+
 function fromAddress() {
-  return (
-    process.env.SMTP_FROM?.trim() ||
-    process.env.RESEND_FROM?.trim() ||
-    (process.env.SMTP_USER ? `LearnFlow <${process.env.SMTP_USER.trim()}>` : "LearnFlow <noreply@learnflow.tg>")
+  const fallback = (process.env.SMTP_USER ?? "noreply@learnflow.tg").trim();
+  return brandedFromHeader(
+    process.env.RESEND_FROM?.trim() || process.env.SMTP_FROM?.trim() || fallback,
+    fallback,
   );
 }
 
@@ -53,7 +71,7 @@ async function sendSmtp(to: string, subject: string, html: string, text: string)
   if (!user || !pass) return { ok: false, error: "no_smtp" };
   const host = (process.env.SMTP_HOST ?? "smtp.gmail.com").trim();
   const preferred = Number(process.env.SMTP_PORT || 587);
-  const from = fromAddress();
+  const from = brandedFrom(process.env.SMTP_FROM?.trim() || user, user);
   const ports = preferred === 465 ? [465, 587] : [587, 465];
   let lastError = "smtp_error";
   for (const port of ports) {
@@ -69,7 +87,14 @@ async function sendSmtp(to: string, subject: string, html: string, text: string)
         socketTimeout: 20000,
         auth: { user, pass },
       });
-      await transporter.sendMail({ from, to, subject, html, text });
+      await transporter.sendMail({
+        from,
+        to,
+        subject,
+        html,
+        text,
+        replyTo: from,
+      });
       return { ok: true };
     } catch (err) {
       lastError = err instanceof Error ? err.message : "smtp_error";
@@ -81,7 +106,7 @@ async function sendSmtp(to: string, subject: string, html: string, text: string)
 async function sendResend(to: string, subject: string, html: string): Promise<{ ok: boolean; error?: string }> {
   const key = (process.env.RESEND_API_KEY ?? "").trim();
   if (!key) return { ok: false, error: "no_resend" };
-  const from = (process.env.RESEND_FROM ?? fromAddress()).trim();
+  const from = brandedFromHeader(process.env.RESEND_FROM?.trim() || fromAddress(), "noreply@learnflow.tg");
   const res = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: {
@@ -107,10 +132,10 @@ export async function sendStudentEmail(opts: {
   if (!to || !to.includes("@")) return { ok: false, error: "Email élève manquant." };
   const html = wrapLearnflowEmail(opts.subject, bodyToHtml(opts.body, opts.link));
   const text = opts.link ? `${opts.body}\n\nContinuer : ${opts.link}` : opts.body;
-  const smtp = await sendSmtp(to, opts.subject, html, text);
-  if (smtp.ok) return { ok: true, via: "smtp" };
   const resend = await sendResend(to, opts.subject, html);
   if (resend.ok) return { ok: true, via: "resend" };
-  const hint = smtp.error && smtp.error !== "no_smtp" ? smtp.error : resend.error;
+  const smtp = await sendSmtp(to, opts.subject, html, text);
+  if (smtp.ok) return { ok: true, via: "smtp" };
+  const hint = resend.error && resend.error !== "no_resend" ? resend.error : smtp.error;
   return { ok: false, error: hint || "Configure SMTP ou RESEND_API_KEY dans admin/.env.local." };
 }

@@ -11,7 +11,7 @@ export default function DailyChallenges({
 }) {
   const { colors } = useAppTheme();
   const rewards = useLearnFlowStore((s) => withDay(s.rewards));
-  const ease = useLearnFlowStore((s) => s.hasEaseBoost());
+  const ease = useLearnFlowStore((s) => s.hasHintBoost());
   const open = CHALLENGES.filter((c) => !rewards.completed.includes(c.id));
 
   return (
@@ -19,8 +19,8 @@ export default function DailyChallenges({
       <Text style={[styles.title, { color: colors.textDark }]}>Défis du jour</Text>
       <Text style={[styles.sub, { color: colors.textMuted }]}>
         {ease
-          ? "Boost actif : les prochaines questions sont plus faciles."
-          : "Réussis un défi : plus d’XP et des questions plus faciles."}
+          ? "Boost actif : un indice gratuit sur tes prochaines questions."
+          : "Réussis un défi : il disparaît, tu gagnes de l’XP."}
       </Text>
       {open.length === 0 ? (
         <Text style={[styles.done, { color: colors.secondary }]}>Tous les défis du jour sont faits.</Text>

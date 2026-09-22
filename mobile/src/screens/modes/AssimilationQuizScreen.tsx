@@ -8,7 +8,7 @@ import QuizPlay from "../../components/quiz/QuizPlay";
 import SessionRecap, { useSessionStats } from "../../components/SessionRecap";
 import Spira from "../../components/Spira";
 import { questionsForChapter } from "../../data/modeContent";
-import { preferEasierQcm } from "../../engine/rewards";
+import { pedagogicalHint } from "../../engine/rewards";
 import { usePublishedCatalog } from "../../data/publishedCache";
 import { playSfx, preloadSfx } from "../../lib/sfx";
 import { useLearnFlowStore } from "../../store/useLearnFlowStore";
@@ -22,8 +22,8 @@ export default function AssimilationQuizScreen({ navigation, route }: Props) {
   const loopErrors = route.params?.loopErrors === true;
   usePublishedCatalog();
   const classe = useLearnFlowStore((s) => s.getActiveProfile()?.classe);
-  const ease = useLearnFlowStore((s) => s.hasEaseBoost());
-  const bank = preferEasierQcm(questionsForChapter(chapterId, classe), ease);
+  const hintBoost = useLearnFlowStore((s) => s.hasHintBoost());
+  const bank = questionsForChapter(chapterId, classe);
   const [queue, setQueue] = useState(bank);
   const questions = queue;
   const recordAssimilation = useLearnFlowStore((s) => s.recordAssimilation);
@@ -35,6 +35,7 @@ export default function AssimilationQuizScreen({ navigation, route }: Props) {
   const [selected, setSelected] = useState<number | null>(null);
   const [score, setScore] = useState(0);
   const [done, setDone] = useState(false);
+  const [hintShown, setHintShown] = useState<string | null>(null);
   const [result, setResult] = useState<{ xp: number; unlocked: boolean; challenger: boolean } | null>(null);
   const [burstKey, setBurstKey] = useState(0);
   const recapStats = useSessionStats({ xp: result?.xp ?? 0, score, total: questions.length });
@@ -55,6 +56,7 @@ export default function AssimilationQuizScreen({ navigation, route }: Props) {
     } else {
       setCurrent((c) => c + 1);
       setSelected(null);
+      setHintShown(null);
     }
   };
 
@@ -174,6 +176,9 @@ export default function AssimilationQuizScreen({ navigation, route }: Props) {
         onBack={() => navigation.goBack()}
         onContinue={advance}
         explanation={q.explicationPedagogique}
+        freeHint={hintShown}
+        hintAvailable={hintBoost && !hintShown}
+        onRevealHint={() => setHintShown(pedagogicalHint(q.explicationPedagogique))}
         reviewLabel="Revoir le cours"
         onReview={() => navigation.navigate("Course", { chapterId })}
         headerRight={<Spira scene="quiz.play" size={36} animated={false} />}

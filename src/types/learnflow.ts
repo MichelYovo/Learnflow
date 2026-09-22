@@ -15,7 +15,7 @@ export type TypeQuizz = "Assimilation" | "GrandQuizzChapitre";
 export interface CompteUtilisateur {
   id: string;
   email: string;
-  motDePasse: string;
+  /** Auth via Supabase Auth uniquement — aucun mot de passe stocké dans l’app. */
   cleOTP2FA?: string;
 }
 

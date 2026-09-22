@@ -14,12 +14,17 @@ export type RewardsState = {
   day: string;
   progress: Record<string, number>;
   completed: string[];
-  easeBoostUntil: number;
+  /** Boost pédagogique : 1 indice gratuit / question pendant la fenêtre. */
+  hintBoostUntil: number;
+  /** @deprecated migré vers hintBoostUntil */
+  easeBoostUntil?: number;
   awardedDuels: string[];
   lifetimeCompleted: number;
   lastStreakDay: string;
   notifiedDay: string;
   lastUnlock: RewardToast | null;
+  /** XP gagnée via défis / lectures ce jour (anti-spam local). */
+  dailyXpAwarded: number;
 };
 
 export type ChallengeDef = {
@@ -28,51 +33,54 @@ export type ChallengeDef = {
   body: string;
   xp: number;
   target: number;
-  easeMinutes: number;
+  hintMinutes: number;
   badge?: string;
 };
+
+/** Plafond XP défi / lecture par jour (côté client — le serveur doit aussi plafonner). */
+export const DAILY_CHALLENGE_XP_CAP = 500;
 
 export const CHALLENGES: ChallengeDef[] = [
   {
     id: "lesson",
     title: "Lis une leçon",
-    body: "Ouvre L’essentiel d’un chapitre. +XP et questions plus faciles.",
-    xp: 60,
+    body: "Ouvre L’essentiel d’un chapitre. +XP et un indice gratuit au prochain QCM.",
+    xp: 40,
     target: 1,
-    easeMinutes: 20,
+    hintMinutes: 20,
   },
   {
     id: "reader",
     title: "Lis En Détails",
     body: "Termine la fiche complète d’un chapitre.",
-    xp: 80,
+    xp: 60,
     target: 1,
-    easeMinutes: 20,
+    hintMinutes: 20,
     badge: "Lecteur Pro",
   },
   {
     id: "qcm",
     title: "10/10 au QCM",
     body: "Valide un quiz d’assimilation sans faute.",
-    xp: 120,
+    xp: 100,
     target: 1,
-    easeMinutes: 30,
+    hintMinutes: 30,
   },
   {
     id: "flash",
     title: "5 flashcards",
     body: "Révise 5 cartes. Tu gagnes de l’XP.",
-    xp: 50,
+    xp: 40,
     target: 5,
-    easeMinutes: 15,
+    hintMinutes: 15,
   },
   {
     id: "duel_win",
     title: "Gagne un Blitz duo",
     body: "Bats un ami en live. Badge Blitz King à la clé.",
-    xp: 180,
+    xp: 150,
     target: 1,
-    easeMinutes: 30,
+    hintMinutes: 30,
     badge: "Blitz King",
   },
 ];
@@ -99,13 +107,20 @@ export function emptyRewards(): RewardsState {
     day: lomeDay(),
     progress: {},
     completed: [],
-    easeBoostUntil: 0,
+    hintBoostUntil: 0,
     awardedDuels: [],
     lifetimeCompleted: 0,
     lastStreakDay: "",
     notifiedDay: "",
     lastUnlock: null,
+    dailyXpAwarded: 0,
   };
+}
+
+function resolveHintUntil(raw: Partial<RewardsState>): number {
+  const hint = Number(raw.hintBoostUntil) || 0;
+  const legacy = Number(raw.easeBoostUntil) || 0;
+  return Math.max(hint, legacy);
 }
 
 export function withDay(raw?: Partial<RewardsState> | null): RewardsState {
@@ -113,15 +128,27 @@ export function withDay(raw?: Partial<RewardsState> | null): RewardsState {
   const day = lomeDay();
   const completed = Array.isArray(base.completed) ? base.completed : [];
   const progress = base.progress && typeof base.progress === "object" ? base.progress : {};
-  if (base.day === day) return { ...emptyRewards(), ...base, completed, progress, day };
+  const hintBoostUntil = resolveHintUntil(base);
+  if (base.day === day) {
+    return {
+      ...emptyRewards(),
+      ...base,
+      completed,
+      progress,
+      day,
+      hintBoostUntil,
+      dailyXpAwarded: Number(base.dailyXpAwarded) || 0,
+    };
+  }
   return {
     ...emptyRewards(),
     day,
-    easeBoostUntil: base.easeBoostUntil,
+    hintBoostUntil,
     awardedDuels: (Array.isArray(base.awardedDuels) ? base.awardedDuels : []).slice(0, 40),
     lifetimeCompleted: base.lifetimeCompleted ?? 0,
     lastStreakDay: base.lastStreakDay ?? "",
     lastUnlock: base.lastUnlock ?? null,
+    dailyXpAwarded: 0,
   };
 }
 
@@ -138,14 +165,27 @@ export function challengesOfTheDay(day = lomeDay()): ChallengeDef[] {
   return [0, 1, 2].map((i) => CHALLENGES[(start + i) % n]).filter(Boolean);
 }
 
-export function hasEaseBoost(r: RewardsState): boolean {
-  return withDay(r).easeBoostUntil > Date.now();
+export function hasHintBoost(r: RewardsState): boolean {
+  return withDay(r).hintBoostUntil > Date.now();
 }
 
-export function preferEasierQuestions<T extends { difficulte?: DifficulteFlash }>(items: T[], ease: boolean): T[] {
-  if (!ease || items.length === 0) return items;
-  const rank = (d?: DifficulteFlash) => (d === "Facile" || !d ? 0 : d === "Moyen" ? 1 : 2);
-  return [...items].sort((a, b) => rank(a.difficulte) - rank(b.difficulte));
+/** @deprecated alias — utiliser hasHintBoost */
+export function hasEaseBoost(r: RewardsState): boolean {
+  return hasHintBoost(r);
+}
+
+/** Extrait un indice court sans spoiler la réponse complète. */
+export function pedagogicalHint(explanation?: string): string {
+  const text = (explanation ?? "").trim();
+  if (!text) return "Relis l’essentiel du chapitre, puis élimine deux options.";
+  const first = text.split(/[.!?]/)[0]?.trim() ?? text;
+  const clipped = first.length > 120 ? `${first.slice(0, 117)}…` : first;
+  return clipped.endsWith(".") ? clipped : `${clipped}.`;
+}
+
+export function preferEasierQuestions<T extends { difficulte?: DifficulteFlash }>(items: T[], _ease: boolean): T[] {
+  // Plus de contournement de difficulté : on conserve l’ordre pédagogique.
+  return items;
 }
 
 export function preferEasierQcm(items: QCMData[], ease: boolean): QCMData[] {
@@ -165,3 +205,10 @@ export function nextStreak(current: number, lastStreakDay: string): { streak: nu
 
 export const DUEL_LOSE_XP = 25;
 export const DUEL_DRAW_XP = 40;
+
+export function formatStudyHours(studyMs: number): string {
+  const hours = Math.max(0, studyMs) / 3_600_000;
+  if (hours < 0.1) return "0h";
+  if (hours < 10) return `${hours.toFixed(1).replace(/\.0$/, "")}h`;
+  return `${Math.round(hours)}h`;
+}

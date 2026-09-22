@@ -18,6 +18,9 @@ export type QuizPlayProps = {
   onBack: () => void;
   onContinue: () => void;
   explanation?: string;
+  freeHint?: string | null;
+  onRevealHint?: () => void;
+  hintAvailable?: boolean;
   optionNotes?: string[];
   reviewLabel?: string;
   onReview?: () => void;
@@ -44,6 +47,9 @@ export default function QuizPlay({
   onBack,
   onContinue,
   explanation,
+  freeHint,
+  onRevealHint,
+  hintAvailable,
   reviewLabel,
   onReview,
   headerRight,
@@ -81,6 +87,22 @@ export default function QuizPlay({
       >
         {kicker ? <Text style={[styles.kicker, { color: colors.textMuted }]}>{kicker}</Text> : null}
         <Text style={[styles.question, { color: colors.textDark }]}>{question}</Text>
+        {!answered && hintAvailable && !freeHint && onRevealHint ? (
+          <Pressable
+            onPress={onRevealHint}
+            accessibilityRole="button"
+            accessibilityLabel="Indice gratuit"
+            style={[styles.hintBtn, { borderColor: colors.hgBorder, backgroundColor: colors.hgBg }]}
+          >
+            <Icon name="lightbulb" size={14} color={colors.accent} />
+            <Text style={[styles.hintBtnText, { color: colors.accent }]}>Indice gratuit</Text>
+          </Pressable>
+        ) : null}
+        {freeHint && !answered ? (
+          <Text style={[styles.hintBody, { borderColor: colors.hgBorder, backgroundColor: colors.hgBg, color: colors.accent }]}>
+            {freeHint}
+          </Text>
+        ) : null}
         <View style={styles.options}>
           {options.map((opt, i) => {
             const kind = optionKind(i, selected, correctIndex);
@@ -185,6 +207,29 @@ const styles = StyleSheet.create({
   scrollContent: { paddingHorizontal: 20, paddingTop: 8, paddingBottom: 24 },
   kicker: { fontSize: 11, fontWeight: "800", letterSpacing: 1.4, textTransform: "uppercase" },
   question: { marginTop: 8, fontSize: 22, fontWeight: "800", lineHeight: 28 },
+  hintBtn: {
+    marginTop: 12,
+    alignSelf: "flex-start",
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    borderWidth: 1,
+    borderRadius: 999,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  hintBtnText: { fontSize: 12, fontWeight: "800" },
+  hintBody: {
+    marginTop: 12,
+    borderWidth: 1,
+    borderRadius: 16,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: 13,
+    fontWeight: "600",
+    lineHeight: 18,
+    overflow: "hidden",
+  },
   options: { marginTop: 22, gap: 12 },
   opt: {
     flexDirection: "row",

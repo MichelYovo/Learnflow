@@ -23,6 +23,7 @@ export function parseCloudProgress(raw: StudentCloudProfile["progress"]): CloudP
     xpTotale: Number(p.xpTotale) || 0,
     streak: Number(p.streak) || 0,
     lessonsDone: Number(p.lessonsDone) || 0,
+    studyMs: Number(p.studyMs) || 0,
     badgesDebloques: Array.isArray(p.badgesDebloques) ? p.badgesDebloques : [],
     avatarId: p.avatarId,
     ligue: p.ligue ?? { nomLigue: "Bronze", rangActuel: 1, scoreHebdo: 0, estGelee: false, groupe: 1 },
@@ -107,6 +108,7 @@ export function snapshotProgress(input: {
     xpTotale: input.profile.xpTotale,
     streak: input.profile.streak,
     lessonsDone: input.profile.lessonsDone,
+    studyMs: input.profile.studyMs ?? 0,
     badgesDebloques: input.profile.badgesDebloques,
     avatarId: input.profile.avatarId ?? null,
     ligue: {
@@ -134,6 +136,7 @@ export function mergeProgress(local: CloudProgress, remote: CloudProgress | null
     xpTotale: Math.max(local.xpTotale, remote.xpTotale, cloudXp),
     streak: Math.max(local.streak, remote.streak),
     lessonsDone: Math.max(local.lessonsDone, remote.lessonsDone),
+    studyMs: Math.max(local.studyMs ?? 0, remote.studyMs ?? 0),
     badgesDebloques: badges,
     avatarId: local.avatarId || remote.avatarId,
     ligue: {
@@ -212,6 +215,7 @@ export async function syncProgress(): Promise<void> {
       xpTotale: merged.xpTotale,
       streak: merged.streak,
       lessonsDone: merged.lessonsDone,
+      studyMs: merged.studyMs,
       badgesDebloques: merged.badgesDebloques,
       avatarId: merged.avatarId ?? undefined,
       chapterProgress: merged.chapterProgress,

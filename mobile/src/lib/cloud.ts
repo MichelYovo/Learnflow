@@ -106,6 +106,32 @@ export async function upsertStudentProfile(
   return {};
 }
 
+export async function awardXp(opts: {
+  amount: number;
+  reason?: string;
+  idempotencyKey?: string;
+}): Promise<{ ok: boolean; totalXp?: number; awarded?: number; message?: string }> {
+  if (!isSupabaseConfigured) return { ok: false, message: "Supabase non configuré." };
+  const amount = Math.max(0, Math.floor(opts.amount));
+  if (amount < 1) return { ok: false, message: "montant invalide" };
+  const { data, error } = await supabase.rpc("award_xp", {
+    p_amount: amount,
+    p_reason: opts.reason ?? "generic",
+    p_idempotency_key: opts.idempotencyKey ?? null,
+  });
+  if (error) {
+    console.warn("[LearnFlow] award_xp", error.message);
+    return { ok: false, message: error.message };
+  }
+  const row = Array.isArray(data) ? data[0] : data;
+  return {
+    ok: Boolean(row?.ok),
+    totalXp: typeof row?.total_xp === "number" ? row.total_xp : undefined,
+    awarded: typeof row?.awarded === "number" ? row.awarded : undefined,
+    message: typeof row?.message === "string" ? row.message : undefined,
+  };
+}
+
 export async function saveCloudProgress(payload: {
   id: string;
   name: string;
@@ -120,13 +146,19 @@ export async function saveCloudProgress(payload: {
 }): Promise<{ error?: string }> {
   if (!isSupabaseConfigured) return { error: "Supabase non configuré." };
   const stamp = nowIso();
+  const { data: existing } = await supabase
+    .from("student_profiles")
+    .select("total_xp")
+    .eq("id", payload.id)
+    .maybeSingle();
+  const safeXp = Math.max(existing?.total_xp ?? 0, Math.min(payload.total_xp, (existing?.total_xp ?? 0) + 250));
   const { error } = await supabase.from("student_profiles").upsert(
     {
       id: payload.id,
       parent_id: payload.id,
       name: payload.name,
       class_level: payload.class_level,
-      total_xp: payload.total_xp,
+      total_xp: safeXp,
       streak: payload.streak,
       lessons_done: payload.lessons_done,
       avatar_id: payload.avatar_id ?? null,

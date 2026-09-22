@@ -6,6 +6,8 @@ Thumbs.db
 
 # Env
 .env
+.env.*
+!.env.example
 .env*.local
 
 # Dependencies
@@ -21,3 +23,4 @@ web-build/
 # Python
 __pycache__/
 *.pyc
+.vercel

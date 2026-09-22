@@ -407,3 +407,153 @@ create policy editor_notices_select_public
 grant select on public.editor_notices to anon, authenticated;
 revoke insert, update, delete on public.editor_notices from anon, authenticated, public;
 
+
+-- ─────────────────────────────────────────────────────────────
+-- Garde-fou XP : limite l'inflation client (anti-cheat soft)
+-- Un upsert ne peut pas ajouter plus de 250 XP d'un coup.
+-- ─────────────────────────────────────────────────────────────
+
+create or replace function public.guard_student_total_xp()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if TG_OP = 'UPDATE' and OLD.total_xp is not null then
+    if NEW.total_xp > OLD.total_xp + 250 then
+      NEW.total_xp := OLD.total_xp + 250;
+    end if;
+    if NEW.total_xp < OLD.total_xp then
+      -- Empêche une baisse accidentelle ; l'admin reste libre via service role.
+      if current_setting('request.jwt.claim.role', true) is distinct from 'service_role' then
+        NEW.total_xp := OLD.total_xp;
+      end if;
+    end if;
+  end if;
+  if NEW.total_xp is null or NEW.total_xp < 0 then
+    NEW.total_xp := coalesce(OLD.total_xp, 0);
+  end if;
+  return NEW;
+end;
+$$;
+
+drop trigger if exists trg_guard_student_total_xp on public.student_profiles;
+create trigger trg_guard_student_total_xp
+  before insert or update of total_xp on public.student_profiles
+  for each row execute function public.guard_student_total_xp();
+
+-- ─────────────────────────────────────────────────────────────
+-- award_xp : attribution XP côté serveur (anti-cheat)
+-- ─────────────────────────────────────────────────────────────
+
+create table if not exists public.xp_awards (
+  id uuid primary key default gen_random_uuid(),
+  student_id uuid not null references auth.users (id) on delete cascade,
+  amount integer not null check (amount > 0 and amount <= 250),
+  reason text not null default 'generic',
+  idempotency_key text not null,
+  created_at timestamptz not null default now(),
+  unique (student_id, idempotency_key)
+);
+
+create index if not exists xp_awards_student_day_idx
+  on public.xp_awards (student_id, created_at desc);
+
+alter table public.xp_awards enable row level security;
+
+drop policy if exists xp_awards_select_own on public.xp_awards;
+create policy xp_awards_select_own
+  on public.xp_awards for select
+  using (student_id::text = auth.uid()::text);
+
+grant select on public.xp_awards to authenticated;
+revoke insert, update, delete on public.xp_awards from anon, authenticated, public;
+
+create or replace function public.award_xp(
+  p_amount integer,
+  p_reason text default 'generic',
+  p_idempotency_key text default null
+)
+returns table (ok boolean, total_xp integer, awarded integer, message text)
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  uid uuid := auth.uid();
+  key text;
+  already integer;
+  day_sum integer;
+  new_total integer;
+  grant_amt integer;
+  daily_cap constant integer := 800;
+begin
+  if uid is null then
+    return query select false, 0, 0, 'non authentifié'::text;
+    return;
+  end if;
+
+  if p_amount is null or p_amount < 1 then
+    return query select false, 0, 0, 'montant invalide'::text;
+    return;
+  end if;
+
+  grant_amt := least(p_amount, 250);
+  key := coalesce(nullif(trim(p_idempotency_key), ''), gen_random_uuid()::text);
+
+  select count(*) into already
+  from public.xp_awards a
+  where a.student_id = uid and a.idempotency_key = key;
+
+  if already > 0 then
+    select sp.total_xp into new_total from public.student_profiles sp where sp.id = uid;
+    return query select true, coalesce(new_total, 0), 0, 'déjà attribué'::text;
+    return;
+  end if;
+
+  select coalesce(sum(a.amount), 0) into day_sum
+  from public.xp_awards a
+  where a.student_id = uid
+    and a.created_at >= (now() at time zone 'Africa/Lome')::date::timestamptz;
+
+  if day_sum >= daily_cap then
+    select sp.total_xp into new_total from public.student_profiles sp where sp.id = uid;
+    return query select false, coalesce(new_total, 0), 0, 'plafond XP journalier'::text;
+    return;
+  end if;
+
+  if day_sum + grant_amt > daily_cap then
+    grant_amt := daily_cap - day_sum;
+  end if;
+
+  insert into public.xp_awards (student_id, amount, reason, idempotency_key)
+  values (uid, grant_amt, coalesce(nullif(trim(p_reason), ''), 'generic'), key);
+
+  update public.student_profiles sp
+  set total_xp = sp.total_xp + grant_amt,
+      updated_at = now()
+  where sp.id = uid
+  returning sp.total_xp into new_total;
+
+  if new_total is null then
+    insert into public.student_profiles (id, parent_id, name, class_level, total_xp)
+    values (uid, uid, 'Élève', '3eme', grant_amt)
+    on conflict (id) do update
+      set total_xp = public.student_profiles.total_xp + grant_amt,
+          updated_at = now()
+    returning public.student_profiles.total_xp into new_total;
+  end if;
+
+  insert into public.league_scores (student_id, league_tier, weekly_xp, last_sync)
+  values (uid, 'Bronze', grant_amt, now())
+  on conflict (student_id) do update
+    set weekly_xp = public.league_scores.weekly_xp + grant_amt,
+        last_sync = now();
+
+  return query select true, coalesce(new_total, grant_amt), grant_amt, 'ok'::text;
+end;
+$$;
+
+revoke all on function public.award_xp(integer, text, text) from public;
+grant execute on function public.award_xp(integer, text, text) to authenticated;

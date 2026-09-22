@@ -7,7 +7,7 @@ import SessionRecap, { useSessionStats } from "@/components/SessionRecap";
 import Spira from "@/components/Spira";
 import { PrimaryButton } from "@/components/ui";
 import { spiraMoodForSession } from "@/data/spira";
-import { cardsDueToday } from "@/engine/spacedRepetition";
+import { cardsDueToday, leitnerBox } from "@/engine/spacedRepetition";
 import { useLearnFlowStore } from "@/store/useLearnFlowStore";
 import { useAppTheme } from "@/theme/useAppTheme";
 import type { DifficulteFlash } from "@/types/learnflow";
@@ -47,6 +47,7 @@ function FlashInner() {
   }
 
   const card = deck[Math.min(idx, deck.length - 1)];
+  const box = leitnerBox(card);
   const rate = (d: DifficulteFlash) => {
     rateFlashcard(card.id, d);
     if (idx + 1 >= deck.length) setDone(true);
@@ -66,7 +67,7 @@ function FlashInner() {
 
   if (done) {
     return (
-      <SessionRecap success title="Session terminée" subtitle="Tes cartes sont à jour." stats={recapStats}>
+      <SessionRecap success title="Session terminée" subtitle="Tes cartes Leitner sont à jour." stats={recapStats}>
         <PrimaryButton onClick={() => router.back()}>OK</PrimaryButton>
       </SessionRecap>
     );
@@ -79,7 +80,7 @@ function FlashInner() {
           <Icon name="arrow-left" size={20} color={colors.textDark} />
         </button>
         <span className="flex-1 text-sm font-extrabold" style={{ color: colors.primary }}>
-          {idx + 1}/{deck.length}
+          {idx + 1}/{deck.length} · Boîte {box}/5
         </span>
       </div>
       <div className="flex flex-col">

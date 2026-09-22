@@ -210,6 +210,49 @@ export function firstOpenChapterId(
   return continueLessonForLearner(classe, profileId, chapterProgress).chapterId;
 }
 
+export type ChapterSearchHit = {
+  chapterId: string;
+  title: string;
+  subject: string;
+  subjectId: string;
+  theme: string;
+};
+
+/** Recherche / index de chapitres pour le mode Libre. */
+export function searchChapters(
+  query: string,
+  classe?: string,
+  profileId?: string,
+  chapterProgress: Record<string, ChapterProgress> = {},
+  limit = 12,
+): ChapterSearchHit[] {
+  const q = query.trim().toLowerCase();
+  const hits: ChapterSearchHit[] = [];
+  try {
+    const programme = programmeForLearner(classe, profileId, chapterProgress);
+    for (const subject of programme) {
+      for (const theme of subject.themes ?? []) {
+        for (const chapter of theme.chapters ?? []) {
+          if (!chapter?.id) continue;
+          const hay = `${chapter.title} ${theme.title} ${subject.name}`.toLowerCase();
+          if (q && !hay.includes(q)) continue;
+          hits.push({
+            chapterId: chapter.id,
+            title: chapter.title,
+            subject: subject.name,
+            subjectId: subject.id,
+            theme: theme.title,
+          });
+          if (hits.length >= limit) return hits;
+        }
+      }
+    }
+  } catch {
+    return hits;
+  }
+  return hits;
+}
+
 export function subjectShortcutsForClass(classe?: string): SubjectShortcut[] {
   return subjectShortcutsForLearner(classe);
 }

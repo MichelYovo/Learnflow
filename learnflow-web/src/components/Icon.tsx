@@ -8,6 +8,7 @@ export type IconName =
   | "flame"
   | "zap"
   | "arrow-left"
+  | "search"
   | "chevron-right"
   | "chevron-left"
   | "target"
@@ -74,6 +75,7 @@ const PATHS: Record<IconName, string> = {
   flame: "M12 3s5 5 5 9a5 5 0 11-10 0c0-2 2-5 5-9z",
   zap: "M13 2L4 14h7l-1 8 9-12h-7l1-8z",
   "arrow-left": "M15 6l-6 6 6 6M9 12h11",
+  search: "M11 5a6 6 0 104.47 10.03L19 19M11 5a6 6 0 110 12 6 6 0 010-12z",
   "chevron-right": "M9 6l6 6-6 6",
   "chevron-left": "M15 6l-6 6 6 6",
   target: "M12 21a9 9 0 100-18 9 9 0 000 18zM12 16a4 4 0 100-8 4 4 0 000 8zM12 12h.01",

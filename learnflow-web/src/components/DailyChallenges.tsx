@@ -8,7 +8,7 @@ export default function DailyChallenges({ onOpen }: { onOpen: (id: ChallengeId) 
   const { colors } = useAppTheme();
   const rawRewards = useLearnFlowStore((s) => s.rewards);
   const rewards = withDay(rawRewards);
-  const ease = Boolean(rewards.easeBoostUntil && rewards.easeBoostUntil > Date.now());
+  const ease = Boolean(rewards.hintBoostUntil && rewards.hintBoostUntil > Date.now());
   const today = challengesOfTheDay(rewards.day);
   const open = today.filter((c) => !rewards.completed.includes(c.id));
 
@@ -19,7 +19,7 @@ export default function DailyChallenges({ onOpen }: { onOpen: (id: ChallengeId) 
       </h2>
       <p className="mt-1 text-xs font-semibold leading-4" style={{ color: colors.textMuted }}>
         {ease
-          ? "Boost actif : les prochaines questions sont plus faciles."
+          ? "Boost actif : un indice gratuit sur tes prochaines questions."
           : "Réussis un défi : il disparaît, tu gagnes de l’XP."}
       </p>
       {open.length === 0 ? (
