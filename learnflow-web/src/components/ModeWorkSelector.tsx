@@ -21,7 +21,7 @@ export default function ModeWorkSelector({ selectedMode, guideInactive, onSelect
     <section data-tour="modes" aria-labelledby="modes-heading">
       <h2
         id="modes-heading"
-        className="lf-mode-heading mb-3.5 text-[18px] font-extrabold"
+        className="mb-3.5 text-base font-extrabold"
         style={{ color: colors.textDark }}
       >
         Modes
@@ -58,6 +58,7 @@ export default function ModeWorkSelector({ selectedMode, guideInactive, onSelect
               } ${selected ? "lf-mode-btn--selected" : ""}`}
               style={{
                 background: surface.background,
+                border: `1px solid ${selected ? def.color : surface.border}`,
                 opacity: inactive ? 0.55 : 1,
               }}
             >
@@ -72,7 +73,7 @@ export default function ModeWorkSelector({ selectedMode, guideInactive, onSelect
               </span>
 
               <p
-                className="lf-mode-label relative z-[1] w-full truncate text-[15px] leading-tight sm:text-[17px]"
+                className="relative z-[1] w-full truncate text-base font-extrabold leading-tight"
                 style={{ color: inactive ? "#94A3B8" : def.color }}
               >
                 {label}
