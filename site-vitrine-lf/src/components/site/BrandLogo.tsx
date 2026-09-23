@@ -1,9 +1,18 @@
 import Image from "next/image";
 
 const SIZES = {
-  nav: { width: 180, height: 42, className: "h-8 w-auto max-w-[min(42vw,11rem)] sm:h-9 sm:max-w-none md:h-10" },
-  footer: { width: 180, height: 42, className: "h-10 w-auto" },
-  mark: { width: 28, height: 28, className: "h-7 w-7 object-contain" },
+  /** Aligné sur le wordmark web (auth ~48 / hero ~56) */
+  nav: {
+    width: 240,
+    height: 56,
+    className: "h-11 w-auto max-w-[min(52vw,13.5rem)] sm:h-12 sm:max-w-[15rem] md:h-14 md:max-w-none",
+  },
+  footer: {
+    width: 240,
+    height: 56,
+    className: "h-12 w-auto sm:h-14",
+  },
+  mark: { width: 36, height: 36, className: "h-9 w-9 object-contain" },
 } as const;
 
 type Props = {
