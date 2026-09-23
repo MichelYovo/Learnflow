@@ -10,6 +10,7 @@ import {
 } from "./cloud";
 import { nowIso } from "./ids";
 import { isSupabaseConfigured, supabase } from "./supabase";
+import { pickFreeze, rankWhileFrozen, settleLeagueFreeze } from "./leagueFreeze";
 
 type CloudChapterProgress = CloudProgress["chapterProgress"][string];
 
@@ -115,13 +116,18 @@ export function snapshotProgress(input: {
     lessonsDone: input.profile.lessonsDone,
     badgesDebloques: input.profile.badgesDebloques,
     avatarId: input.profile.avatarId ?? null,
-    ligue: {
-      nomLigue: input.ligue.nomLigue,
-      rangActuel: input.ligue.rangActuel,
-      scoreHebdo: input.ligue.scoreHebdo,
-      estGelee: false,
-      groupe: input.ligue.groupe,
-    },
+    ligue: (() => {
+      const frozen = settleLeagueFreeze(input.ligue);
+      return {
+        nomLigue: input.ligue.nomLigue,
+        rangActuel: input.ligue.rangActuel,
+        scoreHebdo: input.ligue.scoreHebdo,
+        estGelee: frozen.estGelee,
+        geleJusqua: frozen.geleJusqua ?? null,
+        rangProtege: frozen.rangProtege,
+        groupe: input.ligue.groupe,
+      };
+    })(),
     chapterProgress: input.chapterProgress,
     flashcards: snapshotFlashcards(input.flashcards),
     aiQuotaRestant: input.aiQuotaRestant,
@@ -142,13 +148,19 @@ export function mergeProgress(local: CloudProgress, remote: CloudProgress | null
     lessonsDone: Math.max(local.lessonsDone, remote.lessonsDone),
     badgesDebloques: badges,
     avatarId: local.avatarId || remote.avatarId,
-    ligue: {
-      nomLigue: local.ligue.scoreHebdo >= remote.ligue.scoreHebdo ? local.ligue.nomLigue : remote.ligue.nomLigue,
-      rangActuel: Math.min(local.ligue.rangActuel || 99, remote.ligue.rangActuel || 99),
-      scoreHebdo: Math.max(local.ligue.scoreHebdo, remote.ligue.scoreHebdo),
-      estGelee: false,
-      groupe: local.ligue.groupe || remote.ligue.groupe,
-    },
+    ligue: (() => {
+      const freeze = pickFreeze(local.ligue, remote.ligue);
+      const liveRank = Math.min(local.ligue.rangActuel || 99, remote.ligue.rangActuel || 99);
+      return {
+        nomLigue: local.ligue.scoreHebdo >= remote.ligue.scoreHebdo ? local.ligue.nomLigue : remote.ligue.nomLigue,
+        rangActuel: rankWhileFrozen(liveRank, freeze),
+        scoreHebdo: Math.max(local.ligue.scoreHebdo, remote.ligue.scoreHebdo),
+        estGelee: freeze.estGelee,
+        geleJusqua: freeze.geleJusqua,
+        rangProtege: freeze.rangProtege,
+        groupe: local.ligue.groupe || remote.ligue.groupe,
+      };
+    })(),
     chapterProgress: mergeChapters(local.chapterProgress, remote.chapterProgress),
     flashcards: snapshotFlashcards(
       mergeFlashcards(

@@ -32,6 +32,7 @@ import {
 } from "@/data/mock";
 import type { LeaguePlayer } from "@/data/mock";
 import { resolveAvatarId } from "@/data/avatars";
+import { freezeUntil, leagueFreezeActive, pickFreeze, rankWhileFrozen, settleLeagueFreeze } from "@/lib/leagueFreeze";
 import { applySelfRating } from "@/engine/spacedRepetition";
 import { xpAssimilation, xpBlitz } from "@/engine/xp";
 import {
@@ -115,6 +116,8 @@ interface LearnFlowState {
       rangActuel: number;
       scoreHebdo: number;
       estGelee: boolean;
+      geleJusqua?: string | null;
+      rangProtege?: number;
       groupe: number;
     };
     aiQuotaRestant?: number;
@@ -454,13 +457,19 @@ export const useLearnFlowStore = create<LearnFlowState>()(
           ),
           chapterProgress: data.chapterProgress,
           flashcards: data.flashcards.length ? data.flashcards : get().flashcards,
-          ligue: {
-            nomLigue: ligueNom || get().ligue.nomLigue,
-            rangActuel: data.ligue.rangActuel || get().ligue.rangActuel,
-            scoreHebdo: Math.max(get().ligue.scoreHebdo, data.ligue.scoreHebdo),
-            estGelee: false,
-            groupe: data.ligue.groupe || get().ligue.groupe,
-          },
+          ligue: (() => {
+            const freeze = pickFreeze(get().ligue, data.ligue);
+            const liveRank = data.ligue.rangActuel || get().ligue.rangActuel;
+            return {
+              nomLigue: ligueNom || get().ligue.nomLigue,
+              rangActuel: rankWhileFrozen(liveRank, freeze),
+              scoreHebdo: Math.max(get().ligue.scoreHebdo, data.ligue.scoreHebdo),
+              estGelee: freeze.estGelee,
+              geleJusqua: freeze.geleJusqua,
+              rangProtege: freeze.rangProtege,
+              groupe: data.ligue.groupe || get().ligue.groupe,
+            };
+          })(),
           ...(typeof data.aiQuotaRestant === "number"
             ? { aiQuotaRestant: data.aiQuotaRestant, aiQuotaDay: data.aiQuotaDay || get().aiQuotaDay }
             : {}),
@@ -481,10 +490,20 @@ export const useLearnFlowStore = create<LearnFlowState>()(
       applyRemoteLeague: (studentId, weeklyXp, rank, tier) => {
         const { ligue, profiles, activeProfileId } = get();
         if (String(activeProfileId) !== studentId) return;
-        const nomLigue = (tier as Ligue["nomLigue"] | undefined) ?? ligue.nomLigue;
+        const settled = settleLeagueFreeze(ligue);
+        const nomLigue = (tier as Ligue["nomLigue"] | undefined) ?? settled.nomLigue;
+        const rangActuel = rankWhileFrozen(rank, settled);
         set({
-          ligue: { ...ligue, scoreHebdo: weeklyXp, rangActuel: rank, nomLigue },
-          profiles: profiles.map((p) => (p.id === studentId ? { ...p, rang: rank } : p)),
+          ligue: {
+            ...settled,
+            scoreHebdo: weeklyXp,
+            rangActuel,
+            nomLigue,
+            estGelee: leagueFreezeActive(settled),
+            geleJusqua: leagueFreezeActive(settled) ? settled.geleJusqua : null,
+            rangProtege: leagueFreezeActive(settled) ? settled.rangProtege ?? rangActuel : undefined,
+          },
+          profiles: profiles.map((p) => (p.id === studentId ? { ...p, rang: rangActuel } : p)),
         });
       },
 
@@ -776,8 +795,20 @@ export const useLearnFlowStore = create<LearnFlowState>()(
         return true;
       },
 
-      gelerLigue: (_jours) => {
-        set({ ligue: { ...get().ligue, estGelee: false } });
+      gelerLigue: (jours) => {
+        const ligue = settleLeagueFreeze(get().ligue);
+        if (leagueFreezeActive(ligue)) return;
+        const geleJusqua = freezeUntil(jours);
+        const rangProtege = Math.max(1, ligue.rangActuel || 1);
+        set({ ligue: { ...ligue, estGelee: true, geleJusqua, rangProtege, rangActuel: rangProtege } });
+        if (get().settings.notifications.leagueUpdates) {
+          get().pushInbox({
+            kind: "league",
+            title: "Ligue gelée",
+            body: `Ton rang #${rangProtege} est protégé pendant ${jours} jour${jours > 1 ? "s" : ""}. Il peut monter, il ne recule pas.`,
+          });
+        }
+        void import("@/lib/progressSync").then((m) => m.requestProgressSync());
       },
 
       envoyerSMSFelicitation: async (msg) => {
@@ -1192,11 +1223,10 @@ export const useLearnFlowStore = create<LearnFlowState>()(
             appTourCompleted: Boolean(p.appTourCompleted),
             profiles,
             activeProfileId,
-            ligue: {
+            ligue: settleLeagueFreeze({
               ...BEGINNER_LIGUE,
               ...(p.ligue && typeof p.ligue === "object" ? p.ligue : current.ligue),
-              estGelee: false,
-            },
+            }),
             suiviParental: p.suiviParental ?? current.suiviParental,
             flashcards: extraCards.length ? [...baseCards, ...extraCards] : baseCards,
             chapterProgress:

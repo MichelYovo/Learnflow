@@ -7,6 +7,7 @@ import { LeagueBadgeCircle } from "@/components/LeagueBadge";
 import { AppBar } from "@/components/ui";
 import { isCloudProfileId, LEAGUE_TIERS, type LeaguePlayer } from "@/data/mock";
 import { fetchLeagueLeaderboard, orderLeaguePlayers } from "@/lib/leagueLive";
+import { formatFreezeUntil, leagueFreezeActive } from "@/lib/leagueFreeze";
 import { useLearnFlowStore } from "@/store/useLearnFlowStore";
 import { useAppTheme } from "@/theme/useAppTheme";
 import type { LigueNom } from "@/types/learnflow";
@@ -53,6 +54,7 @@ const ACHIEVEMENTS = [
 
 export default function LiguePage() {
   const ligue = useLearnFlowStore((s) => s.ligue);
+  const gelerLigue = useLearnFlowStore((s) => s.gelerLigue);
   const leagueBoard = useLearnFlowStore((s) => s.leagueBoard);
   const badges = useLearnFlowStore((s) => s.getActiveProfile().badgesDebloques);
   const myAvatarId = useLearnFlowStore((s) => s.getActiveProfile()?.avatarId);
@@ -92,7 +94,9 @@ export default function LiguePage() {
   const rest = sorted.filter((p) => p.rank >= 4 && p.rank <= 30);
   const tierMeta = LEAGUE_TIERS.find((t) => t.id === selectedTier) ?? LEAGUE_TIERS[0];
   const isCurrent = selectedTier === ligue.nomLigue;
-  const myRank = sorted.find((p) => p.you)?.rank ?? ligue.rangActuel;
+  const frozen = leagueFreezeActive(ligue);
+  const liveRank = sorted.find((p) => p.you)?.rank ?? ligue.rangActuel;
+  const myRank = isCurrent && frozen ? Math.min(liveRank, ligue.rangProtege || ligue.rangActuel) : liveRank;
 
   return (
     <div>
@@ -277,6 +281,23 @@ export default function LiguePage() {
               Le classement est vide pour l’instant. Dès qu’un élève se connecte, il apparaît ici — dernier tant qu’il n’a pas encore d’XP.
             </p>
           )}
+          {isCurrent ? (
+            frozen && ligue.geleJusqua ? (
+              <p className="mt-3 text-center text-sm font-semibold" style={{ color: colors.textMuted }}>
+                Rang #{ligue.rangProtege || myRank} protégé jusqu’au {formatFreezeUntil(ligue.geleJusqua)}. Il peut monter, il ne recule pas.
+              </p>
+            ) : (
+              <button
+                type="button"
+                onClick={() => gelerLigue(7)}
+                className="mt-3 mb-2 flex min-h-[52px] w-full items-center justify-center gap-2.5 rounded-[18px] border-[1.5px] py-3.5 text-[15px] font-extrabold"
+                style={{ background: colors.white, borderColor: colors.border, color: colors.primary }}
+              >
+                <Icon name="shield" size={20} color={colors.primary} />
+                Geler ma ligue (7j)
+              </button>
+            )
+          ) : null}
         </div>
       ) : (
         <div className="mx-auto w-full min-w-0 max-w-3xl space-y-3 px-[clamp(0.75rem,3.6vw,2rem)] py-4 pb-8 xl:max-w-4xl">

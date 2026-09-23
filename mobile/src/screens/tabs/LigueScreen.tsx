@@ -9,6 +9,7 @@ import { LeagueBadgeCircle } from "../../components/league/LeagueBadge";
 import Icon from "../../components/Icon";
 import { isCloudProfileId, LEAGUE_TIERS, type LeaguePlayer } from "../../data/mock";
 import { fetchLeagueLeaderboard, orderLeaguePlayers } from "../../lib/leagueLive";
+import { formatFreezeUntil, leagueFreezeActive } from "../../lib/leagueFreeze";
 import { useLearnFlowStore } from "../../store/useLearnFlowStore";
 import type { LigueNom } from "../../types/learnflow";
 import { useAppTheme } from "../../theme/useAppTheme";
@@ -24,6 +25,7 @@ const ACHIEVEMENTS = [
 
 export default function LigueScreen() {
   const ligue = useLearnFlowStore((s) => s.ligue);
+  const gelerLigue = useLearnFlowStore((s) => s.gelerLigue);
   const leagueBoard = useLearnFlowStore((s) => s.leagueBoard);
   const badgesDebloques = useLearnFlowStore((s) => s.getActiveProfile()?.badgesDebloques ?? []);
   const myAvatarId = useLearnFlowStore((s) => s.getActiveProfile()?.avatarId);
@@ -64,7 +66,9 @@ export default function LigueScreen() {
 
   const tierMeta = LEAGUE_TIERS.find((t) => t.id === selectedTier) ?? LEAGUE_TIERS[0];
   const isCurrent = selectedTier === ligue.nomLigue;
-  const myRank = sorted.find((p) => p.you)?.rank ?? ligue.rangActuel;
+  const frozen = leagueFreezeActive(ligue);
+  const liveRank = sorted.find((p) => p.you)?.rank ?? ligue.rangActuel;
+  const myRank = isCurrent && frozen ? Math.min(liveRank, ligue.rangProtege || ligue.rangActuel) : liveRank;
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: colors.surface }]} edges={["top"]}>
       <View style={[styles.header, { backgroundColor: colors.white, borderBottomColor: colors.border }]}>
@@ -126,6 +130,35 @@ export default function LigueScreen() {
               Le classement est vide pour l’instant. Dès qu’un élève se connecte, il apparaît ici — dernier tant qu’il n’a pas encore d’XP.
             </Text>
           )}
+          {isCurrent ? (
+            frozen && ligue.geleJusqua ? (
+              <Text style={[styles.hint, { color: colors.textMuted, marginTop: 8 }]}>
+                Rang #{ligue.rangProtege || myRank} protégé jusqu’au {formatFreezeUntil(ligue.geleJusqua)}. Il peut monter, il ne recule pas.
+              </Text>
+            ) : (
+              <Pressable
+                accessibilityRole="button"
+                onPress={() => gelerLigue(7)}
+                style={{
+                  marginTop: 12,
+                  marginHorizontal: 16,
+                  minHeight: 52,
+                  flexDirection: "row",
+                  gap: 10,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  padding: 14,
+                  borderRadius: 18,
+                  borderWidth: 1.5,
+                  backgroundColor: colors.white,
+                  borderColor: colors.border,
+                }}
+              >
+                <Icon name="shield" size={20} color={colors.primary} />
+                <Text style={{ color: colors.primary, fontWeight: "800", fontSize: 15 }}>Geler ma ligue (7j)</Text>
+              </Pressable>
+            )
+          ) : null}
         </ScrollView>
       ) : (
         <ScrollView contentContainerStyle={[styles.scroll, { paddingTop: 16 }]} showsVerticalScrollIndicator={false}>

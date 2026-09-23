@@ -37,6 +37,8 @@ export type CloudLigueState = {
   rangActuel: number;
   scoreHebdo: number;
   estGelee: boolean;
+  geleJusqua?: string | null;
+  rangProtege?: number;
   groupe: number;
 };
 

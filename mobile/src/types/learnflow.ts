@@ -155,6 +155,10 @@ export interface Ligue {
   rangActuel: number;
   scoreHebdo: number;
   estGelee: boolean;
+  /** Fin du gel, ISO. Vide si la ligue n’est pas gelée. */
+  geleJusqua?: string | null;
+  /** Rang tenu pendant le gel. Un meilleur rang le remplace. */
+  rangProtege?: number;
   groupe: number;
 }
 
