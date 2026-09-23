@@ -7,7 +7,7 @@ import Logo from "../../components/Logo";
 import ClassPicker from "../../components/ClassPicker";
 import ParentPhoneField from "../../components/ParentPhoneField";
 import { classLabel } from "../../data/mock";
-import { ensureBeginnerLeague, fetchOwnStudentProfile, isProfileComplete, trackActivity, upsertStudentProfile } from "../../lib/cloud";
+import { ensureBeginnerLeague, isProfileComplete, profileSaveMessage, readOwnStudentProfile, trackActivity, upsertStudentProfile } from "../../lib/cloud";
 import { markParentConfirmed } from "../../lib/parentConfirm";
 import { isValidTogoLocal, toTogoE164, TOGO_MOBILE_ERROR } from "../../lib/phoneTogo";
 import { notifySecureLogin } from "../../lib/secureAuth";
@@ -44,7 +44,16 @@ export default function CompleteProfileScreen({ navigation }: Props) {
         navigation.replace("Login");
         return;
       }
-      const existing = await fetchOwnStudentProfile();
+      setUserId(user.id);
+      setEmail(user.email ?? "");
+      const metaName = String(user.user_metadata?.full_name ?? user.user_metadata?.name ?? "").trim();
+      setDisplayName(metaName || user.email?.split("@")[0] || "Élève");
+      const read = await readOwnStudentProfile();
+      if (read.error === "read") {
+        setError("Impossible de lire ton compte. Vérifie ta connexion et réessaie.");
+        return;
+      }
+      const existing = read.profile;
       if (isProfileComplete(existing)) {
         applyCloudUser(
           {
@@ -63,12 +72,7 @@ export default function CompleteProfileScreen({ navigation }: Props) {
         void trackActivity("login", { provider: "google" });
         void notifySecureLogin("login");
         navigation.replace("Success");
-        return;
       }
-      setUserId(user.id);
-      setEmail(user.email ?? "");
-      const metaName = String(user.user_metadata?.full_name ?? user.user_metadata?.name ?? "").trim();
-      setDisplayName(metaName || user.email?.split("@")[0] || "Élève");
     })();
   }, [applyCloudUser, navigation]);
 
@@ -88,20 +92,27 @@ export default function CompleteProfileScreen({ navigation }: Props) {
     }
     setError("");
     setBusy(true);
+    const read = await readOwnStudentProfile();
+    if (read.error) {
+      setError("Impossible de lire ton compte. Vérifie ta connexion et réessaie.");
+      setBusy(false);
+      return;
+    }
+    const existing = read.profile;
     const result = await upsertStudentProfile({
       id: userId,
       parent_id: userId,
       name: displayName,
       email,
       class_level: classe,
-      parent_phone: phone ?? null,
+      parent_phone: phone ?? existing?.parent_phone ?? null,
       platform: "mobile",
-      total_xp: 0,
-      streak: 0,
-      lessons_done: 0,
+      total_xp: existing?.total_xp ?? 0,
+      streak: existing?.streak ?? 0,
+      lessons_done: existing?.lessons_done ?? 0,
     });
     if (result.error) {
-      setError(result.error);
+      setError(profileSaveMessage(result.error));
       setBusy(false);
       return;
     }
@@ -111,13 +122,14 @@ export default function CompleteProfileScreen({ navigation }: Props) {
         email,
         nom: displayName,
         classe,
-        parentPhone: phone,
-        xpTotale: 0,
-        streak: 0,
-        lessonsDone: 0,
+        parentPhone: phone ?? existing?.parent_phone ?? undefined,
+        xpTotale: existing?.total_xp ?? 0,
+        streak: existing?.streak ?? 0,
+        lessonsDone: existing?.lessons_done ?? 0,
         rang: 1,
+        avatarId: existing?.avatar_id ?? undefined,
       },
-      { fresh: true, authenticate: false },
+      { fresh: !existing, authenticate: false },
     );
     void ensureBeginnerLeague(userId);
     void trackActivity("profile_complete", { classe, platform: "mobile" });
@@ -132,7 +144,7 @@ export default function CompleteProfileScreen({ navigation }: Props) {
         <Logo height={76} style={{ alignSelf: "center" }} />
         <Text style={styles.title}>Dernière étape</Text>
         <Text style={[styles.sub, { color: colors.textSecondary }]}>
-          Compte Google : {email || displayName}. Choisis ta classe pour continuer.
+          {email || displayName}. Choisis ta classe pour continuer.
         </Text>
         <Text style={[styles.label, { color: colors.textDark }]}>Ma classe</Text>
         <ClassPicker value={classe} onChange={setClasse} />

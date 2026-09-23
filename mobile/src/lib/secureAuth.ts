@@ -18,7 +18,7 @@ const PRODUCTION_API = "https://learnflow-web.vercel.app";
 
 let lastOtpChannel: OtpChannel = "learnflow";
 
-function apiBase() {
+export function learnflowApiBase() {
   let base = (process.env.EXPO_PUBLIC_LEARNFLOW_API_URL ?? "").replace(/\/$/, "");
   if (!base) return PRODUCTION_API;
   const isLoopback = /localhost|127\.0\.0\.1/i.test(base);
@@ -36,7 +36,7 @@ async function accessToken(): Promise<string | null> {
 
 async function callSecure(action: SecureAction, extra: Record<string, string> = {}): Promise<SecureJson | null> {
   const token = await accessToken();
-  const base = apiBase();
+  const base = learnflowApiBase();
   if (!token || !base) return null;
   try {
     const res = await fetch(`${base}/api/auth/secure`, {
@@ -68,7 +68,7 @@ export async function sendSecureEmailOtp(
   const viaApi = await callSecure("send-otp", options?.force ? { force: "true" } : {});
   if (viaApi?.channel) lastOtpChannel = viaApi.channel;
   if (viaApi?.ok) return { retryAfterSeconds: viaApi.retryAfterSeconds ?? 60 };
-  if (!apiBase()) {
+  if (!learnflowApiBase()) {
     return { error: "Ajoute EXPO_PUBLIC_LEARNFLOW_API_URL (adresse du web LearnFlow) pour recevoir le code." };
   }
   return {
@@ -105,7 +105,7 @@ export async function createConfirmedSignup(input: {
   lastName: string;
   classLevel: string;
 }): Promise<{ error?: string }> {
-  const base = apiBase();
+  const base = learnflowApiBase();
   if (!base) {
     return { error: "Ajoute EXPO_PUBLIC_LEARNFLOW_API_URL pour t’inscrire." };
   }

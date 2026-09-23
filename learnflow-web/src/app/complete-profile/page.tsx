@@ -7,7 +7,7 @@ import ParentPhoneField from "@/components/ParentPhoneField";
 import ClassPicker from "@/components/ClassPicker";
 import { AuthStage, Page, PrimaryButton } from "@/components/ui";
 import { classLabel } from "@/data/mock";
-import { ensureBeginnerLeague, fetchOwnStudentProfile, trackActivity, upsertStudentProfile } from "@/lib/cloud";
+import { ensureBeginnerLeague, profileSaveMessage, readOwnStudentProfile, trackActivity, upsertStudentProfile } from "@/lib/cloud";
 import { isProfileComplete } from "@/lib/cloudTypes";
 import { markParentConfirmed } from "@/lib/parentConfirm";
 import { isValidTogoLocal, toTogoE164, TOGO_MOBILE_ERROR } from "@/lib/phoneTogo";
@@ -43,7 +43,17 @@ export default function CompleteProfilePage() {
         router.replace("/login");
         return;
       }
-      const existing = await fetchOwnStudentProfile();
+      setUserId(user.id);
+      setEmail(user.email ?? "");
+      const metaName = String(user.user_metadata?.full_name ?? user.user_metadata?.name ?? "").trim();
+      setDisplayName(metaName || user.email?.split("@")[0] || "Élève");
+      const read = await readOwnStudentProfile();
+      if (read.error === "read") {
+        setError("Impossible de lire ton compte. Vérifie ta connexion et réessaie.");
+        setReady(true);
+        return;
+      }
+      const existing = read.profile;
       if (isProfileComplete(existing)) {
         applyCloudUser(
           {
@@ -64,10 +74,6 @@ export default function CompleteProfilePage() {
         router.replace("/success");
         return;
       }
-      setUserId(user.id);
-      setEmail(user.email ?? "");
-      const metaName = String(user.user_metadata?.full_name ?? user.user_metadata?.name ?? "").trim();
-      setDisplayName(metaName || user.email?.split("@")[0] || "Élève");
       setReady(true);
     });
   }, [applyCloudUser, router]);
@@ -88,7 +94,13 @@ export default function CompleteProfilePage() {
     }
     setError("");
     setBusy(true);
-    const existing = await fetchOwnStudentProfile();
+    const read = await readOwnStudentProfile();
+    if (read.error) {
+      setError("Impossible de lire ton compte. Vérifie ta connexion et réessaie.");
+      setBusy(false);
+      return;
+    }
+    const existing = read.profile;
     const result = await upsertStudentProfile({
       id: userId,
       parent_id: userId,
@@ -102,7 +114,7 @@ export default function CompleteProfilePage() {
       lessons_done: existing?.lessons_done ?? 0,
     });
     if (result.error) {
-      setError(result.error);
+      setError(profileSaveMessage(result.error));
       setBusy(false);
       return;
     }
@@ -144,7 +156,7 @@ export default function CompleteProfilePage() {
             Dernière étape
           </h1>
           <p className="mt-1 text-sm font-semibold" style={{ color: colors.textSecondary }}>
-            Compte Google : {email || displayName}. Choisis ta classe pour continuer.
+            {email || displayName}. Choisis ta classe pour continuer.
           </p>
         </div>
 

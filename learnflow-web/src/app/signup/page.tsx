@@ -12,6 +12,7 @@ import { AuthStage, Page, PrimaryButton } from "@/components/ui";
 import { isValidTogoLocal, toTogoE164, TOGO_MOBILE_ERROR } from "@/lib/phoneTogo";
 import { advanceFromSession } from "@/lib/advanceAuth";
 import { savePendingAuth } from "@/lib/pendingAuth";
+import { signInWithPasswordRecovered } from "@/lib/passwordAuth";
 import { createConfirmedSignup } from "@/lib/secureAuth";
 import { getBrowserSupabase } from "@/lib/supabase";
 import type { ClasseAPC } from "@/types/learnflow";
@@ -107,13 +108,10 @@ export default function SignUpPage() {
       setError(created.error);
       return;
     }
-    const { error: signInError } = await supabase.auth.signInWithPassword({
-      email: emailNorm,
-      password,
-    });
-    if (signInError) {
+    const signed = await signInWithPasswordRecovered(emailNorm, password);
+    if (signed.error) {
       setBusy(false);
-      setError(signInError.message || "Connexion impossible après inscription. Réessaie.");
+      setError(signed.error);
       return;
     }
     await advanceFromSession(useLearnFlowStore.getState().applyCloudUser, (path) => router.replace(path));

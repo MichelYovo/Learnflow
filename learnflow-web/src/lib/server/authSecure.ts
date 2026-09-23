@@ -133,29 +133,50 @@ export async function handleEmailSignup(input: {
   const already =
     msg.includes("already") || msg.includes("registered") || msg.includes("exists") || msg.includes("duplicate");
 
-  if (!already) {
-    return { error: error?.message || "Inscription impossible.", status: 400 };
+  if (already) {
+    // Ne jamais réécrire le mot de passe d’un compte existant : n’importe qui
+    // connaissant l’email pouvait ainsi prendre la main sur un compte non confirmé.
+    return { error: "Ce compte existe déjà. Connecte-toi.", status: 409 };
   }
 
+  return { error: "Inscription impossible. Vérifie l’email et le mot de passe, puis réessaie.", status: 400 };
+}
+
+function isEmailNotConfirmed(error: { message?: string; code?: string } | null) {
+  if (!error) return false;
+  const code = (error.code ?? "").toLowerCase();
+  const message = (error.message ?? "").toLowerCase();
+  return code === "email_not_confirmed" || message.includes("not confirmed");
+}
+
+/**
+ * Ancien compte bloqué par « Confirm email » : le mot de passe est bon,
+ * GoTrue refuse seulement la session. On confirme, sans changer le mot de passe.
+ */
+export async function confirmUnconfirmedPassword(emailRaw: string, password: string) {
+  const email = emailRaw.trim().toLowerCase();
+  if (!email.includes("@") || password.length < 8) {
+    return { error: "Email ou mot de passe incorrect.", status: 401 as const };
+  }
+  const url = supabaseUrl();
+  const anon = anonKey();
+  if (!url || !anon) return { error: "Supabase n’est pas configuré.", status: 503 as const };
+
+  const client = createClient(url, anon, { auth: { persistSession: false, autoRefreshToken: false } });
+  const { error } = await client.auth.signInWithPassword({ email, password });
+  if (!error) return { ok: true as const };
+  if (!isEmailNotConfirmed(error)) {
+    return { error: "Email ou mot de passe incorrect.", status: 401 as const };
+  }
+
+  const admin = adminClient();
+  if (!admin) return { error: "Serveur auth non configuré.", status: 503 as const };
   const existing = await findAuthUserByEmail(admin, email);
-  if (!existing?.id) {
-    return { error: "Ce compte existe déjà. Connecte-toi.", status: 409 };
-  }
+  if (!existing?.id) return { error: "Email ou mot de passe incorrect.", status: 401 as const };
 
-  if (existing.email_confirmed_at) {
-    return { error: "Ce compte existe déjà. Connecte-toi.", status: 409 };
-  }
-
-  // Compte bloqué par Confirm email (session jamais ouverte) : on confirme + maj MDP.
-  const { error: updErr } = await admin.auth.admin.updateUserById(existing.id, {
-    password,
-    email_confirm: true,
-    user_metadata: input.user_metadata ?? {},
-  });
-  if (updErr) {
-    return { error: updErr.message, status: 500 };
-  }
-  return { ok: true as const, userId: existing.id, recovered: true as const };
+  const { error: updErr } = await admin.auth.admin.updateUserById(existing.id, { email_confirm: true });
+  if (updErr) return { error: "Impossible de confirmer ce compte. Réessaie.", status: 500 as const };
+  return { ok: true as const, recovered: true as const };
 }
 
 function otpPepper() {
@@ -696,9 +717,20 @@ export async function handleLoginNotice(
   const email = (user.email || student?.email || "").trim().toLowerCase();
   const when = formatLome();
   const platform = opts.platform;
-  const event = opts.event || "login";
+  const allowedEvents = new Set(["login", "signup", "profile_complete", "parent_linked"]);
+  const event = allowedEvents.has(opts.event ?? "") ? (opts.event as string) : "login";
+  const hourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
 
-  if (email.includes("@")) {
+  const { data: recentMail } = await admin
+    .from("login_notices")
+    .select("id")
+    .eq("student_id", user.id)
+    .eq("channel", "email")
+    .eq("status", "sent")
+    .gte("created_at", hourAgo)
+    .limit(1);
+
+  if (email.includes("@") && !recentMail?.length) {
     const html = wrapEmail(
       "Connexion à LearnFlow",
       `<p style="margin:0 0 12px;font-size:15px;line-height:1.5;">Bonjour ${escapeHtml(name)},</p>
@@ -715,7 +747,40 @@ export async function handleLoginNotice(
 
   const parentPhone = student?.parent_phone?.trim() ?? "";
   const welcomeEvents = new Set(["signup", "parent_linked"]);
-  if (parentPhone && welcomeEvents.has(event) && isValidTogoLocal(parentPhone)) {
+  const dayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+  const burstAgo = new Date(Date.now() - 15 * 60 * 1000).toISOString();
+  const { count: waToday } = await admin
+    .from("login_notices")
+    .select("id", { count: "exact", head: true })
+    .eq("student_id", user.id)
+    .eq("channel", "whatsapp")
+    .eq("status", "sent")
+    .gte("created_at", dayAgo);
+  const { count: waBurst } = await admin
+    .from("login_notices")
+    .select("id", { count: "exact", head: true })
+    .eq("student_id", user.id)
+    .eq("channel", "whatsapp")
+    .gte("created_at", burstAgo);
+  const { data: samePhone } = parentPhone
+    ? await admin
+        .from("login_notices")
+        .select("id")
+        .eq("student_id", user.id)
+        .eq("channel", "whatsapp")
+        .eq("status", "sent")
+        .eq("detail", `to:${whatsappDigits(parentPhone)}`)
+        .limit(1)
+    : { data: [] as { id: string }[] };
+
+  if (
+    parentPhone &&
+    welcomeEvents.has(event) &&
+    isValidTogoLocal(parentPhone) &&
+    (waToday ?? 0) < 2 &&
+    (waBurst ?? 0) < 3 &&
+    !samePhone?.length
+  ) {
     const text =
       `LearnFlow — suivi parental\n\n` +
       `Bonjour,\n\n` +
@@ -729,7 +794,7 @@ export async function handleLoginNotice(
       "whatsapp",
       event === "signup" ? "signup" : "parent_linked",
       wa.ok ? "sent" : wa.skipped ? "skipped" : "error",
-      wa.error,
+      wa.ok ? `to:${whatsappDigits(parentPhone)}` : wa.error,
     );
   }
 
