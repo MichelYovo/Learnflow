@@ -4,12 +4,12 @@ type Tilt = "none" | "left" | "right";
 
 type Props = {
   children: ReactNode;
-  /** Dark screen (Blitz) — home indicator becomes light. */
   dark?: boolean;
   tilt?: Tilt;
-  glow?: "blue" | "green" | "amber" | "red" | "none";
+  glow?: "blue" | "none";
   className?: string;
   label?: string;
+  priority?: boolean;
 };
 
 const TILT: Record<Tilt, string> = {
@@ -21,9 +21,6 @@ const TILT: Record<Tilt, string> = {
 const GLOW: Record<NonNullable<Props["glow"]>, string> = {
   none: "",
   blue: "lf-phone-glow-blue",
-  green: "lf-phone-glow-green",
-  amber: "lf-phone-glow-amber",
-  red: "lf-phone-glow-red",
 };
 
 export default function Phone({
@@ -48,9 +45,7 @@ export default function Phone({
           <span className="lf-phone-camera" />
         </div>
         <div className="lf-phone-screen" data-dark={dark ? "true" : "false"}>
-          <div className="lf-phone-ui">
-            {children}
-          </div>
+          <div className="lf-phone-ui">{children}</div>
         </div>
         <span className={`lf-phone-home ${dark ? "lf-phone-home-light" : ""}`} aria-hidden />
         <span className="lf-phone-glare" aria-hidden />

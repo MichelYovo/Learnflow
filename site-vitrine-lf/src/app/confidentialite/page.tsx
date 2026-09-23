@@ -14,38 +14,38 @@ export default function PrivacyPage() {
     <>
       <Header />
       <article className="mx-auto w-full max-w-3xl flex-1 px-[clamp(1.15rem,4.5vw,2.25rem)] py-12 sm:py-16">
-        <p className="text-xs font-extrabold uppercase tracking-widest text-[#1677FF]">Légal</p>
-        <h1 className="lf-h1 mt-2 font-black text-[#1C1917]">Confidentialité</h1>
-        <p className="mt-4 text-sm font-semibold text-[#A8A29E]">LearnFlow Togo · Version 1.0.0</p>
-        <div className="mt-8 space-y-6 text-base font-medium leading-relaxed text-[#475569]">
+        <p className="text-xs font-extrabold uppercase tracking-widest text-[var(--lf-brand)]">Légal</p>
+        <h1 className="lf-h1 mt-2 font-black">Confidentialité</h1>
+        <p className="mt-4 text-sm font-semibold text-[var(--lf-faint)]">LearnFlow Togo · Version 1.0.0</p>
+        <div className="mt-8 space-y-6 text-base font-medium leading-relaxed text-[var(--lf-muted)]">
           <p>
-            Tes données élève restent <strong className="text-[#1C1917]">offline-first</strong> sur l’appareil. Les
+            Tes données élève restent <strong className="text-[var(--lf-ink)]">offline-first</strong> sur l’appareil. Les
             profils multi-élèves sont stockés localement. Tu contrôles ce qui peut être partagé.
           </p>
-          <h2 className="text-xl font-extrabold text-[#1C1917]">Ce qui reste sur le téléphone</h2>
+          <h2 className="text-xl font-extrabold text-[var(--lf-ink)]">Ce qui reste sur le téléphone</h2>
           <ul className="list-disc space-y-2 pl-5">
             <li>Profils, PIN (empreinte SHA-256 locale), progression, flashcards, agenda, inbox</li>
             <li>Sessions d’étude et cache de ligue (SQLite)</li>
           </ul>
-          <h2 className="text-xl font-extrabold text-[#1C1917]">Ce que tu peux activer</h2>
+          <h2 className="text-xl font-extrabold text-[var(--lf-ink)]">Ce que tu peux activer</h2>
           <ul className="list-disc space-y-2 pl-5">
             <li>Profil visible en ligue (prénom dans le classement du groupe)</li>
             <li>Partage de score Blitz (texte WhatsApp)</li>
             <li>SMS parent passif : félicitations uniquement (10/10, Challenger) — jamais de surveillance</li>
             <li>Analytique anonyme, sans contenu de cours</li>
           </ul>
-          <h2 className="text-xl font-extrabold text-[#1C1917]">Cloud optionnel</h2>
+          <h2 className="text-xl font-extrabold text-[var(--lf-ink)]">Cloud optionnel</h2>
           <p>
             Sans configuration Supabase, l’app tourne entièrement en local. Avec cloud, seuls les profils et scores de
             ligue nécessaires à la sync sont envoyés. En mode démo, aucun mot de passe n’est envoyé hors appareil.
           </p>
-          <h2 className="text-xl font-extrabold text-[#1C1917]">Contact</h2>
+          <h2 className="text-xl font-extrabold text-[var(--lf-ink)]">Contact</h2>
           <p>
             Questions :{" "}
-            <SupportButton className="font-extrabold text-[#1677FF]">écrire au support</SupportButton>
+            <SupportButton className="font-extrabold text-[var(--lf-brand)]">écrire au support</SupportButton>
           </p>
         </div>
-        <Link href="/" className="mt-10 inline-block font-extrabold text-[#1677FF]">
+        <Link href="/" className="mt-10 inline-block font-extrabold text-[var(--lf-brand)]">
           ← Retour au site
         </Link>
       </article>

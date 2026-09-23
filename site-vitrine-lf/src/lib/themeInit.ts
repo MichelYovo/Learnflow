@@ -1,0 +1,2 @@
+/** Inline before paint — prevents flash of wrong theme. Safe to import from Server Components. */
+export const themeInitScript = `(function(){try{var k='lf-theme';var t=localStorage.getItem(k);if(t!=='light'&&t!=='dark'){t=window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'}var r=document.documentElement;r.dataset.theme=t;r.classList.toggle('dark',t==='dark');r.style.colorScheme=t}catch(e){}})();`;

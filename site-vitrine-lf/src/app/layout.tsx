@@ -1,13 +1,15 @@
 import type { Metadata, Viewport } from "next";
 import { Poppins } from "next/font/google";
-import SupportProvider from "../components/site/SupportProvider";
+import SiteProviders from "../components/site/SiteProviders";
+import { themeInitScript } from "../lib/themeInit";
 import "./globals.css";
 
 const poppins = Poppins({
   variable: "--font-poppins",
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800", "900"],
+  weight: ["500", "700", "800"],
   display: "swap",
+  preload: true,
 });
 
 export const metadata: Metadata = {
@@ -56,14 +58,20 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
-  themeColor: "#0B1B3A",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#0B1B3A" },
+    { media: "(prefers-color-scheme: dark)", color: "#060A12" },
+  ],
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="fr" className={`${poppins.variable} h-full antialiased`}>
+    <html lang="fr" className={`${poppins.variable} h-full antialiased`} suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+      </head>
       <body className="flex min-h-dvh w-full max-w-[100vw] flex-col overflow-x-hidden font-sans">
-        <SupportProvider>{children}</SupportProvider>
+        <SiteProviders>{children}</SiteProviders>
       </body>
     </html>
   );

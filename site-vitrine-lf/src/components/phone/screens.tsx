@@ -2,10 +2,10 @@ import { SUBJECTS } from "../../lib/brand";
 import { StatusBar, TabBar } from "./chrome";
 
 const MODES_HOME = [
-  { label: "Libre", spira: "calme", bg: "#ECFDF5", color: "#10B981", border: "#A7F3D0" },
-  { label: "Guidé", spira: "confiant", bg: "#E6F4FF", color: "#1677FF", border: "#1677FF" },
-  { label: "Cramming", spira: "determine", bg: "#FFFBEB", color: "#F59E0B", border: "#FDE68A" },
-  { label: "Blitz 60s", spira: "enerve", bg: "#FEF2F2", color: "#EF4444", border: "#FECACA" },
+  { label: "Libre", spira: "calme" },
+  { label: "Guidé", spira: "confiant" },
+  { label: "Cramming", spira: "determine" },
+  { label: "Blitz 60s", spira: "enerve" },
 ];
 
 export function HomeMock() {
@@ -15,14 +15,14 @@ export function HomeMock() {
         <StatusBar />
         <div className="flex items-center justify-between gap-3 px-5 py-3.5">
           <div className="flex min-w-0 items-center gap-3">
-            <img src="/avatars/avatar-01.png" alt="" className="h-12 w-12 rounded-full object-cover" />
+            <img src="/avatars/avatar-01.png" alt="" width={48} height={48} loading="eager" decoding="async" className="h-12 w-12 rounded-full object-cover" />
             <div>
               <p className="text-[13px] font-semibold text-[#64748B]">Salut</p>
               <p className="text-[20px] font-extrabold leading-none text-[#1C1917]">Kofi</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <span className="flex items-center gap-1 rounded-[14px] bg-[#FEF3C7] px-2.5 py-2 text-[14px] font-extrabold text-[#D97706]">
+            <span className="flex items-center gap-1 rounded-[14px] bg-[#E6F4FF] px-2.5 py-2 text-[14px] font-extrabold text-[#1677FF]">
               🔥 7
             </span>
             <span className="relative flex h-10 w-10 items-center justify-center rounded-full bg-[#F8FAFC]">
@@ -34,7 +34,7 @@ export function HomeMock() {
       </div>
 
       <div className="flex-1 space-y-4 overflow-hidden px-5 py-4">
-        <div className="flex items-center justify-between rounded-3xl bg-[linear-gradient(135deg,#1677FF_0%,#00B8F4_100%)] px-5 py-5">
+        <div className="flex items-center justify-between rounded-3xl bg-[#1677FF] px-5 py-5">
           <div className="min-w-0 flex-1 pr-3">
             <p className="text-[20px] font-extrabold text-white">Pythagore</p>
             <p className="mt-1 text-[15px] font-semibold text-white/90">Leçon 3/5 · Maths</p>
@@ -50,15 +50,12 @@ export function HomeMock() {
           {MODES_HOME.map((m) => (
             <div
               key={m.label}
-              className="min-h-[118px] rounded-3xl p-4"
-              style={{ background: m.bg, border: `2px solid ${m.border}` }}
+              className="min-h-[118px] rounded-3xl border-2 border-[#BAE0FF] bg-[#E6F4FF] p-4"
             >
               <div className="mb-3 flex h-[56px] w-[56px] items-center justify-center overflow-hidden rounded-[18px] bg-white">
-                <img src={`/spira/${m.spira}.png`} alt="" className="h-12 w-12 object-contain" />
+                <img src={`/spira/${m.spira}.png`} alt="" width={48} height={48} loading="lazy" decoding="async" className="h-12 w-12 object-contain" />
               </div>
-              <p className="text-[16px] font-extrabold" style={{ color: m.color }}>
-                {m.label}
-              </p>
+              <p className="text-[16px] font-extrabold text-[#1677FF]">{m.label}</p>
             </div>
           ))}
         </div>
@@ -71,11 +68,8 @@ export function HomeMock() {
           <div className="grid grid-cols-5 gap-1">
             {SUBJECTS.slice(0, 5).map((s) => (
               <div key={s.id} className="flex flex-col items-center gap-1.5">
-                <span
-                  className="flex h-12 w-12 items-center justify-center rounded-[18px]"
-                  style={{ background: s.bg }}
-                >
-                  <img src={`/icons/subjects/${s.id}.png`} alt="" className="h-8 w-8 object-contain" />
+                <span className="flex h-12 w-12 items-center justify-center rounded-[18px] bg-[#E6F4FF]">
+                  <img src={`/icons/subjects/${s.id}.png`} alt="" width={32} height={32} loading="lazy" decoding="async" className="h-8 w-8 object-contain" />
                 </span>
                 <span className="w-full truncate text-center text-[10px] font-bold text-[#64748B]">{s.label}</span>
               </div>
@@ -99,11 +93,11 @@ export function HomeMock() {
           </div>
         </div>
 
-        <div className="flex items-center gap-3 rounded-3xl border border-[#FDE68A] bg-[#FFFBEB] p-3.5">
-          <img src="/badges/gold.png" alt="" className="h-12 w-12 object-contain" />
+        <div className="flex items-center gap-3 rounded-3xl border border-[#BAE0FF] bg-[#E6F4FF] p-3.5">
+          <img src="/badges/gold.png" alt="" width={48} height={48} loading="lazy" decoding="async" className="h-12 w-12 object-contain" />
           <div className="min-w-0 flex-1">
             <p className="text-[15px] font-extrabold text-[#1C1917]">Ligue Or</p>
-            <p className="text-[13px] font-semibold text-[#D97706]">#4</p>
+            <p className="text-[13px] font-semibold text-[#1677FF]">#4</p>
           </div>
         </div>
       </div>
@@ -124,7 +118,7 @@ export function QuizMock() {
           <div className="h-2.5 w-[70%] rounded-full bg-[#1677FF]" />
         </div>
         <span className="text-[13px] font-extrabold text-[#1677FF]">7/10</span>
-        <img src="/spira/confiant.png" alt="" className="h-8 w-8 object-contain" />
+        <img src="/spira/confiant.png" alt="" width={32} height={32} loading="lazy" decoding="async" className="h-8 w-8 object-contain" />
       </div>
       <div className="flex-1 space-y-3 px-5 pt-2">
         <p className="text-[11px] font-extrabold uppercase tracking-wider text-[#A8A29E]">Assimilation · SVT</p>
@@ -142,13 +136,13 @@ export function QuizMock() {
             className="flex items-center gap-3 rounded-[18px] border-2 px-3 py-3 text-[14px] font-bold"
             style={
               o.ok
-                ? { borderColor: "#10B981", background: "#ECFDF5", color: "#065F46" }
+                ? { borderColor: "#1677FF", background: "#E6F4FF", color: "#0B1B3A" }
                 : { borderColor: "#E7E5E4", background: "#fff", color: "#1C1917", opacity: 0.45 }
             }
           >
             <span
               className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[12px] font-black"
-              style={o.ok ? { background: "#10B981", color: "#fff" } : { background: "#F5F5F4", color: "#64748B" }}
+              style={o.ok ? { background: "#1677FF", color: "#fff" } : { background: "#F5F5F4", color: "#64748B" }}
             >
               {o.ok ? "✓" : o.letter}
             </span>
@@ -156,10 +150,10 @@ export function QuizMock() {
           </div>
         ))}
       </div>
-      <div className="border-t-2 border-[#A7F3D0] bg-[#ECFDF5] px-5 py-3">
-        <p className="text-[15px] font-extrabold text-[#10B981]">C’est ça !</p>
+      <div className="border-t-2 border-[#BAE0FF] bg-[#E6F4FF] px-5 py-3">
+        <p className="text-[15px] font-extrabold text-[#1677FF]">C’est ça !</p>
         <p className="mt-0.5 text-[12px] font-medium leading-4 text-[#64748B]">L’influx passe d’un neurone à l’autre au niveau de la synapse.</p>
-        <div className="mt-2 rounded-2xl bg-[#10B981] py-2.5 text-center text-[14px] font-extrabold text-white">Continuer</div>
+        <div className="mt-2 rounded-2xl bg-[#1677FF] py-2.5 text-center text-[14px] font-extrabold text-white">Continuer</div>
       </div>
     </div>
   );
@@ -199,9 +193,9 @@ export function ResultMock() {
 
 export function LeagueMock() {
   const podium = [
-    { place: 2, name: "Ama", xp: "3 120", avatar: "/avatars/avatar-05.png", h: 96, g: "linear-gradient(#E2E8F0,#94A3B8)" },
-    { place: 1, name: "Toi", xp: "3 840", avatar: "/avatars/avatar-01.png", h: 132, g: "linear-gradient(#FDE68A,#F59E0B)" },
-    { place: 3, name: "Kodjo", xp: "2 910", avatar: "/avatars/avatar-08.png", h: 80, g: "linear-gradient(#FED7AA,#F97316)" },
+    { place: 2, name: "Ama", xp: "3 120", avatar: "/avatars/avatar-05.png", h: 96, g: "#94A3B8" },
+    { place: 1, name: "Toi", xp: "3 840", avatar: "/avatars/avatar-01.png", h: 132, g: "#1677FF" },
+    { place: 3, name: "Kodjo", xp: "2 910", avatar: "/avatars/avatar-08.png", h: 80, g: "#64748B" },
   ];
   return (
     <div className="flex h-full flex-col bg-[#FAFAF9]">
@@ -219,11 +213,15 @@ export function LeagueMock() {
       </div>
       <div className="flex-1 overflow-hidden px-4 pt-3">
         <div className="mb-3 flex items-center justify-center gap-2">
-          {["bronze", "silver", "gold", "platinum", "diamond"].map((t, i) => (
+          {["bronze", "silver", "gold"].map((t, i) => (
             <img
               key={t}
               src={`/badges/${t}.png`}
               alt=""
+              width={i === 2 ? 48 : 32}
+              height={i === 2 ? 48 : 32}
+              loading="lazy"
+              decoding="async"
               className={`object-contain ${i === 2 ? "h-12 w-12" : "h-8 w-8 opacity-50"}`}
             />
           ))}
@@ -235,15 +233,19 @@ export function LeagueMock() {
           <div className="flex items-end justify-center gap-2">
             {podium.map((p) => (
               <div key={p.place} className="flex flex-1 flex-col items-center gap-1.5">
-                {p.place === 1 ? <span className="text-[#F59E0B]">🏅</span> : <span className="h-[22px]" />}
+                {p.place === 1 ? <span className="text-[#1677FF]">🏅</span> : <span className="h-[22px]" />}
                 <img
                   src={p.avatar}
                   alt=""
+                  width={p.place === 1 ? 64 : 52}
+                  height={p.place === 1 ? 64 : 52}
+                  loading="lazy"
+                  decoding="async"
                   className="rounded-full object-cover"
                   style={{
                     width: p.place === 1 ? 64 : 52,
                     height: p.place === 1 ? 64 : 52,
-                    border: p.place === 1 ? "3px solid #FBBF24" : "2px solid #fff",
+                    border: p.place === 1 ? "3px solid #1677FF" : "2px solid #fff",
                   }}
                 />
                 <p className="text-[13px] font-extrabold text-[#1C1917]">{p.name}</p>
@@ -335,7 +337,7 @@ export function CourseMock() {
         </div>
       </div>
       <div className="flex-1 space-y-3 overflow-hidden px-5 py-3">
-        <img src="/schemas/neurone.png" alt="" className="h-28 w-full rounded-2xl object-cover" />
+        <img src="/schemas/neurone.jpg" alt="" width={340} height={112} loading="lazy" decoding="async" className="h-28 w-full rounded-2xl object-cover" />
         <ul className="space-y-3.5">
           {[
             <>Le <span className="font-bold text-[#1677FF]">neurone</span> conduit le message nerveux dans un seul sens.</>,

@@ -4,15 +4,60 @@
   --font-sans: var(--font-poppins);
   --color-lf: #1677ff;
   --color-lf-dark: #155eef;
-  --color-lf-green: #10b981;
-  --color-lf-amber: #f59e0b;
-  --color-lf-surface: #fafaf9;
+  --color-lf-surface: #f7f8fa;
+}
+
+/* ——— Brand system (one accent + neutrals, like fata) ——— */
+:root,
+[data-theme="light"] {
+  --lf-brand: #1677ff;
+  --lf-brand-hover: #155eef;
+  --lf-brand-soft: #e8f1ff;
+  --lf-brand-border: #c5dbff;
+  --lf-ink: #0f172a;
+  --lf-muted: #64748b;
+  --lf-faint: #94a3b8;
+  --lf-bg: #f7f8fa;
+  --lf-surface: #ffffff;
+  --lf-border: #e8eaef;
+  --lf-header: #0b1b3a;
+  --lf-header-fg: #ffffff;
+  --lf-logo: #0b1b3a;
+  --lf-cta-bg: #1677ff;
+  --lf-shadow: rgba(15, 23, 42, 0.08);
+  --lf-glow: rgba(22, 119, 255, 0.22);
+}
+
+[data-theme="dark"] {
+  --lf-brand: #3b8bff;
+  --lf-brand-hover: #5a9dff;
+  --lf-brand-soft: #13233f;
+  --lf-brand-border: #1e3a5f;
+  --lf-ink: #f1f5f9;
+  --lf-muted: #94a3b8;
+  --lf-faint: #64748b;
+  --lf-bg: #070b14;
+  --lf-surface: #0e1524;
+  --lf-border: #1c2738;
+  --lf-header: #060a12;
+  --lf-header-fg: #f8fafc;
+  --lf-logo: #f8fafc;
+  --lf-cta-bg: #1677ff;
+  --lf-shadow: rgba(0, 0, 0, 0.35);
+  --lf-glow: rgba(59, 139, 255, 0.2);
 }
 
 html {
   scroll-behavior: smooth;
   overflow-x: hidden;
   width: 100%;
+  background: var(--lf-bg);
+  color-scheme: light;
+}
+
+html.dark,
+html[data-theme="dark"] {
+  color-scheme: dark;
 }
 
 body {
@@ -21,8 +66,8 @@ body {
   width: 100%;
   max-width: 100%;
   overflow-x: hidden;
-  background: #fafaf9;
-  color: #1c1917;
+  background: var(--lf-bg);
+  color: var(--lf-ink);
   font-family: var(--font-poppins), ui-sans-serif, system-ui, sans-serif;
 }
 
@@ -44,6 +89,8 @@ canvas {
 
 .lf-section {
   padding-block: clamp(2.75rem, 6vw, 5rem);
+  content-visibility: auto;
+  contain-intrinsic-size: 1px 720px;
 }
 
 .lf-kicker {
@@ -51,14 +98,14 @@ canvas {
   font-weight: 800;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: #1677ff;
+  color: var(--lf-brand);
 }
 
 .lf-lead {
   font-size: clamp(1rem, 0.3vw + 0.92rem, 1.125rem);
   line-height: 1.65;
   font-weight: 500;
-  color: #64748b;
+  color: var(--lf-muted);
 }
 
 .lf-h1,
@@ -67,6 +114,7 @@ canvas {
   max-width: 100%;
   font-weight: 900;
   letter-spacing: -0.03em;
+  color: var(--lf-ink);
 }
 
 .lf-h1 {
@@ -77,6 +125,37 @@ canvas {
 .lf-h2 {
   font-size: clamp(1.5rem, 2.4vw + 0.85rem, 2.25rem);
   line-height: 1.15;
+}
+
+.lf-surface {
+  background: var(--lf-surface);
+  border-color: var(--lf-border);
+}
+
+.lf-ctrl {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.5rem;
+  height: 2.5rem;
+  padding-inline: 0.65rem;
+  border-radius: 0.75rem;
+  border: 1px solid color-mix(in srgb, var(--lf-header-fg) 18%, transparent);
+  background: color-mix(in srgb, var(--lf-header-fg) 8%, transparent);
+  color: var(--lf-header-fg);
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.lf-ctrl:hover {
+  background: color-mix(in srgb, var(--lf-header-fg) 16%, transparent);
+  border-color: color-mix(in srgb, var(--lf-header-fg) 28%, transparent);
+}
+
+.lf-ctrl-icon {
+  padding-inline: 0;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -110,7 +189,9 @@ canvas {
   --scale: calc(var(--screen-w) / var(--ui-w));
   width: var(--phone-w);
   max-width: 100%;
-  filter: drop-shadow(0 28px 50px rgba(15, 23, 42, 0.28));
+  filter: drop-shadow(0 28px 50px var(--lf-shadow));
+  content-visibility: auto;
+  contain-intrinsic-size: 280px 580px;
 }
 
 @media (min-width: 768px) {
@@ -278,24 +359,13 @@ canvas {
 }
 
 .lf-phone-glow-blue {
-  filter: drop-shadow(0 28px 50px rgba(22, 119, 255, 0.32));
-}
-.lf-phone-glow-green {
-  filter: drop-shadow(0 28px 50px rgba(16, 185, 129, 0.32));
-}
-.lf-phone-glow-amber {
-  filter: drop-shadow(0 28px 50px rgba(245, 158, 11, 0.32));
-}
-.lf-phone-glow-red {
-  filter: drop-shadow(0 28px 50px rgba(239, 68, 68, 0.32));
+  filter: drop-shadow(0 28px 50px var(--lf-glow));
 }
 
 details summary::-webkit-details-marker {
   display: none;
 }
 
-/* Pastille logo des téléphones : disque blanc, pas d’auréole bleue.
-   Le PNG du mark a un fond noir — screen le fait disparaître. */
 .lf-phone-mark {
   isolation: isolate;
 }
@@ -304,7 +374,6 @@ details summary::-webkit-details-marker {
   max-width: none;
 }
 
-/* Petit salut de Spira, en bas de page uniquement */
 .lf-spira-wave-wrap {
   display: flex;
   justify-content: center;
@@ -317,7 +386,7 @@ details summary::-webkit-details-marker {
   object-fit: contain;
   transform-origin: 70% 80%;
   animation: lf-spira-wave 4.8s ease-in-out infinite;
-  filter: drop-shadow(0 10px 16px rgba(15, 23, 42, 0.16));
+  filter: drop-shadow(0 10px 16px var(--lf-shadow));
 }
 
 @keyframes lf-spira-wave {

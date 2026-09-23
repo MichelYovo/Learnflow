@@ -34,7 +34,7 @@ export function ProfilePlay({ playKey }: { playKey: number }) {
         <p className={`mt-1 text-[15px] font-semibold text-[#64748B] ${phase >= 1 ? "lf-play-up" : "opacity-0"}`}>3ème · Lomé</p>
         <div className={`mt-6 flex flex-wrap justify-center gap-2 ${phase >= 2 ? "lf-play-up" : "opacity-0"}`}>
           {SUBJECTS.slice(0, 4).map((s) => (
-            <span key={s.id} className="rounded-full px-3 py-1.5 text-[12px] font-extrabold" style={{ color: s.color, background: s.bg }}>
+            <span key={s.id} className="rounded-full bg-[#E6F4FF] px-3 py-1.5 text-[12px] font-extrabold text-[#1677FF]">
               {s.label}
             </span>
           ))}
