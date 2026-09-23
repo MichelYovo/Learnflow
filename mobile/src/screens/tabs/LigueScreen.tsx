@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import LeagueBadgeHero from "../../components/league/LeagueBadgeHero";
@@ -7,12 +7,11 @@ import LeaguePodium from "../../components/league/LeaguePodium";
 import LeagueTierScroller from "../../components/league/LeagueTierScroller";
 import { LeagueBadgeCircle } from "../../components/league/LeagueBadge";
 import Icon from "../../components/Icon";
-import { LEAGUE_TIERS } from "../../data/mock";
+import { isCloudProfileId, LEAGUE_TIERS, type LeaguePlayer } from "../../data/mock";
+import { fetchLeagueLeaderboard, orderLeaguePlayers } from "../../lib/leagueLive";
 import { useLearnFlowStore } from "../../store/useLearnFlowStore";
 import type { LigueNom } from "../../types/learnflow";
 import { useAppTheme } from "../../theme/useAppTheme";
-
-const TIER_ORDER: LigueNom[] = ["Bronze", "Argent", "Or", "Platine", "Diamant"];
 
 const ACHIEVEMENTS = [
   { label: "Série 7", key: "Série 7", color: "#EF4444", icon: "flame" as const },
@@ -26,21 +25,38 @@ const ACHIEVEMENTS = [
 export default function LigueScreen() {
   const ligue = useLearnFlowStore((s) => s.ligue);
   const leagueBoard = useLearnFlowStore((s) => s.leagueBoard);
-  const gelerLigue = useLearnFlowStore((s) => s.gelerLigue);
   const badgesDebloques = useLearnFlowStore((s) => s.getActiveProfile()?.badgesDebloques ?? []);
   const myAvatarId = useLearnFlowStore((s) => s.getActiveProfile()?.avatarId);
+  const activeProfileId = useLearnFlowStore((s) => s.activeProfileId);
   const { colors, darkMode } = useAppTheme();
   const [selectedTier, setSelectedTier] = useState<LigueNom>(ligue.nomLigue);
   const [tab, setTab] = useState<"classement" | "badges">("classement");
-  const [gelMsg, setGelMsg] = useState(false);
+  const [tierBoard, setTierBoard] = useState<LeaguePlayer[] | null>(null);
 
-  const sorted = useMemo(
-    () =>
-      [...leagueBoard]
-        .map((p) => (p.you && myAvatarId ? { ...p, avatarId: myAvatarId } : p))
-        .sort((a, b) => a.rank - b.rank),
-    [leagueBoard, myAvatarId]
-  );
+  useEffect(() => {
+    let cancelled = false;
+    const state = useLearnFlowStore.getState();
+    if (!isCloudProfileId(state.activeProfileId)) {
+      setTierBoard(null);
+      return;
+    }
+    const profile = state.getActiveProfile();
+    void fetchLeagueLeaderboard(selectedTier, String(state.activeProfileId), {
+      name: profile.nom,
+      avatarId: profile.avatarId,
+      initials: profile.firstName?.slice(0, 2),
+    }).then((players) => {
+      if (!cancelled) setTierBoard(players);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedTier, leagueBoard, activeProfileId]);
+
+  const sorted = useMemo(() => {
+    const source = tierBoard ?? (selectedTier === ligue.nomLigue ? leagueBoard : []);
+    return orderLeaguePlayers(source.map((p) => (p.you && myAvatarId ? { ...p, avatarId: myAvatarId } : p)));
+  }, [tierBoard, leagueBoard, selectedTier, ligue.nomLigue, myAvatarId]);
   const first = sorted.find((p) => p.rank === 1);
   const second = sorted.find((p) => p.rank === 2);
   const third = sorted.find((p) => p.rank === 3);
@@ -48,10 +64,7 @@ export default function LigueScreen() {
 
   const tierMeta = LEAGUE_TIERS.find((t) => t.id === selectedTier) ?? LEAGUE_TIERS[0];
   const isCurrent = selectedTier === ligue.nomLigue;
-  const currentIndex = TIER_ORDER.indexOf(ligue.nomLigue);
-  const selectedIndex = TIER_ORDER.indexOf(selectedTier);
-  const isUnlocked = selectedIndex <= currentIndex;
-
+  const myRank = sorted.find((p) => p.you)?.rank ?? ligue.rangActuel;
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: colors.surface }]} edges={["top"]}>
       <View style={[styles.header, { backgroundColor: colors.white, borderBottomColor: colors.border }]}>
@@ -91,25 +104,14 @@ export default function LigueScreen() {
             title={`Ligue ${tierMeta.label}`}
             subtitle={
               isCurrent
-                ? `Rang #${ligue.rangActuel} · cette semaine`
-                : isUnlocked
-                  ? "Palier débloqué"
-                  : "Palier à débloquer"
+                ? `Rang #${myRank} · cette semaine`
+                : `${sorted.length} élève${sorted.length > 1 ? "s" : ""} · classés par XP`
             }
             subtitleColor={isCurrent ? tierMeta.color : colors.textMuted}
-            rank={isCurrent ? ligue.rangActuel : null}
-            dimmed={!isUnlocked}
+            rank={isCurrent ? myRank : null}
           />
 
-          {!isCurrent ? (
-            <Text style={[styles.hint, { color: colors.textMuted }]}>
-              {isUnlocked
-                ? "Tu as déjà dépassé ce palier. Le classement s’affiche pour ta ligue actuelle."
-                : "Gagne de l’XP cette semaine pour viser ce palier."}
-            </Text>
-          ) : null}
-
-          {isCurrent && sorted.length > 0 ? (
+          {sorted.length > 0 ? (
             <>
               {first && second && third ? (
                 <LeaguePodium first={first} second={second} third={third} tier={selectedTier} />
@@ -118,33 +120,19 @@ export default function LigueScreen() {
               {(first && second && third ? rest : sorted).map((player) => (
                 <LeagueLeaderboardRow key={`${player.studentId ?? player.name}-${player.rank}`} player={player} tier={selectedTier} />
               ))}
-              <Pressable
-                accessibilityRole="button"
-                style={[styles.gelBtn, { backgroundColor: colors.white, borderColor: colors.border }]}
-                onPress={() => {
-                  gelerLigue(7);
-                  setGelMsg(true);
-                }}
-              >
-                <Icon name="shield" size={20} color={colors.primary} />
-                <Text style={{ color: colors.primary, fontWeight: "800", fontSize: 15 }}>Geler ma ligue (7j)</Text>
-              </Pressable>
-              {gelMsg || ligue.estGelee ? (
-                <Text style={[styles.hint, { color: colors.textMuted }]}>Ton rang est protégé pendant 7 jours (démo).</Text>
-              ) : null}
             </>
-          ) : isCurrent ? (
+          ) : (
             <Text style={[styles.hint, { color: colors.textMuted }]}>
               Le classement est vide pour l’instant. Dès qu’un élève se connecte, il apparaît ici — dernier tant qu’il n’a pas encore d’XP.
             </Text>
-          ) : null}
+          )}
         </ScrollView>
       ) : (
         <ScrollView contentContainerStyle={[styles.scroll, { paddingTop: 16 }]} showsVerticalScrollIndicator={false}>
           <Text style={[styles.section, { color: colors.textDark }]}>Paliers</Text>
           <View style={styles.badges}>
-            {LEAGUE_TIERS.map((tier, index) => {
-              const unlocked = index <= currentIndex;
+            {LEAGUE_TIERS.map((tier) => {
+              const current = tier.id === ligue.nomLigue;
               return (
                 <View
                   key={tier.id}
@@ -152,15 +140,14 @@ export default function LigueScreen() {
                     styles.badge,
                     {
                       backgroundColor: colors.white,
-                      borderColor: unlocked ? tier.color : colors.border,
-                      opacity: unlocked ? 1 : 0.4,
+                      borderColor: current ? tier.color : colors.border,
                     },
                   ]}
                 >
-                  <LeagueBadgeCircle nom={tier.id} size={72} selected={tier.id === ligue.nomLigue} />
+                  <LeagueBadgeCircle nom={tier.id} size={72} selected={current} />
                   <Text style={{ fontWeight: "800", fontSize: 14, color: colors.textDark }}>{tier.label}</Text>
                   <Text style={{ fontSize: 12, color: colors.textMuted }}>
-                    {unlocked ? (tier.id === ligue.nomLigue ? "Palier actuel" : "Débloqué") : "Verrouillé"}
+                    {current ? "Palier actuel" : "Ouverte"}
                   </Text>
                 </View>
               );
@@ -230,19 +217,6 @@ const styles = StyleSheet.create({
   scroll: { paddingBottom: 120 },
   section: { fontSize: 18, fontWeight: "800", paddingHorizontal: 20, paddingTop: 20, paddingBottom: 8 },
   hint: { textAlign: "center", fontSize: 14, fontWeight: "600", paddingHorizontal: 24, marginBottom: 8 },
-  gelBtn: {
-    marginTop: 12,
-    marginHorizontal: 16,
-    marginBottom: 8,
-    minHeight: 52,
-    flexDirection: "row",
-    gap: 10,
-    alignItems: "center",
-    justifyContent: "center",
-    padding: 14,
-    borderRadius: 18,
-    borderWidth: 1.5,
-  },
   badges: {
     flexDirection: "row",
     flexWrap: "wrap",

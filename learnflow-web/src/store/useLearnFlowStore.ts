@@ -458,7 +458,7 @@ export const useLearnFlowStore = create<LearnFlowState>()(
             nomLigue: ligueNom || get().ligue.nomLigue,
             rangActuel: data.ligue.rangActuel || get().ligue.rangActuel,
             scoreHebdo: Math.max(get().ligue.scoreHebdo, data.ligue.scoreHebdo),
-            estGelee: data.ligue.estGelee || get().ligue.estGelee,
+            estGelee: false,
             groupe: data.ligue.groupe || get().ligue.groupe,
           },
           ...(typeof data.aiQuotaRestant === "number"
@@ -776,15 +776,8 @@ export const useLearnFlowStore = create<LearnFlowState>()(
         return true;
       },
 
-      gelerLigue: (jours) => {
-        set({ ligue: { ...get().ligue, estGelee: true } });
-        if (get().settings.notifications.leagueUpdates) {
-          get().pushInbox({
-            kind: "league",
-            title: "Ligue gelée",
-            body: `Ton rang est protégé pendant ${jours} jour${jours > 1 ? "s" : ""}.`,
-          });
-        }
+      gelerLigue: (_jours) => {
+        set({ ligue: { ...get().ligue, estGelee: false } });
       },
 
       envoyerSMSFelicitation: async (msg) => {
@@ -1199,7 +1192,11 @@ export const useLearnFlowStore = create<LearnFlowState>()(
             appTourCompleted: Boolean(p.appTourCompleted),
             profiles,
             activeProfileId,
-            ligue: { ...BEGINNER_LIGUE, ...(p.ligue && typeof p.ligue === "object" ? p.ligue : current.ligue) },
+            ligue: {
+              ...BEGINNER_LIGUE,
+              ...(p.ligue && typeof p.ligue === "object" ? p.ligue : current.ligue),
+              estGelee: false,
+            },
             suiviParental: p.suiviParental ?? current.suiviParental,
             flashcards: extraCards.length ? [...baseCards, ...extraCards] : baseCards,
             chapterProgress:

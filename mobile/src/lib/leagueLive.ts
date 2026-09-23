@@ -1,4 +1,11 @@
 import type { LeaguePlayer } from "../data/mock";
+
+/** Plus d’XP d’abord. À égalité, celui qui a atteint le score en premier reste devant. */
+export function orderLeaguePlayers(players: LeaguePlayer[]): LeaguePlayer[] {
+  return [...players]
+    .sort((a, b) => b.xp - a.xp || a.rank - b.rank || a.name.localeCompare(b.name, "fr"))
+    .map((player, index) => ({ ...player, rank: index + 1 }));
+}
 import { beginnerLeagueBoard, initialsFromName } from "../data/mock";
 import { supabase, isSupabaseConfigured } from "./supabase";
 import { ensureBeginnerLeague } from "./cloud";
@@ -18,7 +25,9 @@ function sortRows(rows: LeagueBoardRow[]): LeagueBoardRow[] {
   return [...rows].sort((a, b) => {
     const xp = (b.weekly_xp ?? 0) - (a.weekly_xp ?? 0);
     if (xp !== 0) return xp;
-    return String(a.last_sync ?? "").localeCompare(String(b.last_sync ?? ""));
+    const left = a.last_sync && a.last_sync.length > 0 ? a.last_sync : "9999";
+    const right = b.last_sync && b.last_sync.length > 0 ? b.last_sync : "9999";
+    return left.localeCompare(right);
   });
 }
 

@@ -1,11 +1,12 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Avatar from "@/components/Avatar";
 import Icon from "@/components/Icon";
 import { LeagueBadgeCircle } from "@/components/LeagueBadge";
 import { AppBar } from "@/components/ui";
-import { LEAGUE_TIERS } from "@/data/mock";
+import { isCloudProfileId, LEAGUE_TIERS, type LeaguePlayer } from "@/data/mock";
+import { fetchLeagueLeaderboard, orderLeaguePlayers } from "@/lib/leagueLive";
 import { useLearnFlowStore } from "@/store/useLearnFlowStore";
 import { useAppTheme } from "@/theme/useAppTheme";
 import type { LigueNom } from "@/types/learnflow";
@@ -53,30 +54,45 @@ const ACHIEVEMENTS = [
 export default function LiguePage() {
   const ligue = useLearnFlowStore((s) => s.ligue);
   const leagueBoard = useLearnFlowStore((s) => s.leagueBoard);
-  const gelerLigue = useLearnFlowStore((s) => s.gelerLigue);
   const badges = useLearnFlowStore((s) => s.getActiveProfile().badgesDebloques);
   const myAvatarId = useLearnFlowStore((s) => s.getActiveProfile()?.avatarId);
-  const { colors, darkMode } = useAppTheme();
+  const activeProfileId = useLearnFlowStore((s) => s.activeProfileId);
+  const { colors } = useAppTheme();
   const [selectedTier, setSelectedTier] = useState<LigueNom>(ligue.nomLigue);
   const [tab, setTab] = useState<"classement" | "badges">("classement");
-  const [gelMsg, setGelMsg] = useState(false);
+  const [tierBoard, setTierBoard] = useState<LeaguePlayer[] | null>(null);
 
-  const sorted = useMemo(
-    () =>
-      [...leagueBoard]
-        .map((p) => (p.you && myAvatarId ? { ...p, avatarId: myAvatarId } : p))
-        .sort((a, b) => a.rank - b.rank),
-    [leagueBoard, myAvatarId]
-  );
+  useEffect(() => {
+    let cancelled = false;
+    const state = useLearnFlowStore.getState();
+    if (!isCloudProfileId(state.activeProfileId)) {
+      setTierBoard(null);
+      return;
+    }
+    const profile = state.getActiveProfile();
+    void fetchLeagueLeaderboard(selectedTier, String(state.activeProfileId), {
+      name: profile.nom,
+      avatarId: profile.avatarId,
+      initials: profile.firstName?.slice(0, 2),
+    }).then((players) => {
+      if (!cancelled) setTierBoard(players);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedTier, leagueBoard, activeProfileId]);
+
+  const sorted = useMemo(() => {
+    const source = tierBoard ?? (selectedTier === ligue.nomLigue ? leagueBoard : []);
+    return orderLeaguePlayers(source.map((p) => (p.you && myAvatarId ? { ...p, avatarId: myAvatarId } : p)));
+  }, [tierBoard, leagueBoard, selectedTier, ligue.nomLigue, myAvatarId]);
   const first = sorted.find((p) => p.rank === 1);
   const second = sorted.find((p) => p.rank === 2);
   const third = sorted.find((p) => p.rank === 3);
   const rest = sorted.filter((p) => p.rank >= 4 && p.rank <= 30);
   const tierMeta = LEAGUE_TIERS.find((t) => t.id === selectedTier) ?? LEAGUE_TIERS[0];
   const isCurrent = selectedTier === ligue.nomLigue;
-  const currentIndex = TIER_ORDER.indexOf(ligue.nomLigue);
-  const selectedIndex = TIER_ORDER.indexOf(selectedTier);
-  const isUnlocked = selectedIndex <= currentIndex;
+  const myRank = sorted.find((p) => p.you)?.rank ?? ligue.rangActuel;
 
   return (
     <div>
@@ -108,12 +124,11 @@ export default function LiguePage() {
       {tab === "classement" ? (
         <div className="mx-auto w-full min-w-0 max-w-3xl px-[clamp(0.75rem,3.6vw,2rem)] pb-8 xl:max-w-4xl">
           <div className="flex items-center justify-center gap-2 overflow-x-auto py-3 sm:gap-3">
-            {TIER_ORDER.map((id, index) => {
+            {TIER_ORDER.map((id) => {
               const on = selectedTier === id;
-              const locked = index > currentIndex;
               return (
                 <button key={id} type="button" onClick={() => setSelectedTier(id)} className="shrink-0">
-                  <LeagueBadgeCircle nom={id} size={on ? 40 : 28} selected={on} dimmed={locked && !on} />
+                  <LeagueBadgeCircle nom={id} size={on ? 40 : 28} selected={on} />
                 </button>
               );
             })}
@@ -121,31 +136,23 @@ export default function LiguePage() {
 
           <div className="relative mb-3 overflow-hidden rounded-[20px] px-5 pb-5 pt-6 text-center" style={{ background: colors.white }}>
             <div className="relative mx-auto inline-flex pb-3">
-              <LeagueBadgeCircle nom={tierMeta.id} size={108} selected dimmed={!isUnlocked} />
+              <LeagueBadgeCircle nom={tierMeta.id} size={108} selected />
               {isCurrent ? (
                 <span
                   className="absolute bottom-1 left-1/2 z-[2] -translate-x-1/2 rounded-full px-2.5 py-0.5 text-[12px] font-black text-white"
                   style={{ background: tierMeta.color, boxShadow: `0 0 0 3px ${colors.white}` }}
                 >
-                  #{ligue.rangActuel}
+                  #{myRank}
                 </span>
               ) : null}
             </div>
             <p className="text-[18px] font-extrabold sm:text-[20px]">Ligue {tierMeta.label}</p>
             <p className="mt-1 text-[13px] font-semibold" style={{ color: isCurrent ? tierMeta.color : colors.textMuted }}>
-              {isCurrent ? `Rang #${ligue.rangActuel} · cette semaine` : isUnlocked ? "Palier débloqué" : "Palier à débloquer"}
+              {isCurrent ? `Rang #${myRank} · cette semaine` : `${sorted.length} élève${sorted.length > 1 ? "s" : ""} · classés par XP`}
             </p>
           </div>
 
-          {!isCurrent ? (
-            <p className="mb-2 text-center text-sm font-semibold" style={{ color: colors.textMuted }}>
-              {isUnlocked
-                ? "Tu as déjà dépassé ce palier. Le classement s’affiche pour ta ligue actuelle."
-                : "Gagne de l’XP cette semaine pour viser ce palier."}
-            </p>
-          ) : null}
-
-          {isCurrent && sorted.length > 0 ? (
+          {sorted.length > 0 ? (
             <>
               {first && second && third ? (
             <>
@@ -264,46 +271,29 @@ export default function LiguePage() {
                 </div>
               ))}
 
-              <button
-                type="button"
-                onClick={() => {
-                  gelerLigue(7);
-                  setGelMsg(true);
-                }}
-                className="mt-3 mb-2 flex min-h-[52px] w-full items-center justify-center gap-2.5 rounded-[18px] border-[1.5px] py-3.5 text-[15px] font-extrabold"
-                style={{ background: colors.white, borderColor: colors.border, color: colors.primary }}
-              >
-                <Icon name="shield" size={20} color={colors.primary} />
-                Geler ma ligue (7j)
-              </button>
-              {gelMsg || ligue.estGelee ? (
-                <p className="text-center text-sm font-semibold" style={{ color: colors.textMuted }}>
-                  Ton rang est protégé pendant 7 jours (démo).
-                </p>
-              ) : null}
             </>
-          ) : isCurrent ? (
+          ) : (
             <p className="mb-2 text-center text-sm font-semibold" style={{ color: colors.textMuted }}>
               Le classement est vide pour l’instant. Dès qu’un élève se connecte, il apparaît ici — dernier tant qu’il n’a pas encore d’XP.
             </p>
-          ) : null}
+          )}
         </div>
       ) : (
         <div className="mx-auto w-full min-w-0 max-w-3xl space-y-3 px-[clamp(0.75rem,3.6vw,2rem)] py-4 pb-8 xl:max-w-4xl">
           <p className="text-[18px] font-extrabold">Paliers</p>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-            {LEAGUE_TIERS.map((tier, index) => {
-              const unlocked = index <= currentIndex;
+            {LEAGUE_TIERS.map((tier) => {
+              const current = tier.id === ligue.nomLigue;
               return (
                 <div
                   key={tier.id}
                   className="flex min-h-[140px] flex-col items-center gap-2 rounded-[20px] border p-4"
-                  style={{ background: colors.white, borderColor: unlocked ? tier.color : colors.border, opacity: unlocked ? 1 : 0.4 }}
+                  style={{ background: colors.white, borderColor: current ? tier.color : colors.border }}
                 >
-                  <LeagueBadgeCircle nom={tier.id} size={72} selected={tier.id === ligue.nomLigue} />
+                  <LeagueBadgeCircle nom={tier.id} size={72} selected={current} />
                   <p className="text-sm font-extrabold">{tier.label}</p>
                   <p className="text-xs" style={{ color: colors.textMuted }}>
-                    {unlocked ? (tier.id === ligue.nomLigue ? "Palier actuel" : "Débloqué") : "Verrouillé"}
+                    {current ? "Palier actuel" : "Ouverte"}
                   </p>
                 </div>
               );

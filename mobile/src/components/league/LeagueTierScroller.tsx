@@ -11,9 +11,7 @@ type Props = {
   currentTier?: LigueNom;
 };
 
-export default function LeagueTierScroller({ selected, onSelect, currentTier }: Props) {
-  const currentIndex = TIER_ORDER.indexOf(currentTier ?? selected);
-
+export default function LeagueTierScroller({ selected, onSelect }: Props) {
   return (
     <ScrollView
       horizontal
@@ -27,12 +25,11 @@ export default function LeagueTierScroller({ selected, onSelect, currentTier }: 
         flexGrow: 1,
       }}
     >
-      {TIER_ORDER.map((id, index) => {
+      {TIER_ORDER.map((id) => {
         const on = selected === id;
-        const locked = index > currentIndex;
         return (
           <Pressable key={id} onPress={() => onSelect(id)} accessibilityRole="button" style={{ flexShrink: 0 }}>
-            <LeagueBadgeCircle nom={id} size={on ? 40 : 28} selected={on} dimmed={locked && !on} />
+            <LeagueBadgeCircle nom={id} size={on ? 40 : 28} selected={on} />
           </Pressable>
         );
       })}
