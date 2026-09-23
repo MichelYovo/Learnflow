@@ -86,7 +86,7 @@ export const DIGESTION_QCM: QCMData[] = [
   },
   {
     id: "d6",
-    enonceQuestion: "Le pancréas déverse ses sucs dans…",
+    enonceQuestion: "Où le pancréas déverse-t-il ses sucs ?",
     optionsProposees: ["L'estomac", "Le duodénum", "Le côlon", "L'œsophage"],
     indexReponseCorrecte: 1,
     explicationPedagogique: "Le suc pancréatique arrive dans le duodénum (début de l'intestin grêle).",
@@ -104,7 +104,7 @@ export const DIGESTION_QCM: QCMData[] = [
   },
   {
     id: "d8",
-    enonceQuestion: "La digestion mécanique, c'est…",
+    enonceQuestion: "Qu'est-ce que la digestion mécanique ?",
     optionsProposees: ["L'action des enzymes", "Le broyage (dents, brassage)", "L'absorption", "La photosynthèse"],
     indexReponseCorrecte: 1,
     explicationPedagogique: "Mécanique = découpage physique. Chimique = enzymes.",
@@ -113,7 +113,7 @@ export const DIGESTION_QCM: QCMData[] = [
   },
   {
     id: "d9",
-    enonceQuestion: "Les glucides simples passent dans le sang au niveau…",
+    enonceQuestion: "À quel niveau les glucides simples passent-ils dans le sang ?",
     optionsProposees: ["Des villosités intestinales", "De la trachée", "Des alvéoles", "De la peau"],
     indexReponseCorrecte: 0,
     explicationPedagogique: "Après hydrolyse, glucose & co. traversent l'épithélium des villosités.",
@@ -142,7 +142,7 @@ export const CELL_QCM: QCMData[] = [
   },
   {
     id: "c2",
-    enonceQuestion: "Les mitochondries produisent surtout…",
+    enonceQuestion: "Que produisent surtout les mitochondries ?",
     optionsProposees: ["L'ATP", "La bile", "L'amidon", "Le CO₂ atmosphérique"],
     indexReponseCorrecte: 0,
     explicationPedagogique: "La respiration cellulaire y produit l'ATP, « monnaie » énergétique.",
@@ -150,7 +150,7 @@ export const CELL_QCM: QCMData[] = [
   },
   {
     id: "c3",
-    enonceQuestion: "La membrane plasmique…",
+    enonceQuestion: "Quel est le rôle de la membrane plasmique ?",
     optionsProposees: ["Fabrique les protéines", "Contrôle les échanges avec le milieu", "Stocke l'ADN", "Digère les aliments"],
     indexReponseCorrecte: 1,
     explicationPedagogique: "Elle est semi-perméable : elle sélectionne ce qui entre et sort.",
@@ -158,7 +158,7 @@ export const CELL_QCM: QCMData[] = [
   },
   {
     id: "c4",
-    enonceQuestion: "Les chloroplastes se trouvent chez…",
+    enonceQuestion: "Où trouve-t-on des chloroplastes ?",
     optionsProposees: ["La cellule animale", "La cellule végétale", "Les bactéries uniquement", "Les virus"],
     indexReponseCorrecte: 1,
     explicationPedagogique: "Les chloroplastes assurent la photosynthèse dans les cellules végétales.",
@@ -166,7 +166,7 @@ export const CELL_QCM: QCMData[] = [
   },
   {
     id: "c5",
-    enonceQuestion: "Le cytoplasme est…",
+    enonceQuestion: "Qu'est-ce que le cytoplasme ?",
     optionsProposees: ["Le suc qui baigne les organites", "La paroi cellulosique", "Le noyau", "La bile"],
     indexReponseCorrecte: 0,
     explicationPedagogique: "Milieu intérieur de la cellule, entre membrane et noyau.",
@@ -174,7 +174,7 @@ export const CELL_QCM: QCMData[] = [
   },
   {
     id: "c6",
-    enonceQuestion: "Les ribosomes servent à…",
+    enonceQuestion: "À quoi servent les ribosomes ?",
     optionsProposees: ["La photosynthèse", "La synthèse des protéines", "Le stockage d'eau", "La division du noyau"],
     indexReponseCorrecte: 1,
     explicationPedagogique: "Ils traduisent l'ARN messager en protéines.",
@@ -182,7 +182,7 @@ export const CELL_QCM: QCMData[] = [
   },
   {
     id: "c7",
-    enonceQuestion: "Une cellule eucaryote possède…",
+    enonceQuestion: "Que possède une cellule eucaryote ?",
     optionsProposees: ["Un noyau vrai", "Aucun organite", "Seulement de l'ADN libre", "Une cuticule"],
     indexReponseCorrecte: 0,
     explicationPedagogique: "Eucaryote = noyau délimité par une enveloppe.",
@@ -190,7 +190,7 @@ export const CELL_QCM: QCMData[] = [
   },
   {
     id: "c8",
-    enonceQuestion: "La mitose produit…",
+    enonceQuestion: "Que produit une mitose ?",
     optionsProposees: ["2 cellules filles identiques", "4 gamètes", "Une seule cellule", "Des anticorps"],
     indexReponseCorrecte: 0,
     explicationPedagogique: "Division conforme : 2 cellules à 2n chromosomes.",
@@ -198,7 +198,7 @@ export const CELL_QCM: QCMData[] = [
   },
   {
     id: "c9",
-    enonceQuestion: "La paroi pecto-cellulosique est propre…",
+    enonceQuestion: "À quel type de cellule la paroi pecto-cellulosique est-elle propre ?",
     optionsProposees: ["À la cellule animale", "À la cellule végétale", "Au noyau", "Aux mitochondries"],
     indexReponseCorrecte: 1,
     explicationPedagogique: "Elle rigidifie la cellule végétale, en plus de la membrane.",
@@ -206,7 +206,7 @@ export const CELL_QCM: QCMData[] = [
   },
   {
     id: "c10",
-    enonceQuestion: "L'énergie de la photosynthèse est captée par…",
+    enonceQuestion: "Quel pigment capte l'énergie de la photosynthèse ?",
     optionsProposees: ["L'hémoglobine", "La chlorophylle", "L'insuline", "La pepsine"],
     indexReponseCorrecte: 1,
     explicationPedagogique: "Le pigment vert des chloroplastes capte la lumière.",
@@ -233,59 +233,59 @@ const q = (
 export const CIRCULATION_QCM: QCMData[] = [
   q("h1", "Combien de cavités a le cœur humain ?", ["2", "3", "4", "6"], 2, "Deux oreillettes et deux ventricules."),
   q("h2", "Quelle cavité a la paroi la plus épaisse ?", ["Oreillette droite", "Ventricule droit", "Oreillette gauche", "Ventricule gauche"], 3, "Le VG pompe vers tout le corps : muscle plus épais."),
-  q("h3", "L'aorte part du…", ["Ventricule droit", "Ventricule gauche", "Oreillette droite", "Foie"], 1, "Grande circulation : VG → aorte."),
-  q("h4", "L'artère pulmonaire transporte un sang…", ["Riche en O₂ vers le corps", "Pauvre en O₂ vers les poumons", "Riche en O₂ vers les poumons", "Pauvre en O₂ vers le foie"], 1, "Exception : artère mais sang « bleu » vers les poumons."),
-  q("h5", "Le septum interventriculaire sert à…", ["Mélanger les deux sangs", "Empêcher le mélange des deux sangs", "Produire la bile", "Filtrer l'urine"], 1, "Cloison étanche entre VD et VG."),
-  q("h6", "Les veines caves aboutissent dans…", ["L'oreillette droite", "L'oreillette gauche", "Le ventricule gauche", "L'aorte"], 0, "Retour veineux de la grande circulation vers l'OD."),
-  q("h7", "La valve mitrale sépare…", ["OD et VD", "OG et VG", "VD et artère pulmonaire", "VG et aorte"], 1, "Valve auriculo-ventriculaire gauche."),
-  q("h8", "La petite circulation relie le cœur…", ["Au cerveau", "Aux poumons", "Aux reins", "À l'intestin"], 1, "VD → poumons → OG."),
-  q("h9", "Les veines pulmonaires ramènent un sang…", ["Pauvre en O₂ à l'OD", "Riche en O₂ à l'OG", "Pauvre en O₂ au VG", "Riche en O₂ à l'aorte"], 1, "Après hématose, sang rouge vers l'oreillette gauche."),
-  q("h10", "La valve tricuspide est située…", ["À gauche", "À droite", "Dans l'aorte", "Dans le foie"], 1, "Entre oreillette et ventricule droits."),
+  q("h3", "De quelle cavité part l'aorte ?", ["Le ventricule droit", "Le ventricule gauche", "L'oreillette droite", "Le foie"], 1, "Grande circulation : ventricule gauche, puis aorte."),
+  q("h4", "Quel sang l'artère pulmonaire transporte-t-elle ?", ["Un sang riche en O₂ vers le corps", "Un sang pauvre en O₂ vers les poumons", "Un sang riche en O₂ vers les poumons", "Un sang pauvre en O₂ vers le foie"], 1, "Exception : c'est une artère, mais elle conduit un sang pauvre en dioxygène vers les poumons."),
+  q("h5", "À quoi sert le septum interventriculaire ?", ["À mélanger les deux sangs", "À empêcher le mélange des deux sangs", "À produire la bile", "À filtrer l'urine"], 1, "C'est la cloison étanche entre le ventricule droit et le ventricule gauche."),
+  q("h6", "Où aboutissent les veines caves ?", ["Dans l'oreillette droite", "Dans l'oreillette gauche", "Dans le ventricule gauche", "Dans l'aorte"], 0, "Le sang de la grande circulation revient à l'oreillette droite."),
+  q("h7", "Quelles cavités la valve mitrale sépare-t-elle ?", ["L'oreillette droite et le ventricule droit", "L'oreillette gauche et le ventricule gauche", "Le ventricule droit et l'artère pulmonaire", "Le ventricule gauche et l'aorte"], 1, "C'est la valve auriculo-ventriculaire gauche."),
+  q("h8", "À quels organes la petite circulation relie-t-elle le cœur ?", ["Au cerveau", "Aux poumons", "Aux reins", "À l'intestin"], 1, "Ventricule droit, poumons, puis oreillette gauche."),
+  q("h9", "Quel sang les veines pulmonaires ramènent-elles, et vers où ?", ["Un sang pauvre en O₂ vers l'oreillette droite", "Un sang riche en O₂ vers l'oreillette gauche", "Un sang pauvre en O₂ vers le ventricule gauche", "Un sang riche en O₂ vers l'aorte"], 1, "Après l'hématose, le sang oxygéné arrive dans l'oreillette gauche."),
+  q("h10", "Où se situe la valve tricuspide ?", ["À gauche du cœur", "À droite du cœur", "Dans l'aorte", "Dans le foie"], 1, "Elle est entre l'oreillette droite et le ventricule droit."),
 ];
 
 export const NERVEUX_QCM: QCMData[] = [
-  q("n1", "Les dendrites servent à…", ["Émettre l'influx", "Recevoir les messages", "Produire la myéline", "Filtrer le sang"], 1, "Entrée du neurone."),
-  q("n2", "L'axone est…", ["Toujours multiple", "La fibre unique qui conduit l'influx", "Le noyau", "Une valve du cœur"], 1, "Un neurone = un axone."),
-  q("n3", "La gaine de myéline…", ["Ralentit l'influx", "Accélère la conduction", "Digère les protéines", "Produit l'insuline"], 1, "L'influx saute d'un nœud à l'autre."),
-  q("n4", "Un nœud de Ranvier est…", ["Une interruption de la myéline", "Le noyau", "Une synapse", "Un os du crâne"], 0, "L'influx y est relancé."),
-  q("n5", "À la synapse, le message devient…", ["Uniquement électrique", "Chimique (neurotransmetteur)", "Lumineux", "Hormonal"], 1, "Vésicules → fente → récepteurs."),
-  q("n6", "Les vésicules synaptiques contiennent…", ["L'ADN", "Des neurotransmetteurs", "De la bile", "De l'urine"], 1, "Sacs dans le bouton."),
-  q("n7", "Le cône d'implantation est…", ["Là où l'influx naît", "Une pyramide du rein", "Une valve", "Un chromosome"], 0, "Départ de l'axone."),
-  q("n8", "Un récepteur s'ouvre quand…", ["On coupe l'axone", "Le neurotransmetteur se fixe", "Le sang est trop acide", "Il fait nuit"], 1, "Canal de la membrane du 2e neurone."),
-  q("n9", "Dans un neurone, le message circule…", ["Dans les deux sens", "Dendrites → axone → synapse", "Synapse → dendrites", "Uniquement dans le sang"], 1, "Un seul sens."),
-  q("n10", "La fente synaptique est…", ["L'espace entre deux neurones", "Le noyau", "L'aorte", "Le bassinet"], 0, "Le messager chimique la traverse."),
+  q("n1", "À quoi servent les dendrites ?", ["À émettre l'influx", "À recevoir les messages", "À produire la myéline", "À filtrer le sang"], 1, "Elles sont l'entrée du neurone."),
+  q("n2", "Qu'est-ce que l'axone ?", ["Une fibre toujours multiple", "La fibre unique qui conduit l'influx", "Le noyau du neurone", "Une valve du cœur"], 1, "Un neurone possède un seul axone."),
+  q("n3", "Quel est l'effet de la gaine de myéline ?", ["Elle ralentit l'influx", "Elle accélère la conduction", "Elle digère les protéines", "Elle produit l'insuline"], 1, "L'influx saute d'un nœud de Ranvier à l'autre."),
+  q("n4", "Qu'est-ce qu'un nœud de Ranvier ?", ["Une interruption de la myéline", "Le noyau du neurone", "Une synapse", "Un os du crâne"], 0, "L'influx nerveux y est relancé."),
+  q("n5", "Que devient le message nerveux à la synapse ?", ["Il reste uniquement électrique", "Il devient chimique, grâce à un neurotransmetteur", "Il devient lumineux", "Il devient hormonal"], 1, "Des vésicules libèrent le neurotransmetteur dans la fente, vers les récepteurs."),
+  q("n6", "Que contiennent les vésicules synaptiques ?", ["De l'ADN", "Des neurotransmetteurs", "De la bile", "De l'urine"], 1, "Ce sont les sacs du bouton synaptique."),
+  q("n7", "Qu'est-ce que le cône d'implantation ?", ["L'endroit où naît l'influx", "Une pyramide du rein", "Une valve cardiaque", "Un chromosome"], 0, "C'est le départ de l'axone."),
+  q("n8", "Quand un récepteur synaptique s'ouvre-t-il ?", ["Quand on coupe l'axone", "Quand le neurotransmetteur se fixe", "Quand le sang est trop acide", "Quand il fait nuit"], 1, "C'est un canal de la membrane du neurone suivant."),
+  q("n9", "Dans quel sens le message circule-t-il dans un neurone ?", ["Dans les deux sens", "Des dendrites vers l'axone, puis la synapse", "De la synapse vers les dendrites", "Uniquement dans le sang"], 1, "Le message ne circule que dans un seul sens."),
+  q("n10", "Qu'est-ce que la fente synaptique ?", ["L'espace entre deux neurones", "Le noyau", "L'aorte", "Le bassinet"], 0, "Le messager chimique la traverse."),
 ];
 
 export const EXCRETION_QCM: QCMData[] = [
-  q("r1", "L'urine est fabriquée dans…", ["Le foie", "Les reins", "L'estomac", "Les poumons"], 1, "Filtration du sang par les reins."),
-  q("r2", "La capsule du rein est…", ["L'enveloppe externe", "Un calice", "L'uretère", "L'aorte"], 0, "Tunique protectrice."),
-  q("r3", "Les pyramides de Malpighi se trouvent…", ["Dans le cortex uniquement", "Dans la médulla", "Dans la vessie", "Dans l'oreillette"], 1, "Structures en éventail de la médulla."),
-  q("r4", "Le bassinet…", ["Produit l'insuline", "Collecte l'urine avant l'uretère", "Pompe le sang", "Conduit l'influx"], 1, "Entonnoir central du hile."),
-  q("r5", "L'uretère relie…", ["Rein et vessie", "Cœur et poumon", "Foie et intestin", "Oreille et cerveau"], 0, "Descente de l'urine."),
-  q("r6", "L'artère rénale apporte…", ["L'urine", "Le sang à filtrer", "La bile", "Les neurotransmetteurs"], 1, "Branche de l'aorte vers le rein."),
-  q("r7", "La papille est…", ["La pointe d'une pyramide", "Une valve cardiaque", "Un nœud de Ranvier", "Une base de l'ADN"], 0, "Égouttement vers le calice."),
-  q("r8", "Le cortex rénal est…", ["La zone externe de filtration", "L'uretère", "Le septum", "L'axone"], 0, "Glomérules dans le cortex."),
-  q("r9", "La veine rénale ramène…", ["L'urine à la vessie", "Le sang filtré vers la veine cave", "Le sang vers les poumons", "La lymphe au cœur"], 1, "Sang « nettoyé » hors du hile."),
-  q("r10", "Un calice sert à…", ["Recevoir l'urine d'une papille", "Contracter le ventricule", "Isoler l'axone", "Coder un gène"], 0, "Cupule de collecte."),
+  q("r1", "Où l'urine est-elle fabriquée ?", ["Dans le foie", "Dans les reins", "Dans l'estomac", "Dans les poumons"], 1, "Les reins filtrent le sang pour produire l'urine."),
+  q("r2", "Qu'est-ce que la capsule du rein ?", ["L'enveloppe externe", "Un calice", "L'uretère", "L'aorte"], 0, "C'est la tunique protectrice du rein."),
+  q("r3", "Où se trouvent les pyramides de Malpighi ?", ["Dans le cortex uniquement", "Dans la médulla", "Dans la vessie", "Dans l'oreillette"], 1, "Ce sont des structures en éventail de la médulla."),
+  q("r4", "Quel est le rôle du bassinet ?", ["Produire l'insuline", "Collecter l'urine avant l'uretère", "Pomper le sang", "Conduire l'influx nerveux"], 1, "C'est l'entonnoir central du hile."),
+  q("r5", "Quels organes l'uretère relie-t-il ?", ["Le rein et la vessie", "Le cœur et le poumon", "Le foie et l'intestin", "L'oreille et le cerveau"], 0, "L'urine descend du rein vers la vessie."),
+  q("r6", "Qu'apporte l'artère rénale ?", ["L'urine", "Le sang à filtrer", "La bile", "Les neurotransmetteurs"], 1, "C'est une branche de l'aorte vers le rein."),
+  q("r7", "Qu'est-ce que la papille rénale ?", ["La pointe d'une pyramide", "Une valve cardiaque", "Un nœud de Ranvier", "Une base de l'ADN"], 0, "L'urine s'y égoutte vers le calice."),
+  q("r8", "Qu'est-ce que le cortex rénal ?", ["La zone externe de filtration", "L'uretère", "Le septum", "L'axone"], 0, "Les glomérules se trouvent dans le cortex."),
+  q("r9", "Que ramène la veine rénale ?", ["L'urine vers la vessie", "Le sang filtré vers la veine cave", "Le sang vers les poumons", "La lymphe vers le cœur"], 1, "Le sang filtré quitte le rein par le hile."),
+  q("r10", "À quoi sert un calice rénal ?", ["À recevoir l'urine d'une papille", "À contracter le ventricule", "À isoler l'axone", "À coder un gène"], 0, "C'est une cupule de collecte."),
 ];
 
 export const ADN_QCM: QCMData[] = [
-  q("d1", "L'ADN a la forme d'une…", ["Simple chaîne linéaire uniquement", "Double hélice", "Sphère pleine", "Valve"], 1, "Deux brins enroulés."),
-  q("d2", "La base A s'associe toujours à…", ["G", "C", "T", "U dans l'ADN"], 2, "Adénine — Thymine."),
-  q("d3", "La paire G–C est liée par…", ["1 liaison hydrogène", "2 liaisons hydrogène", "3 liaisons hydrogène", "Une liaison peptidique"], 2, "Plus stable que A–T (2 liaisons)."),
-  q("d4", "Un gène est…", ["Un organe", "Un segment d'ADN qui code un caractère", "Une hormone", "Un os"], 1, "Unité d'information héréditaire."),
-  q("d5", "Le squelette de chaque brin est…", ["Protéine contractile", "Sucre-phosphate", "Lipide membranaire", "Hémoglobine"], 1, "Montants de l'échelle."),
-  q("d6", "Une mutation est…", ["Un changement de l'ADN", "Une digestion", "Un réflexe", "Un calice"], 0, "Altération de la séquence, parfois d'un caractère."),
-  q("d7", "Le crossing-over a lieu pendant…", ["La mitose anaphase", "La prophase I de méiose", "La digestion", "La systole"], 1, "Brassage intrachromosomique."),
-  q("d8", "La méiose produit des cellules…", ["2n identiques", "n (haploïdes)", "Toujours cancéreuses", "Sans ADN"], 1, "Quatre gamètes à n chromosomes."),
-  q("d9", "Complémentarité : C va avec…", ["A", "T", "G", "U dans l'ADN"], 2, "Cytosine — Guanine."),
-  q("d10", "Le brassage interchromosomique, c'est…", ["La répartition aléatoire des homologues", "La digestion de l'amidon", "L'ouverture d'un canal", "La filtration glomérulaire"], 0, "Anaphase I : chaque pôle reçoit un homologue au hasard."),
+  q("d1", "Quelle est la forme de l'ADN ?", ["Une simple chaîne linéaire", "Une double hélice", "Une sphère pleine", "Une valve"], 1, "Deux brins s'enroulent l'un autour de l'autre."),
+  q("d2", "Avec quelle base l'adénine (A) s'associe-t-elle toujours dans l'ADN ?", ["G", "C", "T", "U"], 2, "L'adénine s'associe à la thymine."),
+  q("d3", "Par combien de liaisons hydrogène la paire G–C est-elle liée ?", ["1 liaison hydrogène", "2 liaisons hydrogène", "3 liaisons hydrogène", "Une liaison peptidique"], 2, "G–C est plus stable que A–T, qui n'a que 2 liaisons."),
+  q("d4", "Qu'est-ce qu'un gène ?", ["Un organe", "Un segment d'ADN qui code un caractère", "Une hormone", "Un os"], 1, "C'est une unité d'information héréditaire."),
+  q("d5", "De quoi est fait le squelette de chaque brin d'ADN ?", ["De protéine contractile", "De sucre et de phosphate", "De lipide membranaire", "D'hémoglobine"], 1, "Ce sont les montants de l'échelle."),
+  q("d6", "Qu'est-ce qu'une mutation ?", ["Un changement de l'ADN", "Une digestion", "Un réflexe", "Un calice"], 0, "C'est une modification de la séquence, qui peut changer un caractère."),
+  q("d7", "À quel moment le crossing-over a-t-il lieu ?", ["Pendant l'anaphase de la mitose", "Pendant la prophase I de la méiose", "Pendant la digestion", "Pendant la systole"], 1, "Il réalise le brassage intrachromosomique."),
+  q("d8", "Quelles cellules la méiose produit-elle ?", ["Des cellules 2n identiques", "Des cellules n, haploïdes", "Des cellules toujours cancéreuses", "Des cellules sans ADN"], 1, "Elle produit quatre gamètes à n chromosomes."),
+  q("d9", "Avec quelle base la cytosine (C) s'associe-t-elle ?", ["A", "T", "G", "U"], 2, "La cytosine s'associe à la guanine."),
+  q("d10", "Qu'est-ce que le brassage interchromosomique ?", ["La répartition aléatoire des chromosomes homologues", "La digestion de l'amidon", "L'ouverture d'un canal", "La filtration glomérulaire"], 0, "À l'anaphase I, chaque pôle reçoit un homologue au hasard."),
 ];
 
 export const COMPLEXES_QCM: QCMData[] = [
   {
     id: "k1",
-    enonceQuestion: "i² vaut ?",
+    enonceQuestion: "Que vaut i² ?",
     optionsProposees: ["1", "−1", "i", "0"],
     indexReponseCorrecte: 1,
     explicationPedagogique: "Par définition, i² = −1.",
@@ -293,7 +293,7 @@ export const COMPLEXES_QCM: QCMData[] = [
   },
   {
     id: "k2",
-    enonceQuestion: "Le module de z = 3 + 4i vaut ?",
+    enonceQuestion: "Que vaut le module de z = 3 + 4i ?",
     optionsProposees: ["5", "7", "12", "1"],
     indexReponseCorrecte: 0,
     explicationPedagogique: "|z| = √(9+16) = 5.",
@@ -301,7 +301,7 @@ export const COMPLEXES_QCM: QCMData[] = [
   },
   {
     id: "k3",
-    enonceQuestion: "Le conjugué de 2 − 5i est ?",
+    enonceQuestion: "Quel est le conjugué de 2 − 5i ?",
     optionsProposees: ["2 + 5i", "−2 − 5i", "5 − 2i", "2 − 5i"],
     indexReponseCorrecte: 0,
     explicationPedagogique: "On change le signe de la partie imaginaire.",
@@ -309,7 +309,7 @@ export const COMPLEXES_QCM: QCMData[] = [
   },
   {
     id: "k4",
-    enonceQuestion: "z = |z| e^{iθ} est la forme…",
+    enonceQuestion: "Comment appelle-t-on la forme z = |z| e^{iθ} ?",
     optionsProposees: ["Algébrique", "Exponentielle", "Cartésienne brute", "Polynomiale"],
     indexReponseCorrecte: 1,
     explicationPedagogique: "Forme exponentielle d'un complexe non nul.",
@@ -317,7 +317,7 @@ export const COMPLEXES_QCM: QCMData[] = [
   },
   {
     id: "k5",
-    enonceQuestion: "Multiplier par i géométriquement, c'est…",
+    enonceQuestion: "Que représente, géométriquement, une multiplication par i ?",
     optionsProposees: ["Homothétie de rapport 2", "Rotation de 90°", "Translation", "Symétrie centrale"],
     indexReponseCorrecte: 1,
     explicationPedagogique: "Arg(i) = π/2 : rotation d'un quart de tour.",
@@ -325,7 +325,7 @@ export const COMPLEXES_QCM: QCMData[] = [
   },
   {
     id: "k6",
-    enonceQuestion: "Si z = a + ib, |z|² = ?",
+    enonceQuestion: "Si z = a + ib, que vaut |z|² ?",
     optionsProposees: ["a + b", "a² + b²", "a² − b²", "2ab"],
     indexReponseCorrecte: 1,
     explicationPedagogique: "|z|² = z z̄ = a² + b².",
@@ -333,7 +333,7 @@ export const COMPLEXES_QCM: QCMData[] = [
   },
   {
     id: "k7",
-    enonceQuestion: "L'argument d'un complexe est…",
+    enonceQuestion: "Qu'est-ce que l'argument d'un nombre complexe ?",
     optionsProposees: ["Sa partie réelle", "L'angle du vecteur image", "Son module", "i²"],
     indexReponseCorrecte: 1,
     explicationPedagogique: "Angle (Ox, vecteur image), modulo 2π.",
@@ -341,7 +341,7 @@ export const COMPLEXES_QCM: QCMData[] = [
   },
   {
     id: "k8",
-    enonceQuestion: "z × z̄ = ?",
+    enonceQuestion: "Que vaut le produit d'un nombre complexe par son conjugué ?",
     optionsProposees: ["0", "|z|²", "2z", "i"],
     indexReponseCorrecte: 1,
     explicationPedagogique: "Produit d'un complexe par son conjugué = carré du module.",
@@ -349,7 +349,7 @@ export const COMPLEXES_QCM: QCMData[] = [
   },
   {
     id: "k9",
-    enonceQuestion: "La forme algébrique de e^{iπ} est ?",
+    enonceQuestion: "Quelle est la forme algébrique de e^{iπ} ?",
     optionsProposees: ["1", "−1", "i", "0"],
     indexReponseCorrecte: 1,
     explicationPedagogique: "Formule d'Euler : e^{iπ} = −1.",
@@ -357,7 +357,7 @@ export const COMPLEXES_QCM: QCMData[] = [
   },
   {
     id: "k10",
-    enonceQuestion: "Deux complexes sont égaux ssi…",
+    enonceQuestion: "À quelle condition deux nombres complexes sont-ils égaux ?",
     optionsProposees: ["Leurs modules sont égaux", "Parties réelles et imaginaires égales", "Leurs arguments sont égaux", "Leur somme est nulle"],
     indexReponseCorrecte: 1,
     explicationPedagogique: "a+ib = c+id ⇔ a=c et b=d.",

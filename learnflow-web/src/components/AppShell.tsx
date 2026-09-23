@@ -11,6 +11,7 @@ import AvatarGate from "./AvatarGate";
 import RewardToast from "./RewardToast";
 import AppTour from "./AppTour";
 import WidgetErrorBoundary from "./WidgetErrorBoundary";
+import { useLearnFlowStore } from "@/store/useLearnFlowStore";
 
 const NAV: { href: string; label: string; icon: IconName; fill: string; outline: string }[] = [
   { href: "/app", label: "Accueil", icon: "home", fill: "/icons/home-fill.png", outline: "/icons/home.png" },
@@ -80,6 +81,43 @@ function TabLink({
   );
 }
 
+/** Compte le temps passé dans l’app, tant que l’onglet est visible. */
+function LiveStudyPulse() {
+  const addStudyMs = useLearnFlowStore((s) => s.addStudyMs);
+  useEffect(() => {
+    let last = Date.now();
+    let sinceSync = 0;
+    const tick = (countWhileHidden: boolean) => {
+      const now = Date.now();
+      const delta = now - last;
+      last = now;
+      if (delta < 1000 || delta > 45_000) return;
+      if (!countWhileHidden && document.visibilityState !== "visible") return;
+      addStudyMs(delta);
+      sinceSync += delta;
+      if (sinceSync >= 120_000) {
+        sinceSync = 0;
+        void import("@/lib/progressSync").then((m) => m.requestProgressSync());
+      }
+    };
+    const id = window.setInterval(() => tick(false), 15_000);
+    const onHide = () => {
+      if (document.visibilityState === "hidden") {
+        tick(true);
+        void import("@/lib/progressSync").then((m) => m.requestProgressSync());
+      } else {
+        last = Date.now();
+      }
+    };
+    document.addEventListener("visibilitychange", onHide);
+    return () => {
+      window.clearInterval(id);
+      document.removeEventListener("visibilitychange", onHide);
+    };
+  }, [addStudyMs]);
+  return null;
+}
+
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname() ?? "";
   const { colors, darkMode } = useAppTheme();
@@ -93,11 +131,17 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   }, [darkMode]);
 
   if (fullscreen) {
-    return <div className="h-dvh min-h-dvh overflow-hidden">{children}</div>;
+    return (
+      <div className="h-dvh min-h-dvh overflow-hidden">
+        <LiveStudyPulse />
+        {children}
+      </div>
+    );
   }
 
   return (
     <div className="flex min-h-dvh w-full max-w-[100vw] overflow-x-hidden" style={{ background: colors.surface, color: colors.textDark }}>
+      <LiveStudyPulse />
       <aside
         className="hidden w-[min(240px,28vw)] shrink-0 flex-col border-r lg:flex"
         style={{ background: colors.white, borderColor: colors.border }}

@@ -1,16 +1,6 @@
 "use client";
 
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Cell,
-  Legend,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
+import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import type { DashboardData } from "@/lib/catalog";
 
 function shortDay(iso: string) {
@@ -19,58 +9,77 @@ function shortDay(iso: string) {
   return date.toLocaleDateString("fr-FR", { weekday: "short", day: "numeric" });
 }
 
+const tooltipStyle = {
+  borderRadius: 16,
+  border: "1px solid #E7E5E4",
+  boxShadow: "0 12px 30px rgba(28,25,23,.08)",
+  fontSize: 12,
+  fontWeight: 700,
+};
+
 export default function ActivityCharts({ stats }: { stats: DashboardData["stats"] }) {
   const series = stats.last7Days.map((row) => ({
     ...row,
     label: shortDay(row.day),
   }));
-  const platforms = [
-    { name: "Web", value: stats.webEvents, fill: "#1677FF" },
-    { name: "Mobile", value: stats.mobileEvents, fill: "#10B981" },
-  ];
+  const total = stats.webEvents + stats.mobileEvents;
+  const webShare = total ? Math.round((stats.webEvents / total) * 100) : 0;
+  const mobileShare = total ? 100 - webShare : 0;
 
   return (
-    <section className="grid gap-4 lg:grid-cols-2">
-      <article className="rounded-[22px] border-2 border-[#F0EFEE] bg-white p-5">
-        <h2 className="mb-1 text-base font-black text-[#1C1917]">Activité 7 jours</h2>
-        <p className="mb-4 text-xs font-semibold text-[#64748B]">Mouvements web et mobile</p>
-        <div className="h-56">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={series} barGap={4}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F0EFEE" />
-              <XAxis dataKey="label" tick={{ fontSize: 11, fontWeight: 700, fill: "#64748B" }} axisLine={false} tickLine={false} />
-              <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: "#94A3B8" }} axisLine={false} tickLine={false} />
-              <Tooltip />
-              <Legend />
-              <Bar dataKey="web" name="Web" fill="#1677FF" radius={[6, 6, 0, 0]} />
-              <Bar dataKey="mobile" name="Mobile" fill="#10B981" radius={[6, 6, 0, 0]} />
+    <section className="grid gap-4 xl:grid-cols-[1.35fr_.65fr]">
+      <article className="flex h-full min-w-0 flex-col rounded-[24px] border border-[#E7E5E4] bg-white p-5 shadow-[0_12px_32px_rgba(28,25,23,.045)]">
+        <h2 className="text-[15px] font-black tracking-tight text-[#1C1917]">Activité sur 7 jours</h2>
+        <p className="mb-4 mt-1 text-xs font-semibold text-[#64748B]">Mouvements web et mobile</p>
+        <div className="min-h-64 w-full flex-1">
+          <ResponsiveContainer width="100%" height="100%" minWidth={280} initialDimension={{ width: 720, height: 256 }}>
+            <BarChart data={series} barGap={6} barCategoryGap="28%">
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F5F5F4" />
+              <XAxis dataKey="label" tick={{ fontSize: 11, fontWeight: 700, fill: "#78716C" }} axisLine={false} tickLine={false} />
+              <YAxis allowDecimals={false} width={28} tick={{ fontSize: 11, fill: "#A8A29E" }} axisLine={false} tickLine={false} />
+              <Tooltip cursor={{ fill: "rgba(22,119,255,0.06)" }} contentStyle={tooltipStyle} />
+              <Legend wrapperStyle={{ fontSize: 12, fontWeight: 700, paddingTop: 8 }} />
+              <Bar dataKey="web" name="Web" fill="#1677FF" radius={[8, 8, 0, 0]} maxBarSize={28} />
+              <Bar dataKey="mobile" name="Mobile" fill="#10B981" radius={[8, 8, 0, 0]} maxBarSize={28} />
             </BarChart>
           </ResponsiveContainer>
         </div>
       </article>
-      <article className="rounded-[22px] border-2 border-[#F0EFEE] bg-white p-5">
-        <h2 className="mb-1 text-base font-black text-[#1C1917]">Web vs mobile</h2>
-        <p className="mb-4 text-xs font-semibold text-[#64748B]">Volume d’événements</p>
-        <div className="h-56">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={platforms} layout="vertical" margin={{ left: 16 }}>
-              <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#F0EFEE" />
-              <XAxis type="number" allowDecimals={false} tick={{ fontSize: 11, fill: "#94A3B8" }} axisLine={false} />
-              <YAxis type="category" dataKey="name" tick={{ fontSize: 13, fontWeight: 800, fill: "#1C1917" }} axisLine={false} tickLine={false} width={70} />
-              <Tooltip />
-              <Bar dataKey="value" name="Événements" radius={[0, 8, 8, 0]}>
-                {platforms.map((p) => (
-                  <Cell key={p.name} fill={p.fill} />
-                ))}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
+
+      <article className="flex flex-col rounded-[24px] border border-[#E7E5E4] bg-white p-5 shadow-[0_12px_32px_rgba(28,25,23,.045)]">
+        <h2 className="text-[15px] font-black tracking-tight text-[#1C1917]">Web et mobile</h2>
+        <p className="mt-1 text-xs font-semibold text-[#64748B]">Part des événements</p>
+        <div className="mt-6 flex h-3 overflow-hidden rounded-full bg-[#F5F5F4]">
+          <div className="h-full bg-[#1677FF]" style={{ width: `${total ? webShare : 0}%` }} />
+          <div className="h-full bg-[#10B981]" style={{ width: `${total ? mobileShare : 0}%` }} />
         </div>
-        <div className="mt-2 flex gap-4 text-sm font-extrabold">
-          <span className="text-[#1677FF]">Web {stats.webEvents}</span>
-          <span className="text-[#10B981]">Mobile {stats.mobileEvents}</span>
+        <div className="mt-5 grid flex-1 grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-1">
+          <PlatformTile label="Web" value={stats.webEvents} share={webShare} tone="blue" />
+          <PlatformTile label="Mobile" value={stats.mobileEvents} share={mobileShare} tone="green" />
         </div>
       </article>
     </section>
+  );
+}
+
+function PlatformTile({
+  label,
+  value,
+  share,
+  tone,
+}: {
+  label: string;
+  value: number;
+  share: number;
+  tone: "blue" | "green";
+}) {
+  const styles =
+    tone === "blue" ? "bg-[#F3F8FF] text-[#1677FF]" : "bg-[#F0FDF8] text-[#059669]";
+  return (
+    <div className={`rounded-2xl px-4 py-4 ${styles}`}>
+      <p className="text-[11px] font-extrabold uppercase tracking-[0.14em]">{label}</p>
+      <p className="mt-2 text-3xl font-black tracking-tight text-[#1C1917]">{value.toLocaleString("fr-FR")}</p>
+      <p className="mt-1 text-xs font-bold opacity-80">{share}% du volume</p>
+    </div>
   );
 }

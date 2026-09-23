@@ -319,8 +319,10 @@ function BlitzInner() {
     setDuelBadge(extra.badge);
   }, [phase, duel, score, recordDuelResult]);
 
+  const answering = useRef(false);
   const pick = (i: number) => {
-    if (selected !== null || phase !== "playing" || ringing) return;
+    if (answering.current || selected !== null || phase !== "playing" || ringing) return;
+    answering.current = true;
     setSelected(i);
     const ok = i === q.indexReponseCorrecte;
     playSfx(ok ? "correct" : "wrong");
@@ -329,6 +331,7 @@ function BlitzInner() {
     setTimeout(() => {
       setQIdx((n) => n + 1);
       setSelected(null);
+      answering.current = false;
     }, 280);
   };
 
@@ -657,7 +660,7 @@ function BlitzInner() {
         )}
 
         <p
-          className={`mt-1.5 shrink-0 text-center text-[10px] font-black tracking-[0.1em] sm:mt-2 sm:text-[11px] md:text-xs ${
+          className={`lf-blitz-kicker mt-1.5 shrink-0 text-center text-[10px] font-black tracking-[0.1em] sm:mt-2 sm:text-[11px] md:text-xs ${
             critical ? "text-red-200" : warning ? "text-amber-400" : "text-white/40"
           }`}
         >
@@ -674,39 +677,40 @@ function BlitzInner() {
                 : "Pas de retour en arrière"}
         </p>
 
-        <div className="mx-auto mt-2 flex min-h-0 w-full min-w-0 max-w-3xl flex-1 flex-col sm:mt-3">
-          <p className="shrink-0 text-[10px] font-black tracking-[0.14em] text-orange-500 sm:text-[11px] md:text-xs">
-            {(q.matiere ?? "MIX").toUpperCase()} · {deck.difficulte.toUpperCase()}
-            {duel ? " · DUEL" : ""}
-          </p>
-          <h1 className="mt-1.5 shrink-0 text-[clamp(1rem,2.6vw+0.7rem,1.85rem)] font-extrabold leading-snug">
-            {q.enonceQuestion}
-          </h1>
-          <div className="mt-3 flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto overscroll-contain sm:mt-4 sm:gap-2.5 md:gap-3">
-            {q.optionsProposees.map((opt, i) => {
-              const on = selected === i;
-              const ok = on && i === q.indexReponseCorrecte;
-              const ko = on && i !== q.indexReponseCorrecte;
-              return (
-                <button
-                  key={opt}
-                  type="button"
-                  onPointerDown={(e) => {
-                    if (e.button !== 0) return;
-                    pick(i);
-                  }}
-                  onClick={() => pick(i)}
-                  className="flex min-h-11 w-full min-w-0 flex-1 items-center rounded-2xl border-2 px-3 py-2 text-left text-[13px] font-bold sm:min-h-12 sm:px-4 sm:text-sm md:min-h-16 md:rounded-3xl md:px-6 md:text-lg"
-                  style={{
-                    borderColor: ok ? "#34D399" : ko ? "#F87171" : "rgba(239,68,68,0.28)",
-                    background: ok ? "rgba(16,185,129,0.16)" : ko ? "rgba(239,68,68,0.22)" : "rgba(0,0,0,0.35)",
-                    transform: ok ? "scale(1.01)" : undefined,
-                  }}
-                >
-                  <span className="min-w-0 break-words">{opt}</span>
-                </button>
-              );
-            })}
+        <div className="mx-auto mt-2 flex min-h-0 w-full min-w-0 max-w-2xl flex-1 flex-col sm:mt-3">
+          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pb-1">
+            <p className="text-[10px] font-black tracking-[0.14em] text-orange-500 sm:text-[11px] md:text-xs">
+              {(q.matiere ?? "MIX").toUpperCase()} · {deck.difficulte.toUpperCase()}
+              {duel ? " · DUEL" : ""}
+            </p>
+            <h1 className="lf-blitz-q mt-1.5 text-[clamp(1rem,0.55rem+1.6vw,1.45rem)] font-extrabold leading-snug">
+              {q.enonceQuestion}
+            </h1>
+            <div className="mt-3 grid grid-cols-1 gap-2 sm:mt-4 sm:gap-2.5">
+              {q.optionsProposees.map((opt, i) => {
+                const on = selected === i;
+                const ok = on && i === q.indexReponseCorrecte;
+                const ko = on && i !== q.indexReponseCorrecte;
+                const letter = "ABCD"[i] ?? String(i + 1);
+                return (
+                  <button
+                    key={`${q.id}-${i}`}
+                    type="button"
+                    onClick={() => pick(i)}
+                    className="flex min-h-12 w-full min-w-0 items-center gap-2.5 rounded-2xl border-2 px-3 py-2.5 text-left text-[clamp(0.9rem,0.8rem+0.35vw,1.05rem)] font-bold leading-snug sm:min-h-[3.25rem] sm:px-4"
+                    style={{
+                      borderColor: ok ? "#34D399" : ko ? "#F87171" : "rgba(239,68,68,0.28)",
+                      background: ok ? "rgba(16,185,129,0.16)" : ko ? "rgba(239,68,68,0.22)" : "rgba(0,0,0,0.35)",
+                    }}
+                  >
+                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/10 text-[12px] font-black">
+                      {letter}
+                    </span>
+                    <span className="lf-blitz-q min-w-0 flex-1">{opt}</span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </div>
       </div>

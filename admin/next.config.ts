@@ -32,6 +32,9 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  images: {
+    qualities: [75, 90],
+  },
   // Plusieurs lockfiles (repo + admin) : forcer la racine sinon Turbopack
   // enregistre /dashboard mais 404 sur /dashboard/eleves, /api/super-prof, etc.
   outputFileTracingRoot: dir,

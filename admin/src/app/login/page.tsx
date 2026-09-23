@@ -14,10 +14,19 @@ export default async function LoginPage() {
   if (session) redirect("/dashboard");
 
   return (
-    <div className="grid min-h-full lg:grid-cols-[1.05fr_.95fr]">
+    <div className="grid min-h-dvh lg:grid-cols-[1.05fr_.95fr]">
       <section className="relative hidden overflow-hidden bg-[#0F172A] lg:flex lg:flex-col lg:justify-between lg:p-12">
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(700px_320px_at_20%_-10%,rgba(22,119,255,.45),transparent),radial-gradient(500px_240px_at_90%_80%,rgba(16,185,129,.18),transparent)]" />
-        <Image src="/brand/logo-dark.png" alt="LearnFlow" width={180} height={42} className="relative h-10 w-auto" />
+        <Image
+          src="/brand/logo-dark.png"
+          alt="LearnFlow"
+          width={388}
+          height={104}
+          quality={90}
+          priority
+          className="relative h-12 w-auto shrink-0 self-start object-contain"
+          style={{ width: "auto", height: "3rem" }}
+        />
         <div className="relative max-w-md">
           <p className="inline-flex rounded-full border border-white/15 bg-white/10 px-3 py-1 text-[11px] font-extrabold uppercase tracking-widest text-white/80">
             Administrateur unique
@@ -35,7 +44,16 @@ export default async function LoginPage() {
       <section className="flex items-center justify-center px-5 py-12">
         <div className="w-full max-w-md">
           <div className="mb-8 flex items-center gap-3 lg:hidden">
-            <Image src="/brand/logo-light.png" alt="LearnFlow" width={168} height={40} className="h-9 w-auto" />
+            <Image
+              src="/brand/logo-light.png"
+              alt="LearnFlow"
+              width={384}
+              height={105}
+              quality={90}
+              priority
+              className="h-10 w-auto shrink-0 object-contain"
+              style={{ width: "auto", height: "2.5rem" }}
+            />
           </div>
           <p className="text-xs font-extrabold uppercase tracking-widest text-[#1677FF]">Espace admin</p>
           <h2 className="mt-2 text-3xl font-black tracking-tight text-[#1C1917]">Bon retour.</h2>

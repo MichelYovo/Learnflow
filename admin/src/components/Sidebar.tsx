@@ -31,7 +31,16 @@ export default function Sidebar() {
     <aside className="hidden w-[260px] shrink-0 flex-col border-r border-[#F0EFEE] bg-white md:flex">
       <div className="flex h-[72px] items-center border-b border-[#F0EFEE] px-5">
         <Link href="/dashboard" className="flex items-center">
-          <Image src="/brand/logo-light.png" alt="LearnFlow" width={150} height={36} className="h-8 w-auto" priority />
+          <Image
+            src="/brand/logo-light.png"
+            alt="LearnFlow"
+            width={384}
+            height={105}
+            quality={90}
+            priority
+            className="h-9 w-auto shrink-0 object-contain"
+            style={{ width: "auto", height: "2.25rem" }}
+          />
         </Link>
       </div>
       <p className="px-5 pt-5 text-[11px] font-extrabold uppercase tracking-widest text-[#A8A29E]">Administration</p>

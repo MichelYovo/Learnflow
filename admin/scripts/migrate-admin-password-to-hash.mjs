@@ -35,7 +35,7 @@ if (!password || password.length < 8) {
 
 const salt = randomBytes(16).toString("hex");
 const hash = scryptSync(password, salt, 64, { N: 16384, r: 8, p: 1 }).toString("hex");
-const encoded = `scrypt$${salt}$${hash}`;
+const encoded = `scrypt$${salt}$${hash}`.replaceAll("$", "\\$");
 
 let hasHash = false;
 let hasPassword = false;

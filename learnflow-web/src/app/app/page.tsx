@@ -9,13 +9,13 @@ import LeagueBadge from "@/components/LeagueBadge";
 import DailyChallenges from "@/components/DailyChallenges";
 import MesMatieres from "@/components/MesMatieres";
 import ModeWorkSelector from "@/components/ModeWorkSelector";
-import { EMPTY_WEEK_CHART } from "@/data/mock";
+import { weekSnapshot } from "@/engine/activityLog";
 import { usePublishedCatalog } from "@/data/publishedCache";
-import { continueLessonForClass, continueLessonForLearner, programmeForLearner, subjectShortcutsForLearner, chapterActivityDone } from "@/data/programme";
+import { continueLessonForClass, continueLessonForLearner, subjectShortcutsForLearner } from "@/data/programme";
 import WeeklyReviewBar from "@/components/WeeklyReviewBar";
 import WidgetErrorBoundary from "@/components/WidgetErrorBoundary";
 import { cardsDueToday } from "@/engine/spacedRepetition";
-import { formatStudyHours } from "@/engine/rewards";
+import { formatStudySpan } from "@/engine/rewards";
 import { useLearnFlowStore } from "@/store/useLearnFlowStore";
 import { useAppTheme } from "@/theme/useAppTheme";
 import { MODE_DEFAULT_TOOLS, appModeToSessionMode, type AppMode } from "@/types/modes";
@@ -37,17 +37,15 @@ export default function AccueilPage() {
   const inbox = useLearnFlowStore((s) => (Array.isArray(s.inbox) ? s.inbox : EMPTY_LIST));
   const { colors, darkMode } = useAppTheme();
   const catalogEpoch = usePublishedCatalog();
-  const weekXp = ligue?.scoreHebdo ?? 0;
-  const weekChart = EMPTY_WEEK_CHART;
+  const activityLog = useLearnFlowStore((s) => s.activityLog);
   const goalChapters = useLearnFlowStore((s) => s.settings.weeklyGoalChapters ?? 5);
   const goalHours = useLearnFlowStore((s) => s.settings.weeklyGoalHours ?? 3);
-  const weekChaptersDone = useMemo(() => {
-    return Object.values(chapterProgress).filter((p) => p && chapterActivityDone(p) >= 3).length;
-  }, [chapterProgress]);
-  const weekStudyMs = profile?.studyMs ?? 0;
+  const week = useMemo(() => weekSnapshot(activityLog), [activityLog]);
+  const weekChart = week.chart;
+  const lessonsLabel = String(profile?.lessonsDone ?? 0);
   const goalProgress =
-    (Math.min(1, weekChaptersDone / Math.max(1, goalChapters)) +
-      Math.min(1, weekStudyMs / Math.max(1, goalHours * 3_600_000))) /
+    (Math.min(1, week.chapters / Math.max(1, goalChapters)) +
+      Math.min(1, week.studyMs / Math.max(1, goalHours * 3_600_000))) /
     2;
   const continueLesson = useMemo(() => {
     try {
@@ -70,16 +68,6 @@ export default function AccueilPage() {
   const todaySessions = agendaSessions
     .filter((s) => s.day === todayIdx)
     .sort((a, b) => a.hour * 60 + a.minute - (b.hour * 60 + b.minute));
-  const totalDone = useMemo(() => {
-    try {
-      return programmeForLearner(profile?.classe, profile?.id, chapterProgress).reduce(
-        (a, s) => a + (s.themes ?? []).reduce((b, t) => b + (t.lessonsDone ?? 0), 0),
-        0,
-      );
-    } catch {
-      return 0;
-    }
-  }, [profile?.classe, profile?.id, chapterProgress, catalogEpoch]);
   const greetingName = (profile?.firstName || profile?.nom || "").trim() || "toi";
   const nextLigue = useMemo(() => {
     if (ligue?.nomLigue === "Bronze") return "Argent";
@@ -221,9 +209,9 @@ export default function AccueilPage() {
           <h2 className="text-[18px] font-extrabold">Ma progression</h2>
           <div className="mt-5 flex">
             {[
-              [String(totalDone), "leçons", colors.textDark],
-              [formatStudyHours(profile?.studyMs ?? 0), "d'étude", colors.textDark],
-              [`+${weekXp}`, "XP", "#F59E0B"],
+              [lessonsLabel, "leçons", colors.textDark],
+              [formatStudySpan(week.studyMs), "cette semaine", colors.textDark],
+              [`+${week.xp}`, "XP", "#F59E0B"],
             ].map(([v, l, c], i) => (
               <div key={l} className={`flex flex-1 flex-col items-center ${i < 2 ? "border-r" : ""}`} style={{ borderColor: colors.border }}>
                 <p className="text-[22px] font-extrabold" style={{ color: c }}>
@@ -258,8 +246,7 @@ export default function AccueilPage() {
               </button>
             </div>
             <p className="text-[12px] font-semibold" style={{ color: colors.textMuted }}>
-              {Math.min(weekChaptersDone, goalChapters)}/{goalChapters} chapitres ·{" "}
-              {formatStudyHours(Math.min(weekStudyMs, goalHours * 3_600_000))} / {goalHours}h
+              {Math.min(week.chapters, goalChapters)}/{goalChapters} chapitres · {formatStudySpan(week.studyMs)} / {goalHours}h
             </p>
             <div className="mt-2.5 h-2 overflow-hidden rounded-full" style={{ background: colors.border }}>
               <div

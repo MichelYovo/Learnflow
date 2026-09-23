@@ -18,9 +18,11 @@ function hashPassword(password) {
 }
 
 function printResult(encoded) {
+  // Next.js développe $VAR dans .env.local : un $ brut vide le hash.
+  const line = encoded.replaceAll("$", "\\$");
   console.log("");
   console.log("========== À COPIER DANS admin/.env.local ==========");
-  console.log(`ADMIN_PASSWORD_HASH=${encoded}`);
+  console.log(`ADMIN_PASSWORD_HASH=${line}`);
   console.log("====================================================");
   console.log("");
   console.log("Ensuite :");
