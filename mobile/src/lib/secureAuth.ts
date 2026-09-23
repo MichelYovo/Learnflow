@@ -96,3 +96,37 @@ export async function notifySecureLogin(event = "login"): Promise<void> {
     /* notification best-effort */
   }
 }
+
+/** Crée le compte Auth déjà confirmé (contourne Confirm email Supabase). */
+export async function createConfirmedSignup(input: {
+  email: string;
+  password: string;
+  firstName: string;
+  lastName: string;
+  classLevel: string;
+}): Promise<{ error?: string }> {
+  const base = apiBase();
+  if (!base) {
+    return { error: "Ajoute EXPO_PUBLIC_LEARNFLOW_API_URL pour t’inscrire." };
+  }
+  try {
+    const res = await fetch(`${base}/api/auth/signup`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email: input.email.trim().toLowerCase(),
+        password: input.password,
+        first_name: input.firstName,
+        last_name: input.lastName,
+        class_level: input.classLevel,
+      }),
+    });
+    const json = (await res.json().catch(() => ({}))) as { error?: string };
+    if (!res.ok) {
+      return { error: json.error || "Inscription impossible. Réessaie." };
+    }
+    return {};
+  } catch {
+    return { error: "Impossible de joindre LearnFlow. Réessaie." };
+  }
+}
