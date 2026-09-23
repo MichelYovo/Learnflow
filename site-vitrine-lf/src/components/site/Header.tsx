@@ -26,7 +26,7 @@ export default function Header() {
       className="sticky top-0 z-50 bg-[var(--lf-header)]/95 pt-[env(safe-area-inset-top)] backdrop-blur-md"
       lang={locale}
     >
-      <div className="lf-container flex h-14 min-w-0 items-center justify-between gap-2 sm:h-16 sm:gap-3 md:h-[72px] md:gap-4">
+      <div className="lf-container flex h-16 min-w-0 items-center justify-between gap-2 sm:h-[72px] sm:gap-3 md:h-20 md:gap-4">
         <Link href="/" className="flex min-w-0 shrink items-center" aria-label="LearnFlow — accueil">
           <BrandLogo size="nav" variant="onDark" priority />
         </Link>
