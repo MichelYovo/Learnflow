@@ -51,6 +51,113 @@ export async function userFromBearer(authorization: string | null) {
   return data.user;
 }
 
+type AuthUserRow = {
+  id: string;
+  email?: string | null;
+  email_confirmed_at?: string | null;
+  created_at?: string;
+};
+
+/** Lookup by email via GoTrue admin (évite de paginer listUsers). */
+async function findAuthUserByEmail(admin: any, email: string): Promise<AuthUserRow | null> {
+  const url = supabaseUrl();
+  const key = secretKey();
+  if (!url || !key) return null;
+  const endpoint = `${url.replace(/\/$/, "")}/auth/v1/admin/users?email=${encodeURIComponent(email)}`;
+  const res = await fetch(endpoint, {
+    headers: {
+      Authorization: `Bearer ${key}`,
+      apikey: key,
+    },
+  });
+  if (res.ok) {
+    const json = (await res.json().catch(() => null)) as
+      | { users?: AuthUserRow[]; user?: AuthUserRow }
+      | AuthUserRow
+      | null;
+    if (json) {
+      if ("users" in json && Array.isArray(json.users)) {
+        const hit = json.users.find((u) => (u.email ?? "").toLowerCase() === email) ?? json.users[0];
+        if (hit?.id) return hit;
+      } else if ("user" in json && json.user?.id) {
+        return json.user;
+      } else if ("id" in json && json.id) {
+        return json;
+      }
+    }
+  }
+
+  // Filet : premières pages admin (petits projets écoles).
+  for (let page = 1; page <= 5; page += 1) {
+    const { data, error } = await admin.auth.admin.listUsers({ page, perPage: 200 });
+    if (error || !data?.users?.length) break;
+    const hit = (data.users as AuthUserRow[]).find((u) => (u.email ?? "").toLowerCase() === email);
+    if (hit) return hit;
+    if (data.users.length < 200) break;
+  }
+  return null;
+}
+
+/**
+ * Crée le compte déjà confirmé côté Auth (service_role).
+ * Contourne « Confirm email » : LearnFlow vérifie avec son code à 6 chiffres.
+ */
+export async function handleEmailSignup(input: {
+  email: string;
+  password: string;
+  user_metadata?: Record<string, string>;
+}) {
+  const admin = adminClient();
+  if (!admin) {
+    return { error: "Serveur auth non configuré (SUPABASE_SECRET_KEY).", status: 503 };
+  }
+
+  const email = input.email.trim().toLowerCase();
+  const password = input.password;
+  if (!email.includes("@") || password.length < 8) {
+    return { error: "Email ou mot de passe invalide.", status: 400 };
+  }
+
+  const { data, error } = await admin.auth.admin.createUser({
+    email,
+    password,
+    email_confirm: true,
+    user_metadata: input.user_metadata ?? {},
+  });
+
+  if (!error && data.user?.id) {
+    return { ok: true as const, userId: data.user.id as string };
+  }
+
+  const msg = (error?.message ?? "").toLowerCase();
+  const already =
+    msg.includes("already") || msg.includes("registered") || msg.includes("exists") || msg.includes("duplicate");
+
+  if (!already) {
+    return { error: error?.message || "Inscription impossible.", status: 400 };
+  }
+
+  const existing = await findAuthUserByEmail(admin, email);
+  if (!existing?.id) {
+    return { error: "Ce compte existe déjà. Connecte-toi.", status: 409 };
+  }
+
+  if (existing.email_confirmed_at) {
+    return { error: "Ce compte existe déjà. Connecte-toi.", status: 409 };
+  }
+
+  // Compte bloqué par Confirm email (session jamais ouverte) : on confirme + maj MDP.
+  const { error: updErr } = await admin.auth.admin.updateUserById(existing.id, {
+    password,
+    email_confirm: true,
+    user_metadata: input.user_metadata ?? {},
+  });
+  if (updErr) {
+    return { error: updErr.message, status: 500 };
+  }
+  return { ok: true as const, userId: existing.id, recovered: true as const };
+}
+
 function otpPepper() {
   return (process.env.OTP_PEPPER || secretKey()).trim().slice(0, 64);
 }

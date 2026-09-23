@@ -4,6 +4,7 @@ const DEFAULT_ORIGINS = [
   "http://localhost:8081",
   "http://127.0.0.1:8081",
   "https://learnflow-web.vercel.app",
+  "https://v-web.vercel.app",
 ];
 
 function hostFromEnv(value?: string) {

@@ -12,6 +12,7 @@ import { AuthStage, Page, PrimaryButton } from "@/components/ui";
 import { isValidTogoLocal, toTogoE164, TOGO_MOBILE_ERROR } from "@/lib/phoneTogo";
 import { advanceFromSession } from "@/lib/advanceAuth";
 import { savePendingAuth } from "@/lib/pendingAuth";
+import { createConfirmedSignup } from "@/lib/secureAuth";
 import { getBrowserSupabase } from "@/lib/supabase";
 import type { ClasseAPC } from "@/types/learnflow";
 import { useLearnFlowStore } from "@/store/useLearnFlowStore";
@@ -93,39 +94,27 @@ export default function SignUpPage() {
       setError("Supabase n’est pas configuré. Ajoute les clés puis réessaie.");
       return;
     }
-    const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-      email: email.trim().toLowerCase(),
+    const emailNorm = email.trim().toLowerCase();
+    const created = await createConfirmedSignup({
+      email: emailNorm,
       password,
-      options: {
-        data: {
-          first_name: firstName.trim(),
-          last_name: lastName.trim(),
-          class_level: chosenClasse,
-        },
-      },
+      firstName: firstName.trim(),
+      lastName: lastName.trim(),
+      classLevel: chosenClasse,
     });
-    if (signUpError) {
+    if (created.error) {
       setBusy(false);
-      const msg = signUpError.message.toLowerCase();
-      if (msg.includes("already") || msg.includes("registered")) {
-        setError("Ce compte existe déjà. Connecte-toi.");
-        return;
-      }
-      setError(signUpError.message);
+      setError(created.error);
       return;
     }
-    if (!signUpData.session) {
-      const { error: signInError } = await supabase.auth.signInWithPassword({
-        email: email.trim().toLowerCase(),
-        password,
-      });
-      if (signInError) {
-        setBusy(false);
-        setError(
-          "Le compte est créé, mais Supabase bloque encore la session. Désactive « Confirm email » (Authentication → Providers → Email) : LearnFlow confirme avec le code à 6 chiffres, pas un lien.",
-        );
-        return;
-      }
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email: emailNorm,
+      password,
+    });
+    if (signInError) {
+      setBusy(false);
+      setError(signInError.message || "Connexion impossible après inscription. Réessaie.");
+      return;
     }
     await advanceFromSession(useLearnFlowStore.getState().applyCloudUser, (path) => router.replace(path));
     setBusy(false);

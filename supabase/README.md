@@ -272,7 +272,9 @@ Optionnel : `OTP_PEPPER` (secret long). S’il est vide, LearnFlow hash avec `SU
 
 Les comptes **suspendus** ne peuvent plus écrire leur progression ni apparaître au classement : relance `schema.sql` pour appliquer `student_is_active()`.
 
-Dans Supabase : **Authentication → Providers → Email** → **Confirm email : désactivé**.
+Dans Supabase : **Authentication → Providers → Email** → **Confirm email : désactivé** (recommandé).
+
+LearnFlow n’a plus besoin de ce réglage pour l’inscription email : `/api/auth/signup` crée le compte déjà confirmé (`email_confirm: true` via `service_role`), puis l’élève reçoit le **code à 6 chiffres** LearnFlow. Désactiver Confirm email évite quand même les mails « clique le lien » côté Supabase (OAuth / anciens flux).
 
 En bas de l’écran OTP : minuteur **1:00** avant « Renvoyer le code ». **10 essais** par code.
 
@@ -346,7 +348,7 @@ Il faut `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY`. Un nouvel élève sans XP 
 | « Google n’est pas encore configuré » | `.env.local` web manquant, ou serveur pas redémarré |
 | Code email qui n’arrive pas | Regarde **spams / promotions**. En mode test Resend, LearnFlow bascule sur le mailer Supabase : colle les modèles HTML (code seulement). Relance aussi `schema.sql` (`email_challenges`). |
 | Mail avec un bouton « se connecter » | Ancien modèle Magic Link, ou **Confirm email** encore activé. Désactive Confirm email ; colle les modèles HTML du repo (code seulement). |
-| Inscription puis « Session expirée » | **Confirm email** est encore ON : l’élève n’a pas de session, donc pas de code LearnFlow. |
+| Inscription puis « Session expirée » / « Supabase bloque encore la session » | Ancien flux `signUp` client avec **Confirm email** ON. Déploie le web avec `/api/auth/signup` ; ou désactive Confirm email. Pour un compte déjà bloqué, réessaie « S'inscrire » (récupération auto) ou confirme l’email dans Authentication → Users. |
 | Pas d’alerte « connecté » / WhatsApp | `RESEND_API_KEY` / clés WhatsApp absentes, ou `EXPO_PUBLIC_LEARNFLOW_API_URL` mobile manquant |
 | Redirect mismatch / `redirect_uri_mismatch` | L’URI `https://xxxx.supabase.co/auth/v1/callback` n’est pas dans Google Cloud |
 | Écran Google « app not verified » / accès bloqué | Ajoute ton Gmail en **Test user** (étape 3a) |
