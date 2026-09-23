@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Poppins } from "next/font/google";
+import Script from "next/script";
 import SiteProviders from "../components/site/SiteProviders";
 import { themeInitScript } from "../lib/themeInit";
 import "./globals.css";
@@ -66,11 +67,11 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="fr" className={`${poppins.variable} h-full antialiased`} suppressHydrationWarning>
-      <head>
-        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
-      </head>
-      <body className="flex min-h-dvh w-full max-w-[100vw] flex-col overflow-x-hidden font-sans">
+    <html lang="fr" className={`${poppins.variable} h-full antialiased`} data-theme="light" suppressHydrationWarning>
+      <body className="flex min-h-dvh w-full max-w-[100vw] flex-col overflow-x-hidden bg-[var(--lf-bg)] font-sans text-[var(--lf-ink)]">
+        <Script id="lf-theme-init" strategy="beforeInteractive">
+          {themeInitScript}
+        </Script>
         <SiteProviders>{children}</SiteProviders>
       </body>
     </html>
