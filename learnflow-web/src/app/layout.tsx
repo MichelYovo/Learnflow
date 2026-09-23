@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Poppins } from "next/font/google";
+import { Fredoka, Poppins } from "next/font/google";
 import AuthGuard from "@/components/AuthGuard";
 import CloudSyncBootstrap from "@/components/CloudSyncBootstrap";
 import SfxBootstrap from "@/components/SfxBootstrap";
@@ -10,6 +10,14 @@ const poppins = Poppins({
   variable: "--font-poppins",
   subsets: ["latin"],
   weight: ["400", "500", "600", "700", "800", "900"],
+  display: "swap",
+});
+
+/** Typo ludique arrondie (esprit Feather / Din Rounded) — labels Modes */
+const fredoka = Fredoka({
+  variable: "--font-fredoka",
+  subsets: ["latin"],
+  weight: ["500", "600", "700"],
   display: "swap",
 });
 
@@ -47,7 +55,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="fr" className={`${poppins.variable} h-dvh antialiased`}>
+    <html lang="fr" className={`${poppins.variable} ${fredoka.variable} h-dvh antialiased`}>
       <body className="h-dvh min-h-dvh w-full max-w-[100vw] overflow-x-hidden font-sans">
         <ThemeSync />
         <SfxBootstrap />

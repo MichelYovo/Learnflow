@@ -29,6 +29,8 @@ export interface ModeDefinition {
   color: string;
   bg: string;
   border: string;
+  /** Teinte foncée pour l’ombre solide type bouton 3D (Duolingo) */
+  depth: string;
   /** Badge optionnel sous le sous-titre (ex. WhatsApp, Répétition) */
   hint?: string;
   hintIcon?: string;
@@ -53,6 +55,7 @@ export const MODE_DEFINITIONS: ModeDefinition[] = [
     color: "#10B981",
     bg: "#ECFDF5",
     border: "#A7F3D0",
+    depth: "#059669",
     hint: "Fiches · Analogies · Schémas SVT",
     hintIcon: "layers",
   },
@@ -66,6 +69,7 @@ export const MODE_DEFINITIONS: ModeDefinition[] = [
     color: "#1677FF",
     bg: "#E6F4FF",
     border: "#BAE0FF",
+    depth: "#0958D9",
     hint: "Spira · répétition",
     hintIcon: "refresh-cw",
   },
@@ -79,6 +83,7 @@ export const MODE_DEFINITIONS: ModeDefinition[] = [
     color: "#F59E0B",
     bg: "#FFFBEB",
     border: "#FDE68A",
+    depth: "#D97706",
     hint: "Quizz · Trous",
     hintIcon: "quiz",
   },
@@ -92,6 +97,7 @@ export const MODE_DEFINITIONS: ModeDefinition[] = [
     color: "#EF4444",
     bg: "#FEF2F2",
     border: "#FECACA",
+    depth: "#DC2626",
     hint: "Difficulté · WhatsApp",
     hintIcon: undefined,
   },

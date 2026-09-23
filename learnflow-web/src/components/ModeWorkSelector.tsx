@@ -1,10 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import Spira from "@/components/Spira";
+import ModeMascot from "@/components/ModeMascot";
 import Icon from "@/components/Icon";
 import { MODE_DEFINITIONS, type AppMode } from "@/types/modes";
-import { spiraMoodForMode } from "@/data/spira";
 import { modeCardSurface } from "@/theme/palette";
 import { useAppTheme } from "@/theme/useAppTheme";
 
@@ -20,11 +19,15 @@ export default function ModeWorkSelector({ selectedMode, guideInactive, onSelect
 
   return (
     <section data-tour="modes" aria-labelledby="modes-heading">
-      <h2 id="modes-heading" className="mb-3.5 text-[18px] font-extrabold" style={{ color: colors.textDark }}>
+      <h2
+        id="modes-heading"
+        className="lf-mode-heading mb-3.5 text-[18px] font-extrabold"
+        style={{ color: colors.textDark }}
+      >
         Modes
       </h2>
       <div
-        className="grid grid-cols-2 gap-2.5 min-[380px]:gap-3 md:grid-cols-4"
+        className="grid grid-cols-2 gap-3 min-[380px]:gap-3.5 md:grid-cols-4"
         role="radiogroup"
         aria-label="Mode de travail"
       >
@@ -33,6 +36,9 @@ export default function ModeWorkSelector({ selectedMode, guideInactive, onSelect
           const selected = selectedMode === def.id;
           const surface = modeCardSurface(def.bg, def.border, def.color, darkMode);
           const label = def.label.replace("Mode ", "").replace(" 60s", "");
+          const depth = darkMode ? `${def.color}99` : def.depth;
+          const ground = darkMode ? `${def.color}33` : `${def.depth}33`;
+
           return (
             <button
               key={def.id}
@@ -49,20 +55,30 @@ export default function ModeWorkSelector({ selectedMode, guideInactive, onSelect
                 setHelp(null);
                 onSelectMode(def.id);
               }}
-              className="min-h-[92px] min-w-0 rounded-3xl p-2.5 text-left min-[380px]:min-h-[100px] min-[380px]:p-3 sm:min-h-[128px] sm:p-[18px] [@media(hover:hover)]:hover:brightness-[.98] [@media(hover:hover)]:active:scale-[0.97]"
+              className={`lf-mode-btn group relative flex min-h-[148px] min-w-0 flex-col items-center justify-end overflow-visible px-2 pb-3 pt-2 text-center min-[380px]:min-h-[160px] min-[380px]:px-2.5 min-[380px]:pb-3.5 sm:min-h-[176px] sm:px-3 sm:pb-4 ${
+                inactive ? "lf-mode-btn--disabled cursor-not-allowed" : ""
+              } ${selected ? "lf-mode-btn--selected" : ""}`}
               style={{
                 background: surface.background,
-                border: `${selected ? 2 : 1}px solid ${selected ? def.color : surface.border}`,
-                opacity: inactive ? 0.5 : 1,
+                borderColor: selected ? def.color : surface.border,
+                ["--lf-mode-depth" as string]: depth,
+                opacity: inactive ? 0.55 : 1,
               }}
             >
-              <div className="mb-3.5 flex items-start justify-between">
-                <span className="flex h-11 w-11 items-center justify-center overflow-visible min-[380px]:h-[52px] min-[380px]:w-[52px]" aria-hidden>
-                  <Spira mood={spiraMoodForMode(def.id)} size={40} message="" animated={false} interactive={false} />
+              {inactive ? (
+                <span className="absolute right-2.5 top-2.5 z-10">
+                  <Icon name="alert-circle" size={16} color="#94A3B8" />
                 </span>
-                {inactive ? <Icon name="alert-circle" size={16} color="#94A3B8" /> : null}
-              </div>
-              <p className="truncate text-[15px] font-extrabold sm:text-[16px]" style={{ color: inactive ? "#94A3B8" : def.color }}>
+              ) : null}
+
+              <span className="lf-mode-btn__mascot flex min-h-0 w-full flex-1 items-end justify-center pb-1 pt-1">
+                <ModeMascot mode={def.id} size={112} groundColor={ground} />
+              </span>
+
+              <p
+                className="lf-mode-label relative z-[1] w-full truncate text-[15px] leading-tight sm:text-[17px]"
+                style={{ color: inactive ? "#94A3B8" : def.color }}
+              >
                 {label}
               </p>
             </button>

@@ -8,8 +8,7 @@ import {
   View,
 } from "react-native";
 import Icon from "./Icon";
-import Spira from "./Spira";
-import { spiraMoodForMode } from "../data/spira";
+import ModeMascot from "./ModeMascot";
 import {
   AppMode,
   MODE_DEFINITIONS,
@@ -18,37 +17,28 @@ import {
 } from "../types/modes";
 import { colors } from "../theme/colors";
 
+const PRESS_DEPTH = 5;
+
 export type ModeAvailability = Partial<
   Record<
     AppMode,
     {
       status: Exclude<ModeCardStatus, "selected">;
-      /** Pourquoi inactive / locked — affiché sous la carte + annonce a11y */
       reason?: string;
     }
   >
 >;
 
 type Props = {
-  /** Mode actuellement sélectionné (surbrillance) */
   selectedMode?: AppMode | null;
-  /**
-   * Disponibilité par mode.
-   * Ex. Mode Guidé inactive : { guide: { status: "inactive", reason: "…" } }
-   */
   availability?: ModeAvailability;
-  /** Callback au lancement d'un mode disponible */
   onSelectMode: (mode: AppMode) => void;
-  /** Affiche le bandeau d'aide sous la grille quand un mode inactif est pressé */
   showHelpOnDisabledPress?: boolean;
 };
 
 /**
- * ModeWorkSelector — grille des 4 modes (maquette Accueil « Mode de travail »).
- *
- * Contrôle de type radiogroup : un seul mode « sélectionné » à la fois.
- * Les cartes inactive/locked restent focusables pour annoncer le motif (a11y),
- * mais n'appellent pas onSelectMode.
+ * ModeWorkSelector — grille des 4 modes (Accueil « Mode de travail »).
+ * Cartes en boutons 3D (ombre solide) + mascottes Spira agrandies.
  */
 export default function ModeWorkSelector({
   selectedMode = null,
@@ -67,7 +57,6 @@ export default function ModeWorkSelector({
 
   const resolveReason = (mode: AppMode) => availability[mode]?.reason;
 
-  // Transition fluide à chaque changement de sélection / disponibilité
   useEffect(() => {
     fade.setValue(0.88);
     Animated.timing(fade, {
@@ -111,11 +100,7 @@ export default function ModeWorkSelector({
   };
 
   return (
-    <View
-      // radiogroup : une seule option « cochée » (selected) parmi les modes
-      accessibilityRole="radiogroup"
-      accessibilityLabel="Mode de travail"
-    >
+    <View accessibilityRole="radiogroup" accessibilityLabel="Mode de travail">
       <View style={styles.headerRow}>
         <Text style={styles.sectionLabel}>Modes</Text>
       </View>
@@ -169,27 +154,45 @@ type CardProps = {
 };
 
 function ModeCard({ definition: def, status, reason, disabled, selected, onPress }: CardProps) {
-  const scale = useRef(new Animated.Value(1)).current;
+  const [pressed, setPressed] = useState(false);
+  const mascotY = useRef(new Animated.Value(0)).current;
 
-  const onPressIn = () => {
+  const bounceMascot = () => {
     if (disabled) return;
-    Animated.spring(scale, { toValue: 0.97, useNativeDriver: true, speed: 40, bounciness: 0 }).start();
-  };
-  const onPressOut = () => {
-    Animated.spring(scale, { toValue: 1, useNativeDriver: true, speed: 40, bounciness: 4 }).start();
+    Animated.sequence([
+      Animated.timing(mascotY, { toValue: -10, duration: 140, useNativeDriver: true }),
+      Animated.spring(mascotY, { toValue: 0, useNativeDriver: true, speed: 28, bounciness: 8 }),
+    ]).start();
   };
 
-  const a11yHint = disabled
-    ? reason ?? "Mode indisponible"
-    : def.purpose;
+  const a11yHint = disabled ? (reason ?? "Mode indisponible") : def.purpose;
+  const label = def.label.replace("Mode ", "").replace(" 60s", "");
+  const ground = `${def.depth}33`;
+  const depth = pressed || disabled ? 0 : PRESS_DEPTH;
 
   return (
-    <Animated.View style={[styles.cardWrap, { transform: [{ scale }] }]}>
+    <View style={[styles.cardWrap, { marginBottom: PRESS_DEPTH }]}>
+      {!disabled ? (
+        <View
+          style={[
+            styles.shadowPlate,
+            {
+              backgroundColor: def.depth,
+              height: PRESS_DEPTH + 22,
+              opacity: pressed ? 0 : 1,
+            },
+          ]}
+        />
+      ) : null}
+
       <Pressable
         onPress={onPress}
-        onPressIn={onPressIn}
-        onPressOut={onPressOut}
-        // radio : état coché = mode sélectionné
+        onPressIn={() => {
+          if (disabled) return;
+          setPressed(true);
+          bounceMascot();
+        }}
+        onPressOut={() => setPressed(false)}
         accessibilityRole="radio"
         accessibilityState={{
           disabled,
@@ -203,24 +206,26 @@ function ModeCard({ definition: def, status, reason, disabled, selected, onPress
           {
             backgroundColor: def.bg,
             borderColor: selected ? def.color : def.border,
-            borderWidth: selected ? 2 : 1,
-            opacity: disabled ? 0.5 : 1,
+            borderWidth: 2,
+            opacity: disabled ? 0.55 : 1,
+            transform: [{ translateY: pressed && !disabled ? PRESS_DEPTH : 0 }],
+            marginBottom: depth,
           },
         ]}
       >
-        {/* Curseur not-allowed n'existe pas en RN natif ; on signale via opacity + badge + a11y */}
-        <View style={styles.cardTop}>
-          <View style={styles.iconBox}>
-            <Spira mood={spiraMoodForMode(def.id)} size={44} animated={false} interactive={false} />
-          </View>
-          {disabled ? (
+        {disabled ? (
+          <View style={styles.lockBadge}>
             <Icon name={status === "locked" ? "lock" : "alert-circle"} size={16} color="#94A3B8" />
-          ) : null}
-        </View>
+          </View>
+        ) : null}
 
-        <Text style={[styles.label, { color: disabled ? "#94A3B8" : def.color }]}>{def.label}</Text>
+        <Animated.View style={[styles.mascotSlot, { transform: [{ translateY: mascotY }] }]}>
+          <ModeMascot mode={def.id} size={108} groundColor={ground} />
+        </Animated.View>
+
+        <Text style={[styles.label, { color: disabled ? "#94A3B8" : def.color }]}>{label}</Text>
       </Pressable>
-    </Animated.View>
+    </View>
   );
 }
 
@@ -236,27 +241,46 @@ const styles = StyleSheet.create({
     fontWeight: "800",
     color: colors.textDark,
   },
-  grid: { flexDirection: "row", flexWrap: "wrap", gap: 12 },
-  cardWrap: { width: "48%" },
+  grid: { flexDirection: "row", flexWrap: "wrap", gap: 14 },
+  cardWrap: { width: "47%", position: "relative" },
+  shadowPlate: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    bottom: 0,
+    borderRadius: 22,
+  },
   card: {
-    borderRadius: 24,
-    padding: 18,
-    minHeight: 128,
-  },
-  cardTop: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    justifyContent: "space-between",
-    marginBottom: 14,
-  },
-  iconBox: {
-    width: 52,
-    height: 52,
+    borderRadius: 22,
+    paddingHorizontal: 10,
+    paddingTop: 10,
+    paddingBottom: 12,
+    minHeight: 168,
     alignItems: "center",
-    justifyContent: "center",
+    justifyContent: "flex-end",
     overflow: "visible",
+    zIndex: 1,
   },
-  label: { fontSize: 16, fontWeight: "800" },
+  lockBadge: {
+    position: "absolute",
+    top: 10,
+    right: 10,
+    zIndex: 4,
+  },
+  mascotSlot: {
+    flex: 1,
+    width: "100%",
+    alignItems: "center",
+    justifyContent: "flex-end",
+    marginBottom: 6,
+    minHeight: 112,
+  },
+  label: {
+    fontSize: 16,
+    fontWeight: "800",
+    letterSpacing: 0.2,
+    textAlign: "center",
+  },
   helpBanner: {
     marginTop: 14,
     flexDirection: "row",
