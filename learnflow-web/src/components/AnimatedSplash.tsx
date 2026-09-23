@@ -25,7 +25,7 @@ export default function AnimatedSplash({ onFinish }: Props) {
 
   return (
     <div className="lf-boot">
-      <Logo height={80} variant="onLight" animated={false} />
+      <Logo height={80} variant="auto" animated={false} />
     </div>
   );
 }

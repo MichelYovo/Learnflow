@@ -24,6 +24,27 @@ const SIDE_NAV = [
   { href: "/app/agenda", label: "Agenda", fill: "/brand/logo-mark.png", outline: "/brand/logo-mark.png" },
 ];
 
+/** Black PNG glyphs, tinted like the mobile tab bar so they stay visible on the dark bar. */
+function NavGlyph({ src, color, className }: { src: string; color: string; className: string }) {
+  return (
+    <span
+      aria-hidden
+      className={`inline-block shrink-0 ${className}`}
+      style={{
+        backgroundColor: color,
+        WebkitMaskImage: `url(${src})`,
+        maskImage: `url(${src})`,
+        WebkitMaskRepeat: "no-repeat",
+        maskRepeat: "no-repeat",
+        WebkitMaskPosition: "center",
+        maskPosition: "center",
+        WebkitMaskSize: "contain",
+        maskSize: "contain",
+      }}
+    />
+  );
+}
+
 function TabLink({
   item,
   active,
@@ -43,13 +64,10 @@ function TabLink({
       className="lf-tabbar-slot flex flex-col items-center justify-end gap-0.5 px-0.5 pb-1 pt-1.5 no-underline"
       style={{ WebkitTapHighlightColor: "transparent" }}
     >
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
+      <NavGlyph
         src={active ? item.fill : item.outline}
-        alt=""
-        width={20}
-        height={20}
-        className="h-5 w-5 object-contain sm:h-[22px] sm:w-[22px]"
+        color={active ? primary : muted}
+        className="h-5 w-5 sm:h-[22px] sm:w-[22px]"
       />
       <span
         className="max-w-full truncate text-[10px] font-bold leading-tight sm:text-[11px]"
@@ -107,8 +125,16 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                   color: active ? colors.primary : colors.textSecondary,
                 }}
               >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={active ? item.fill : item.outline} alt="" width={18} height={18} className="h-[18px] w-[18px] object-contain" />
+                {item.fill.includes("logo-mark") ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={item.fill} alt="" width={18} height={18} className="h-[18px] w-[18px] object-contain" />
+                ) : (
+                  <NavGlyph
+                    src={active ? item.fill : item.outline}
+                    color={active ? colors.primary : colors.textSecondary}
+                    className="h-[18px] w-[18px]"
+                  />
+                )}
                 {item.label}
               </Link>
             );
