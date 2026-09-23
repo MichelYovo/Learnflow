@@ -355,6 +355,7 @@ export const useLearnFlowStore = create<LearnFlowState>()(
           streak: startFresh ? 0 : (user.streak ?? existing?.streak ?? 0),
           rang,
           lessonsDone: startFresh ? 0 : (user.lessonsDone ?? existing?.lessonsDone ?? 0),
+          studyMs: startFresh ? 0 : (user.studyMs ?? existing?.studyMs ?? 0),
           badgesDebloques: startFresh ? [] : (existing?.badgesDebloques ?? []),
           color: "#1677FF",
           bg: "#E6F4FF",

@@ -37,8 +37,8 @@ export interface ProfileEleve {
   streak: number;
   rang: number;
   lessonsDone: number;
-  /** Temps d'étude cumulé (ms) — incrémenté à la validation d'activités. */
-  studyMs: number;
+  /** Temps d'étude cumulé (ms). Optionnel pour les profils legacy / cloud. */
+  studyMs?: number;
   badgesDebloques: string[];
   suiviParentalId?: number;
   color?: string;

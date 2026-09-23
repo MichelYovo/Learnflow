@@ -37,7 +37,7 @@ export interface ProfileEleve {
   streak: number;
   rang: number;
   lessonsDone: number;
-  studyMs: number;
+  studyMs?: number;
   badgesDebloques: string[];
   suiviParentalId?: number;
   color?: string;
