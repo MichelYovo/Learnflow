@@ -375,6 +375,7 @@ const LocaleContext = createContext<Ctx | null>(null);
 function readLocale(): Locale {
   if (typeof window === "undefined") return "fr";
   const raw = window.localStorage.getItem(STORAGE_KEY);
+  // Default = FR. Only switch if the user explicitly chose EN.
   return raw === "en" ? "en" : "fr";
 }
 

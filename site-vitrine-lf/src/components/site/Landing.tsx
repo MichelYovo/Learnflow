@@ -20,10 +20,10 @@ const HeroPhones = dynamic(() => import("./HeroPhones"), {
 });
 
 export default function Landing() {
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
 
   return (
-    <main className="min-w-0">
+    <main className="min-w-0" lang={locale}>
       <section className="relative overflow-hidden">
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(900px_420px_at_80%_-10%,var(--lf-glow),transparent)]" />
         <div className="lf-container relative grid min-w-0 items-center gap-8 pb-10 pt-8 sm:gap-10 sm:pb-12 sm:pt-10 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,.95fr)] lg:pb-16 lg:pt-14">

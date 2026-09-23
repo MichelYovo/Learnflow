@@ -11,7 +11,7 @@ import WebCta from "./WebCta";
 
 export default function Header() {
   const [open, setOpen] = useState(false);
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
 
   const links = [
     { href: "/#parcours", label: t.nav.how },
@@ -22,23 +22,30 @@ export default function Header() {
   ];
 
   return (
-    <header className="sticky top-0 z-50 bg-[var(--lf-header)]/95 pt-[env(safe-area-inset-top)] backdrop-blur-md">
-      <div className="lf-container flex h-16 min-w-0 items-center justify-between gap-3 sm:h-[72px] sm:gap-4">
-        <Link href="/" className="flex min-w-0 shrink-0 items-center" aria-label="LearnFlow — accueil">
-          <BrandLogo size="nav" variant="onDark" />
+    <header
+      className="sticky top-0 z-50 bg-[var(--lf-header)]/95 pt-[env(safe-area-inset-top)] backdrop-blur-md"
+      lang={locale}
+    >
+      <div className="lf-container flex h-14 min-w-0 items-center justify-between gap-2 sm:h-16 sm:gap-3 md:h-[72px] md:gap-4">
+        <Link href="/" className="flex min-w-0 shrink items-center" aria-label="LearnFlow — accueil">
+          <BrandLogo size="nav" variant="onDark" priority />
         </Link>
-        <nav className="hidden min-w-0 items-center gap-3 xl:flex xl:gap-5" aria-label="Sections">
+        <nav
+          className="hidden min-w-0 flex-1 items-center justify-center gap-2 xl:flex xl:gap-4 2xl:gap-5"
+          aria-label="Sections"
+        >
           {links.map((l) => (
             <a
               key={l.href}
               href={l.href}
-              className="whitespace-nowrap text-sm font-semibold text-white/75 hover:text-white"
+              className="max-w-[9.5rem] truncate whitespace-nowrap text-sm font-semibold text-white/75 hover:text-white 2xl:max-w-none"
+              title={l.label}
             >
               {l.label}
             </a>
           ))}
         </nav>
-        <div className="flex min-w-0 items-center gap-2 sm:gap-3">
+        <div className="flex shrink-0 items-center gap-1.5 sm:gap-2 md:gap-3">
           <SiteControls />
           <div className="hidden items-center gap-3 xl:flex">
             <SupportButton className="rounded-2xl bg-white px-4 py-2.5 text-sm font-extrabold text-[var(--lf-brand)] shadow-sm hover:bg-[var(--lf-brand-soft)]">
@@ -53,7 +60,7 @@ export default function Header() {
           </div>
           <button
             type="button"
-            className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-white/20 bg-white/10 xl:hidden"
+            className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-white/20 bg-white/10 sm:h-11 sm:w-11 xl:hidden"
             aria-expanded={open}
             aria-label={open ? t.nav.closeMenu : t.nav.openMenu}
             onClick={() => setOpen((v) => !v)}
