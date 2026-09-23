@@ -21,6 +21,7 @@ import { advanceFromSession } from "../../lib/advanceAuth";
 import { signInWithGoogle } from "../../lib/googleAuth";
 import { isValidTogoLocal, toTogoE164, TOGO_MOBILE_ERROR } from "../../lib/phoneTogo";
 import { savePendingAuth } from "../../lib/pendingAuth";
+import { signInWithPasswordRecovered } from "../../lib/passwordAuth";
 import { createConfirmedSignup } from "../../lib/secureAuth";
 import { useLearnFlowStore } from "../../store/useLearnFlowStore";
 import { colors } from "../../theme/colors";
@@ -148,13 +149,10 @@ export default function SignUpScreen({ navigation }: Props) {
       setError(created.error);
       return;
     }
-    const { error: signInError } = await supabase.auth.signInWithPassword({
-      email: emailNorm,
-      password,
-    });
-    if (signInError) {
+    const signed = await signInWithPasswordRecovered(emailNorm, password);
+    if (signed.error) {
       setBusy(false);
-      setError(signInError.message || "Connexion impossible après inscription. Réessaie.");
+      setError(signed.error);
       return;
     }
     const settled = await advanceFromSession(navigation, useLearnFlowStore.getState().applyCloudUser);

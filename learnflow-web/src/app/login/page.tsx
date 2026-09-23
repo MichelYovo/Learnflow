@@ -7,8 +7,9 @@ import Icon from "@/components/Icon";
 import Logo from "@/components/Logo";
 import SocialAuth from "@/components/SocialAuth";
 import { AuthStage, Page, PrimaryButton } from "@/components/ui";
-import { advanceFromSession } from "@/lib/advanceAuth";
+import { advanceFromSession, loginGateMessage } from "@/lib/advanceAuth";
 import { savePendingAuth } from "@/lib/pendingAuth";
+import { signInWithPasswordRecovered } from "@/lib/passwordAuth";
 import { getBrowserSupabase } from "@/lib/supabase";
 import { useLearnFlowStore } from "@/store/useLearnFlowStore";
 import { useAppTheme } from "@/theme/useAppTheme";
@@ -36,19 +37,15 @@ function LoginInner() {
       setError("Entre ton mot de passe.");
       return;
     }
-    const supabase = getBrowserSupabase();
-    if (!supabase) {
+    if (!getBrowserSupabase()) {
       setError("Supabase n’est pas configuré. Ajoute les clés puis réessaie.");
       return;
     }
     setBusy(true);
-    const { error: authError } = await supabase.auth.signInWithPassword({
-      email: email.trim(),
-      password,
-    });
-    if (authError) {
+    const signed = await signInWithPasswordRecovered(email, password);
+    if (signed.error) {
       setBusy(false);
-      setError("Email ou mot de passe incorrect.");
+      setError(signed.error);
       return;
     }
     savePendingAuth({ email: email.trim().toLowerCase(), flow: "login", emailOtpVerified: false });
@@ -130,10 +127,8 @@ function LoginInner() {
 
         {error ? <p className="mt-3 text-center text-xs font-bold text-red-500">{error}</p> : null}
 
-        {googleError === "suspended" ? (
-          <p className="mt-3 text-center text-xs font-bold text-red-500">
-            Compte suspendu. Contacte l’admin LearnFlow.
-          </p>
+        {loginGateMessage(googleError) ? (
+          <p className="mt-3 text-center text-xs font-bold text-red-500">{loginGateMessage(googleError)}</p>
         ) : googleError ? (
           <p className="mt-3 text-center text-xs font-bold text-red-500">
             {googleError === "config"

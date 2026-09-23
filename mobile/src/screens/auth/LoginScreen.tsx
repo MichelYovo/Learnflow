@@ -21,6 +21,7 @@ import type { AuthStackParamList } from "../../navigation/types";
 import { advanceFromSession } from "../../lib/advanceAuth";
 import { signInWithGoogle } from "../../lib/googleAuth";
 import { savePendingAuth } from "../../lib/pendingAuth";
+import { signInWithPasswordRecovered } from "../../lib/passwordAuth";
 import { isSupabaseConfigured, supabase } from "../../lib/supabase";
 import { useLearnFlowStore } from "../../store/useLearnFlowStore";
 
@@ -79,13 +80,10 @@ export default function LoginScreen({ navigation }: Props) {
       return;
     }
     setBusy(true);
-    const { error: authError } = await supabase.auth.signInWithPassword({
-      email: email.trim(),
-      password,
-    });
-    if (authError) {
+    const signed = await signInWithPasswordRecovered(email, password);
+    if (signed.error) {
       setBusy(false);
-      setError("Email ou mot de passe incorrect.");
+      setError(signed.error);
       return;
     }
     await enterAfterSession(email.trim().toLowerCase(), "login");

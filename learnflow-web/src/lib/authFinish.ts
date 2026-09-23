@@ -1,9 +1,17 @@
-import { ensureBeginnerLeague, fetchOwnStudentProfile, trackActivity, upsertStudentProfile } from "./cloud";
+import { ensureBeginnerLeague, readOwnStudentProfile, trackActivity, upsertStudentProfile } from "./cloud";
 import { isProfileComplete } from "./cloudTypes";
 import { clearPendingAuth, loadPendingAuth } from "./pendingAuth";
 import { markParentConfirmed } from "./parentConfirm";
 import { notifySecureLogin } from "./secureAuth";
 import { getBrowserSupabase } from "./supabase";
+import type { SupabaseClient, User } from "@supabase/supabase-js";
+
+async function currentAuthUser(supabase: SupabaseClient): Promise<User | null> {
+  const first = await supabase.auth.getUser();
+  if (first.data.user) return first.data.user;
+  const session = await supabase.auth.getSession();
+  return session.data.session?.user ?? null;
+}
 
 export type CloudUserInput = {
   id: string;
@@ -26,15 +34,18 @@ export async function settleVerifiedUser(): Promise<
 > {
   const supabase = getBrowserSupabase();
   if (!supabase) return { next: "login", error: "config" };
-  const { data } = await supabase.auth.getUser();
-  const user = data.user;
+  const user = await currentAuthUser(supabase);
   if (!user) return { next: "login", error: "session" };
 
   const pending = loadPendingAuth();
   const email = user.email ?? pending?.email ?? "";
   const metaName = String(user.user_metadata?.full_name ?? user.user_metadata?.name ?? "").trim();
 
-  const profile = await fetchOwnStudentProfile();
+  const read = await readOwnStudentProfile();
+  if (read.error === "read") return { next: "login", error: "profile" };
+  if (read.error === "session") return { next: "login", error: "session" };
+  if (read.error === "config") return { next: "login", error: "config" };
+  const profile = read.profile;
   if (profile?.status === "suspendu") {
     await supabase.auth.signOut();
     return { next: "login", error: "suspended" };
@@ -42,7 +53,9 @@ export async function settleVerifiedUser(): Promise<
 
   const knownAccount = Boolean(profile);
   const otpOk = pending?.emailOtpVerified === true;
-  if (!knownAccount && !otpOk) {
+  // Email + mot de passe : pas de code email. Le code reste pour un premier compte Google.
+  const passwordFlow = pending?.flow === "login" || pending?.flow === "signup";
+  if (!knownAccount && !otpOk && !passwordFlow) {
     return { next: "otp" };
   }
 
@@ -60,7 +73,7 @@ export async function settleVerifiedUser(): Promise<
       streak: 0,
       lessons_done: 0,
     });
-    if (result.error) return { next: "login", error: result.error };
+    if (result.error) return { next: "login", error: "save" };
     await ensureBeginnerLeague(user.id);
     clearPendingAuth();
     void trackActivity("signup", { provider: "email" });

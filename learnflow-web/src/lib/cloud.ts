@@ -2,18 +2,37 @@ import { getBrowserSupabase, isSupabaseConfigured } from "./supabase";
 import type { ActivityType, CloudProgress, StudentCloudProfile } from "./cloudTypes";
 import { nowIso } from "./ids";
 
-export async function fetchOwnStudentProfile(): Promise<StudentCloudProfile | null> {
+export type ProfileRead = {
+  profile: StudentCloudProfile | null;
+  error?: "config" | "session" | "read";
+};
+
+/** Une erreur réseau n’est pas un profil absent : sinon l’élève est renvoyé vers le code email. */
+export async function readOwnStudentProfile(): Promise<ProfileRead> {
   const supabase = getBrowserSupabase();
-  if (!supabase) return null;
+  if (!supabase) return { profile: null, error: "config" };
   const { data: sessionData } = await supabase.auth.getSession();
   const uid = sessionData.session?.user.id;
-  if (!uid) return null;
+  if (!uid) return { profile: null, error: "session" };
   const { data, error } = await supabase.from("student_profiles").select("*").eq("id", uid).maybeSingle();
   if (error) {
     console.warn("[LearnFlow] fetch profile", error.message);
-    return null;
+    return { profile: null, error: "read" };
   }
-  return (data as StudentCloudProfile | null) ?? null;
+  return { profile: (data as StudentCloudProfile | null) ?? null };
+}
+
+export async function fetchOwnStudentProfile(): Promise<StudentCloudProfile | null> {
+  const read = await readOwnStudentProfile();
+  return read.profile;
+}
+
+export function profileSaveMessage(message: string) {
+  const m = message.toLowerCase();
+  if (m.includes("network") || m.includes("failed to fetch") || m.includes("fetch")) {
+    return "Connexion impossible. Vérifie ton réseau et réessaie.";
+  }
+  return "Impossible d’enregistrer ton profil. Réessaie.";
 }
 
 export async function upsertStudentProfile(

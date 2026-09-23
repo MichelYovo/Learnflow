@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Logo from "@/components/Logo";
 import { AuthStage, Page, PrimaryButton } from "@/components/ui";
 import { advanceFromSession } from "@/lib/advanceAuth";
-import { fetchOwnStudentProfile } from "@/lib/cloud";
+import { readOwnStudentProfile } from "@/lib/cloud";
 import { loadPendingAuth, savePendingAuth, type AuthFlow } from "@/lib/pendingAuth";
 import { sendSecureEmailOtp, verifySecureEmailOtp } from "@/lib/secureAuth";
 import { useLearnFlowStore } from "@/store/useLearnFlowStore";
@@ -60,7 +60,17 @@ function OTPInner() {
     }
 
     void (async () => {
-      const existing = await fetchOwnStudentProfile();
+      const existingRead = await readOwnStudentProfile();
+      if (existingRead.error) {
+        setInfo("");
+        setError(
+          existingRead.error === "read"
+            ? "Impossible de lire ton compte. Vérifie ta connexion et réessaie."
+            : "Session expirée. Repars de la connexion.",
+        );
+        return;
+      }
+      const existing = existingRead.profile;
       if (existing) {
         setInfo("Compte déjà reconnu, connexion…");
         const current = loadPendingAuth();
