@@ -2,6 +2,7 @@
 
 @theme inline {
   --font-sans: var(--font-poppins);
+  --font-display: var(--font-fredoka), var(--font-poppins), ui-rounded, system-ui, sans-serif;
   --color-lf: #1677ff;
   --color-lf-dark: #155eef;
   --color-lf-green: #10b981;
@@ -266,6 +267,216 @@ select {
   border: none !important;
   outline: none !important;
   box-shadow: none !important;
+}
+
+/* ── Modes : boutons 3D style Duolingo ─────────────────────────────── */
+.lf-mode-heading,
+.lf-mode-label {
+  font-family: var(--font-fredoka), var(--font-poppins), ui-rounded, system-ui, sans-serif;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+.lf-mode-btn {
+  --lf-mode-depth: #0958d9;
+  --lf-mode-press: 5px;
+  border-radius: 22px;
+  border-width: 2px;
+  border-style: solid;
+  box-shadow: 0 var(--lf-mode-press) 0 var(--lf-mode-depth);
+  transform: translateY(0);
+  transition:
+    transform 80ms ease,
+    box-shadow 80ms ease,
+    filter 160ms ease;
+}
+
+.lf-mode-btn:not(.lf-mode-btn--disabled):hover {
+  filter: brightness(1.03);
+}
+
+.lf-mode-btn:not(.lf-mode-btn--disabled):active,
+.lf-mode-btn:not(.lf-mode-btn--disabled).lf-mode-btn--pressed {
+  transform: translateY(var(--lf-mode-press));
+  box-shadow: 0 0 0 var(--lf-mode-depth);
+}
+
+.lf-mode-btn--selected {
+  box-shadow:
+    0 var(--lf-mode-press) 0 var(--lf-mode-depth),
+    0 0 0 3px color-mix(in srgb, var(--lf-mode-depth) 28%, transparent);
+}
+
+.lf-mode-btn--selected:not(.lf-mode-btn--disabled):active {
+  box-shadow: 0 0 0 var(--lf-mode-depth);
+}
+
+.lf-mode-btn__mascot {
+  pointer-events: none;
+}
+
+.lf-mode-mascot {
+  position: relative;
+  display: inline-flex;
+  align-items: flex-end;
+  justify-content: center;
+  transform-origin: 50% 92%;
+  transition: transform 220ms cubic-bezier(0.34, 1.4, 0.64, 1);
+}
+
+.lf-mode-btn:not(.lf-mode-btn--disabled):hover .lf-mode-mascot {
+  animation: lf-mode-mascot-bounce 0.55s cubic-bezier(0.34, 1.4, 0.64, 1);
+}
+
+.lf-mode-mascot__sprite .lf-spira-3d {
+  filter:
+    brightness(1.06)
+    saturate(1.1)
+    drop-shadow(0 2px 0 rgba(15, 23, 42, 0.06));
+}
+
+.lf-mode-mascot--libre .lf-mode-mascot__sprite {
+  transform: scaleY(1.06) scaleX(0.96) rotate(-4deg);
+  transform-origin: 50% 100%;
+}
+
+.lf-mode-mascot--guide .lf-mode-mascot__sprite {
+  transform: rotate(3deg);
+  transform-origin: 50% 100%;
+}
+
+.lf-mode-mascot--cramming .lf-mode-mascot__sprite {
+  transform: scale(1.02) rotate(-2deg);
+  transform-origin: 50% 100%;
+}
+
+.lf-mode-mascot--blitz .lf-mode-mascot__sprite {
+  transform: skewX(-6deg) rotate(4deg) translateX(4px);
+  transform-origin: 50% 100%;
+}
+
+.lf-mode-mascot__ground {
+  position: absolute;
+  z-index: 1;
+  bottom: 2%;
+  left: 50%;
+  width: 58%;
+  height: 10%;
+  border-radius: 50%;
+  transform: translateX(-50%);
+  filter: blur(1px);
+  pointer-events: none;
+}
+
+.lf-mode-prop {
+  position: absolute;
+  z-index: 3;
+  pointer-events: none;
+}
+
+.lf-mode-prop--shades {
+  top: 18%;
+  left: 50%;
+  width: 72%;
+  height: auto;
+  transform: translateX(-50%);
+}
+
+.lf-mode-prop--badge {
+  top: 4%;
+  right: 2%;
+  width: 28%;
+  height: auto;
+}
+
+.lf-mode-prop--book {
+  width: 26%;
+  height: auto;
+}
+
+.lf-mode-prop--book-l {
+  bottom: 22%;
+  left: -2%;
+  transform: rotate(-18deg);
+}
+
+.lf-mode-prop--book-r {
+  bottom: 18%;
+  right: -4%;
+  transform: rotate(16deg);
+}
+
+.lf-mode-prop--sweat {
+  width: 7px;
+  height: 11px;
+  border-radius: 50% 50% 50% 50% / 40% 40% 60% 60%;
+  background: #38bdf8;
+  opacity: 0.9;
+}
+
+.lf-mode-prop--sweat-1 {
+  top: 12%;
+  right: 18%;
+  transform: rotate(18deg);
+}
+
+.lf-mode-prop--sweat-2 {
+  top: 22%;
+  right: 8%;
+  width: 5px;
+  height: 8px;
+  transform: rotate(28deg);
+  opacity: 0.75;
+}
+
+.lf-mode-prop--sweat-3 {
+  top: 8%;
+  left: 22%;
+  width: 6px;
+  height: 9px;
+  transform: rotate(-22deg);
+  opacity: 0.8;
+}
+
+.lf-mode-prop--speed {
+  top: 8%;
+  left: -6%;
+  width: 42%;
+  height: auto;
+  z-index: 1;
+}
+
+.lf-mode-prop--shades,
+.lf-mode-prop--badge,
+.lf-mode-prop--book,
+.lf-mode-prop--sweat {
+  z-index: 3;
+}
+
+@keyframes lf-mode-mascot-bounce {
+  0% {
+    transform: translateY(0) scale(1, 1);
+  }
+  35% {
+    transform: translateY(-10px) scale(0.94, 1.08);
+  }
+  60% {
+    transform: translateY(2px) scale(1.05, 0.94);
+  }
+  100% {
+    transform: translateY(0) scale(1, 1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lf-mode-btn,
+  .lf-mode-mascot {
+    transition: none;
+  }
+
+  .lf-mode-btn:not(.lf-mode-btn--disabled):hover .lf-mode-mascot {
+    animation: none;
+  }
 }
 
 .lf-slide-in {
