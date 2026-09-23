@@ -48,12 +48,22 @@ export default function ContactForm({ topic = "support", onSuccess, embedded = f
     setBusy(false);
   }
 
+  const field =
+    "mt-1 h-11 w-full rounded-2xl border border-[var(--lf-border)] bg-[var(--lf-surface)] px-3 text-sm font-semibold text-[var(--lf-ink)] outline-none focus:border-[var(--lf-brand)]";
+  const label = "block text-xs font-extrabold uppercase tracking-wide text-[var(--lf-faint)]";
+
   if (done) {
     return (
-      <div className={embedded ? "rounded-[24px] border-2 border-[#BAE0FF] bg-[#E6F4FF] p-6 text-center" : "text-center"}>
-        <p className="text-xs font-extrabold uppercase tracking-widest text-[#1677FF]">C’est parti</p>
-        <h3 className="mt-2 text-2xl font-black text-[#1C1917]">Message envoyé</h3>
-        <p className="mt-3 text-sm font-medium leading-relaxed text-[#64748B]">
+      <div
+        className={
+          embedded
+            ? "rounded-[24px] border border-[var(--lf-brand-border)] bg-[var(--lf-brand-soft)] p-6 text-center"
+            : "text-center"
+        }
+      >
+        <p className="text-xs font-extrabold uppercase tracking-widest text-[var(--lf-brand)]">C’est parti</p>
+        <h3 className="mt-2 text-2xl font-black text-[var(--lf-ink)]">Message envoyé</h3>
+        <p className="mt-3 text-sm font-medium leading-relaxed text-[var(--lf-muted)]">
           {topic === "waitlist"
             ? "On te préviendra dès que l’app est sur les stores."
             : "L’équipe LearnFlow a bien reçu ton message. Tu le retrouves aussi dans le dashboard admin."}
@@ -61,7 +71,7 @@ export default function ContactForm({ topic = "support", onSuccess, embedded = f
         <button
           type="button"
           onClick={() => setDone(false)}
-          className="mt-5 inline-flex h-11 items-center rounded-2xl bg-[#1677FF] px-5 text-sm font-extrabold text-white"
+          className="mt-5 inline-flex h-11 items-center rounded-2xl bg-[var(--lf-brand)] px-5 text-sm font-extrabold text-white"
         >
           Envoyer un autre message
         </button>
@@ -71,19 +81,19 @@ export default function ContactForm({ topic = "support", onSuccess, embedded = f
 
   return (
     <form onSubmit={(e) => void submit(e)} className={embedded ? "space-y-3" : ""}>
-      <label className="block text-xs font-extrabold uppercase tracking-wide text-[#A8A29E]">
+      <label className={label}>
         Prénom et nom
         <input
           required
           value={name}
           onChange={(e) => setName(e.target.value)}
           maxLength={80}
-          className="mt-1 h-11 w-full rounded-2xl border border-[#1C1917]/10 bg-white px-3 text-sm font-semibold text-[#1C1917] outline-none focus:border-[#1677FF]"
+          className={field}
           placeholder="Kofi Adjei"
           autoComplete="name"
         />
       </label>
-      <label className="mt-3 block text-xs font-extrabold uppercase tracking-wide text-[#A8A29E]">
+      <label className={`mt-3 ${label}`}>
         Email
         <input
           required
@@ -91,12 +101,12 @@ export default function ContactForm({ topic = "support", onSuccess, embedded = f
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           maxLength={120}
-          className="mt-1 h-11 w-full rounded-2xl border border-[#1C1917]/10 bg-white px-3 text-sm font-semibold text-[#1C1917] outline-none focus:border-[#1677FF]"
+          className={field}
           placeholder="kofi@email.com"
           autoComplete="email"
         />
       </label>
-      <label className="mt-3 block text-xs font-extrabold uppercase tracking-wide text-[#A8A29E]">
+      <label className={`mt-3 ${label}`}>
         Message
         <textarea
           required
@@ -105,18 +115,18 @@ export default function ContactForm({ topic = "support", onSuccess, embedded = f
           minLength={8}
           maxLength={2000}
           rows={embedded ? 5 : 4}
-          className="mt-1 w-full resize-none rounded-2xl border border-[#1C1917]/10 bg-white px-3 py-2.5 text-sm font-semibold text-[#1C1917] outline-none focus:border-[#1677FF]"
+          className="mt-1 w-full resize-none rounded-2xl border border-[var(--lf-border)] bg-[var(--lf-surface)] px-3 py-2.5 text-sm font-semibold text-[var(--lf-ink)] outline-none focus:border-[var(--lf-brand)]"
           placeholder={topic === "waitlist" ? "Android ou iPhone, ta classe…" : "Dis-nous ce dont tu as besoin."}
         />
       </label>
       <div className="hidden" aria-hidden>
         <input tabIndex={-1} autoComplete="off" value={honeypot} onChange={(e) => setHoneypot(e.target.value)} />
       </div>
-      {error ? <p className="mt-3 text-sm font-bold text-[#EF4444]">{error}</p> : null}
+      {error ? <p className="mt-3 text-sm font-bold text-red-500">{error}</p> : null}
       <button
         type="submit"
         disabled={busy}
-        className="mt-4 inline-flex h-12 w-full items-center justify-center rounded-2xl bg-[#1677FF] text-sm font-extrabold text-white disabled:opacity-60"
+        className="mt-4 inline-flex h-12 w-full items-center justify-center rounded-2xl bg-[var(--lf-brand)] text-sm font-extrabold text-white disabled:opacity-60"
       >
         {busy ? "Envoi…" : "Envoyer le message"}
       </button>

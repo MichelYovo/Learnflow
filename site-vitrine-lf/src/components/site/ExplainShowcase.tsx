@@ -11,7 +11,7 @@ export type ExplainItem = {
   body: string;
   sfx: SfxKind;
   anim: "pop" | "shake" | "win";
-  glow?: "blue" | "green" | "amber" | "red";
+  glow?: "blue" | "none";
   dark?: boolean;
   label: string;
   screen: (playKey: number) => ReactNode;

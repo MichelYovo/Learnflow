@@ -4,15 +4,16 @@ export const WEB_URL =
     "",
   );
 
+/** Matières : même accent marque, pas de palette arc-en-ciel sur la vitrine. */
 export const SUBJECTS = [
-  { id: "maths", label: "Maths", color: "#1677FF", bg: "#E6F4FF" },
-  { id: "svt", label: "SVT", color: "#10B981", bg: "#ECFDF5" },
-  { id: "pc", label: "PCT / PC", color: "#06B6D4", bg: "#ECFEFF" },
-  { id: "hg", label: "HG", color: "#F59E0B", bg: "#FFFBEB" },
-  { id: "fr", label: "Français", color: "#8B5CF6", bg: "#F5F3FF" },
-  { id: "ang", label: "Anglais", color: "#EF4444", bg: "#FEF2F2" },
-  { id: "edhc", label: "ECM", color: "#F97316", bg: "#FFF7ED" },
-  { id: "philo", label: "Philo", color: "#6366F1", bg: "#EEF2FF" },
+  { id: "maths", label: "Maths" },
+  { id: "svt", label: "SVT" },
+  { id: "pc", label: "PCT / PC" },
+  { id: "hg", label: "HG" },
+  { id: "fr", label: "Français" },
+  { id: "ang", label: "Anglais" },
+  { id: "edhc", label: "ECM" },
+  { id: "philo", label: "Philo" },
 ] as const;
 
 export const MODES = [
@@ -23,9 +24,6 @@ export const MODES = [
     purpose:
       "Tu lis à ton rythme, sans chrono. Idéal le soir, le week-end, ou quand tu veux vraiment comprendre un chapitre.",
     hint: "Cours · Schémas · Pas de stress",
-    color: "#10B981",
-    bg: "#ECFDF5",
-    border: "#A7F3D0",
   },
   {
     id: "guide",
@@ -34,9 +32,6 @@ export const MODES = [
     purpose:
       "L’app te propose ce qu’il faut réviser aujourd’hui — surtout ce que tu risques d’oublier. Tu suis, c’est tout.",
     hint: "Une petite routine chaque jour",
-    color: "#1677FF",
-    bg: "#E6F4FF",
-    border: "#BAE0FF",
   },
   {
     id: "cramming",
@@ -45,9 +40,6 @@ export const MODES = [
     purpose:
       "Un chapitre, des quiz, des textes à trous. Pas de chrono : tu te concentres jusqu’à tout retenir.",
     hint: "Quiz · Mots manquants",
-    color: "#F59E0B",
-    bg: "#FFFBEB",
-    border: "#FDE68A",
   },
   {
     id: "blitz",
@@ -56,9 +48,6 @@ export const MODES = [
     purpose:
       "60 secondes, questions mêlées. Tout seul, ou Duel Blitz : tu invites un ami dans la même arène, en même temps.",
     hint: "Solo · ou Duel Blitz",
-    color: "#EF4444",
-    bg: "#FEF2F2",
-    border: "#FECACA",
   },
 ] as const;
 

@@ -14,16 +14,16 @@ export default function LegalPage() {
     <>
       <Header />
       <article className="mx-auto w-full max-w-3xl flex-1 px-[clamp(1.15rem,4.5vw,2.25rem)] py-12 sm:py-16">
-        <p className="text-xs font-extrabold uppercase tracking-widest text-[#1677FF]">Légal</p>
-        <h1 className="lf-h1 mt-2 font-black text-[#1C1917]">Mentions légales</h1>
-        <div className="mt-8 space-y-6 text-base font-medium leading-relaxed text-[#475569]">
+        <p className="text-xs font-extrabold uppercase tracking-widest text-[var(--lf-brand)]">Légal</p>
+        <h1 className="lf-h1 mt-2 font-black text-[var(--lf-ink)]">Mentions légales</h1>
+        <div className="mt-8 space-y-6 text-base font-medium leading-relaxed text-[var(--lf-muted)]">
           <p>
-            <strong className="text-[#1C1917]">LearnFlow</strong> est une application mobile d’apprentissage pour
+            <strong className="text-[var(--lf-ink)]">LearnFlow</strong> est une application mobile d’apprentissage pour
             collégiens et lycéens (programme APC Togo). Identifiant : <code>tg.learnflow.app</code>. Version 1.0.0.
           </p>
           <p>
             Éditeur du site vitrine : LearnFlow Togo. Contact :{" "}
-            <SupportButton className="font-extrabold text-[#1677FF]">formulaire de support</SupportButton>
+            <SupportButton className="font-extrabold text-[var(--lf-brand)]">formulaire de support</SupportButton>
             .
           </p>
           <p>
@@ -34,7 +34,7 @@ export default function LegalPage() {
           </p>
           <p>Hébergement : selon le déploiement choisi (à renseigner lors de la mise en ligne).</p>
         </div>
-        <Link href="/" className="mt-10 inline-block font-extrabold text-[#1677FF]">
+        <Link href="/" className="mt-10 inline-block font-extrabold text-[var(--lf-brand)]">
           ← Retour au site
         </Link>
       </article>
