@@ -3,28 +3,49 @@
 import { useLocale } from "../../lib/i18n";
 import { useTheme } from "../../lib/theme";
 
-export default function SiteControls({ className = "" }: { className?: string }) {
-  const { locale, toggleLocale, t } = useLocale();
+type Props = {
+  className?: string;
+  /** Larger touch targets for the mobile drawer */
+  stacked?: boolean;
+};
+
+export default function SiteControls({ className = "", stacked = false }: Props) {
+  const { locale, setLocale, t } = useLocale();
   const { theme, toggleTheme } = useTheme();
-  const nextLang = locale === "fr" ? "EN" : "FR";
-  const langLabel = locale === "fr" ? t.a11y.switchToEn : t.a11y.switchToFr;
   const themeLabel = theme === "light" ? t.a11y.switchToDark : t.a11y.switchToLight;
 
   return (
-    <div className={`flex items-center gap-1 ${className}`.trim()}>
-      <button
-        type="button"
-        onClick={toggleLocale}
-        className="lf-ctrl"
-        aria-label={langLabel}
-        title={langLabel}
-      >
-        {nextLang}
-      </button>
+    <div
+      className={`flex items-center gap-1.5 ${stacked ? "w-full justify-between rounded-2xl border border-white/15 bg-white/5 p-2" : ""} ${className}`.trim()}
+      role="group"
+      aria-label="Langue et thème"
+    >
+      <div className={`flex items-center gap-1 ${stacked ? "flex-1" : ""}`}>
+        <button
+          type="button"
+          onClick={() => setLocale("fr")}
+          className={`lf-ctrl ${locale === "fr" ? "lf-ctrl-active" : ""} ${stacked ? "lf-ctrl-lg flex-1" : ""}`}
+          aria-label={t.a11y.switchToFr}
+          aria-pressed={locale === "fr"}
+          title={t.a11y.switchToFr}
+        >
+          FR
+        </button>
+        <button
+          type="button"
+          onClick={() => setLocale("en")}
+          className={`lf-ctrl ${locale === "en" ? "lf-ctrl-active" : ""} ${stacked ? "lf-ctrl-lg flex-1" : ""}`}
+          aria-label={t.a11y.switchToEn}
+          aria-pressed={locale === "en"}
+          title={t.a11y.switchToEn}
+        >
+          EN
+        </button>
+      </div>
       <button
         type="button"
         onClick={toggleTheme}
-        className="lf-ctrl lf-ctrl-icon"
+        className={`lf-ctrl lf-ctrl-icon ${stacked ? "lf-ctrl-lg" : ""}`}
         aria-label={themeLabel}
         title={themeLabel}
       >

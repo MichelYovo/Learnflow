@@ -136,17 +136,26 @@ canvas {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 2.5rem;
-  height: 2.5rem;
-  padding-inline: 0.65rem;
+  min-width: 2.25rem;
+  height: 2.25rem;
+  padding-inline: 0.5rem;
   border-radius: 0.75rem;
   border: 1px solid color-mix(in srgb, var(--lf-header-fg) 18%, transparent);
   background: color-mix(in srgb, var(--lf-header-fg) 8%, transparent);
   color: var(--lf-header-fg);
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-weight: 800;
   letter-spacing: 0.04em;
-  transition: background 0.15s ease, border-color 0.15s ease;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+@media (min-width: 640px) {
+  .lf-ctrl {
+    min-width: 2.5rem;
+    height: 2.5rem;
+    padding-inline: 0.65rem;
+    font-size: 0.75rem;
+  }
 }
 
 .lf-ctrl:hover {
@@ -154,8 +163,20 @@ canvas {
   border-color: color-mix(in srgb, var(--lf-header-fg) 28%, transparent);
 }
 
+.lf-ctrl-active {
+  background: #fff;
+  border-color: #fff;
+  color: var(--lf-brand);
+}
+
 .lf-ctrl-icon {
   padding-inline: 0;
+}
+
+.lf-ctrl-lg {
+  min-width: 2.75rem;
+  height: 2.75rem;
+  font-size: 0.8rem;
 }
 
 @media (prefers-reduced-motion: reduce) {

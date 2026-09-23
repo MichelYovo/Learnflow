@@ -14,7 +14,7 @@ export default function Footer() {
     <footer className="border-t border-[var(--lf-border)] bg-[var(--lf-surface)]">
       <div className="lf-container grid gap-10 py-10 sm:py-12 md:grid-cols-2 lg:grid-cols-[1.5fr_1fr_1fr_1fr]">
         <div>
-          <BrandLogo size="footer" variant="auto" />
+          <BrandLogo size="footer" variant="onLight" />
           <p className="mt-4 max-w-sm text-sm font-medium leading-relaxed text-[var(--lf-muted)]">{t.footer.blurb}</p>
         </div>
         <div>
