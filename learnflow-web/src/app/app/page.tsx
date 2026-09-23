@@ -38,15 +38,9 @@ export default function AccueilPage() {
   const { colors, darkMode } = useAppTheme();
   const catalogEpoch = usePublishedCatalog();
   const activityLog = useLearnFlowStore((s) => s.activityLog);
-  const goalChapters = useLearnFlowStore((s) => s.settings.weeklyGoalChapters ?? 5);
-  const goalHours = useLearnFlowStore((s) => s.settings.weeklyGoalHours ?? 3);
   const week = useMemo(() => weekSnapshot(activityLog), [activityLog]);
   const weekChart = week.chart;
   const lessonsLabel = String(profile?.lessonsDone ?? 0);
-  const goalProgress =
-    (Math.min(1, week.chapters / Math.max(1, goalChapters)) +
-      Math.min(1, week.studyMs / Math.max(1, goalHours * 3_600_000))) /
-    2;
   const continueLesson = useMemo(() => {
     try {
       return continueLessonForLearner(profile?.classe, profile?.id, chapterProgress);
@@ -220,43 +214,6 @@ export default function AccueilPage() {
                 <p className="mt-1 text-[13px] font-semibold text-[#9CA3AF]">{l}</p>
               </div>
             ))}
-          </div>
-
-          <div className="mt-5 rounded-2xl p-3.5" style={{ background: colors.surfaceAlt }}>
-            <div className="mb-2 flex items-center justify-between gap-2">
-              <p className="text-[13px] font-extrabold" style={{ color: colors.textDark }}>
-                Objectif de la semaine
-              </p>
-              <button
-                type="button"
-                className="text-[12px] font-bold"
-                style={{ color: colors.primary }}
-                onClick={() => {
-                  const chapters = window.prompt("Chapitres à valider cette semaine ?", String(goalChapters));
-                  const hours = window.prompt("Heures d'étude cette semaine ?", String(goalHours));
-                  if (chapters || hours) {
-                    useLearnFlowStore.getState().setWeeklyGoals({
-                      weeklyGoalChapters: chapters ? Number(chapters) : goalChapters,
-                      weeklyGoalHours: hours ? Number(hours) : goalHours,
-                    });
-                  }
-                }}
-              >
-                Modifier
-              </button>
-            </div>
-            <p className="text-[12px] font-semibold" style={{ color: colors.textMuted }}>
-              {Math.min(week.chapters, goalChapters)}/{goalChapters} chapitres · {formatStudySpan(week.studyMs)} / {goalHours}h
-            </p>
-            <div className="mt-2.5 h-2 overflow-hidden rounded-full" style={{ background: colors.border }}>
-              <div
-                className="h-full rounded-full transition-[width]"
-                style={{
-                  width: `${Math.min(100, Math.round(goalProgress * 100))}%`,
-                  background: colors.primary,
-                }}
-              />
-            </div>
           </div>
 
           <div className="mt-5 flex h-[88px] items-end">
