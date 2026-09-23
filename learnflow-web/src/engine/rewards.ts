@@ -212,3 +212,14 @@ export function formatStudyHours(studyMs: number): string {
   if (hours < 10) return `${hours.toFixed(1).replace(/\.0$/, "")}h`;
   return `${Math.round(hours)}h`;
 }
+
+/** Durée lisible pendant que l’élève travaille : minutes, puis heures. */
+export function formatStudySpan(studyMs: number): string {
+  const safe = Math.max(0, studyMs);
+  const totalMin = Math.floor(safe / 60_000);
+  if (totalMin < 1) return `${Math.floor(safe / 1000)} s`;
+  if (totalMin < 60) return `${totalMin} min`;
+  const hours = Math.floor(totalMin / 60);
+  const minutes = totalMin % 60;
+  return minutes ? `${hours}h ${minutes}` : `${hours}h`;
+}

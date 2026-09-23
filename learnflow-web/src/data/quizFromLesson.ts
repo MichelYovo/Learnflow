@@ -41,29 +41,6 @@ function fold(s: string) {
     .trim();
 }
 
-function clip(s: string, n = 100) {
-  const t = s.replace(/\s+/g, " ").trim();
-  if (t.length <= n) return t;
-  return `${t.slice(0, n - 1).trim()}…`;
-}
-
-/** One-line choice: keyword, part after « : », or first sentence. */
-function shortChoice(raw: string, n = 54) {
-  const t = stripCardinalMarkup(raw)
-    .replace(/^[•\-]\s+/, "")
-    .replace(/\s+/g, " ")
-    .trim();
-  const labeled = t.match(/^(.{6,44}?)\s*[:：]\s+(.{6,})$/);
-  if (labeled) {
-    const rightFirst = (labeled[2].split(/(?<=[.!?])\s+/)[0] ?? labeled[2]).replace(/[.]$/, "").trim();
-    if (rightFirst.length >= 6 && rightFirst.length <= n) return rightFirst;
-    return clip(labeled[1], n);
-  }
-  const first = (t.split(/(?<=[.!?])\s+/)[0] ?? t).trim();
-  if (first.length >= 6 && first.length <= n) return first;
-  return clip(t, n);
-}
-
 function sameChoice(a: string, b: string) {
   const fa = fold(a);
   const fb = fold(b);
@@ -75,9 +52,9 @@ function pickWrongs(correct: string, pool: string[]): string[] {
   const out: string[] = [];
   const seen = new Set([fold(correct)]);
   for (const raw of pool) {
-    const w = shortChoice(raw);
+    const w = clipWords(tidy(cleanLine(raw)), 120);
     const key = fold(w);
-    if (!w || w.length < 3 || seen.has(key) || sameChoice(w, correct)) continue;
+    if (!w || w.length < 2 || seen.has(key) || sameChoice(w, correct)) continue;
     seen.add(key);
     out.push(w);
     if (out.length === 3) break;
@@ -86,9 +63,11 @@ function pickWrongs(correct: string, pool: string[]): string[] {
 }
 
 function notesFor(options: string[], correct: string, explain: string): string[] {
-  const why = clip(explain.replace(/\s+/g, " ").trim(), 90);
+  const why = clipWords(explain.replace(/\s+/g, " ").trim(), 160);
   return options.map((opt) =>
-    fold(opt) === fold(correct) ? why : `Pas ça. ${why}`,
+    fold(opt) === fold(correct)
+      ? why
+      : "Cette proposition ne répond pas à la question. Reviens à la phrase du cours.",
   );
 }
 
@@ -102,7 +81,7 @@ function mcq(id: string, enonce: string, correct: string, wrongs: string[], mati
   const pool = pickWrongs(correct, wrongs);
   if (pool.length < 3) return null;
   const options = seededShuffle([correct, ...pool.slice(0, 3)], id);
-  const why = clip((explain || correct).trim(), 90);
+  const why = clipWords((explain || correct).trim(), 160);
   return {
     id,
     enonceQuestion: enonce,
@@ -122,34 +101,152 @@ function cleanLine(s: string) {
     .trim();
 }
 
-function stemFromPuce(text: string, keywords: string[]): { stem: string; correct: string } | null {
-  const t = text.replace(/\s+/g, " ").trim();
+function clipWords(s: string, n: number) {
+  const t = s.replace(/\s+/g, " ").trim();
+  if (t.length <= n) return t;
+  const cut = t.slice(0, n - 1);
+  const sp = cut.lastIndexOf(" ");
+  const base = sp > 24 ? cut.slice(0, sp) : cut;
+  return `${base.trim()}…`;
+}
+
+function tidy(s: string) {
+  return s.replace(/\s+/g, " ").trim();
+}
+
+function asQuestion(s: string) {
+  const t = tidy(s).replace(/[.…]+$/, "").replace(/\s*\?+$/, "");
+  return `${t} ?`;
+}
+
+function looksLikeFormula(s: string) {
+  const w = (s.split(/\s+/)[0] ?? "").replace(/[.,;:!?]+$/, "");
+  if (!w) return false;
+  if (/[0-9=+\-*/^²³₀-₉√∑Δ_]/.test(w)) return true;
+  if (/^[A-Za-zΔ]$/.test(w)) return true;
+  if (/^[A-Za-z][₀-₉0-9]$/.test(w)) return true;
+  return false;
+}
+
+function sentenceCase(s: string) {
+  const t = tidy(s).replace(/[.]+$/, "");
+  if (!t || looksLikeFormula(t)) return t;
+  return t.charAt(0).toUpperCase() + t.slice(1);
+}
+
+function subjectPhrase(s: string) {
+  return tidy(s).replace(/^(Le|La|Les|Un|Une|Des)\b/, (w) => w.toLowerCase()).replace(/^L['’]/, "l'");
+}
+
+function namedNotion(s: string) {
+  const t = subjectPhrase(s);
+  const body = t.charAt(0).toLowerCase() + t.slice(1);
+  if (/^relations\b/i.test(t)) return `les ${body}`;
+  if (/^(loi|relation|théorème|theoreme|formule|règle|regle)\b/i.test(t)) return `la ${body}`;
+  return t;
+}
+
+type FactKind = "si" | "ecrit" | "def" | "label" | "fait";
+
+type ParsedFact = {
+  stem: string;
+  correct: string;
+  explain: string;
+  kind: FactKind;
+};
+
+const FAIT_STEMS = [
+  "Laquelle de ces affirmations est exacte ?",
+  "Quelle phrase correspond au cours ?",
+  "Parmi ces propositions, laquelle est juste ?",
+];
+
+/** Transforme une puce de cours en question complète, avec une réponse courte. */
+function parseFact(raw: string, faitIndex = 0): ParsedFact | null {
+  const t = tidy(cleanLine(raw));
   if (t.length < 18) return null;
-  const labeled = t.match(/^(.{10,80}?)\s*[:：]\s+(.{12,})$/);
-  if (labeled) {
-    const left = labeled[1].trim().replace(/\?$/, "");
+  const explain = /[.!?…]$/.test(t) ? t : `${t}.`;
+
+  const si = t.match(/^si\s+(.+?)\s*(?:→|->|⇒|:)\s*(.+)$/i);
+  if (si && si[2].trim().length >= 4) {
     return {
-      stem: left.length < 22 ? `${left} ?` : `${clip(left, 70)} ?`,
-      correct: shortChoice(labeled[2]),
+      kind: "si",
+      stem: asQuestion(`Si ${si[1].trim().replace(/[.]$/, "")}, que se passe-t-il`),
+      correct: clipWords(sentenceCase(si[2]), 110),
+      explain,
     };
   }
-  const iff = t.match(/^(.{12,72}?)\s+(si et seulement si|lorsque|quand|ssi)\s+(.{8,})$/i);
+
+  const plus = t.match(/^plus\s+(.{6,80}?),\s+plus\s+(.{6,})$/i);
+  if (plus) {
+    return {
+      kind: "si",
+      stem: asQuestion(`Que se passe-t-il lorsque ${subjectPhrase(plus[1])}`),
+      correct: clipWords(sentenceCase(plus[2]), 110),
+      explain,
+    };
+  }
+
+  const en = t.match(/^(en\s+[^,]{3,42}),\s+(.{10,})$/i);
+  if (en) {
+    return {
+      kind: "si",
+      stem: asQuestion(`${sentenceCase(en[1])}, que se passe-t-il`),
+      correct: clipWords(sentenceCase(en[2]), 110),
+      explain,
+    };
+  }
+
+  const iff = t.match(/^(.{10,72}?)\s+(si et seulement si|ssi)\s+(.{8,})$/i);
   if (iff) {
     return {
-      stem: `${clip(iff[1].trim(), 56)} ${iff[2].toLowerCase()}…`,
-      correct: shortChoice(iff[3]),
+      kind: "si",
+      stem: asQuestion(`${sentenceCase(iff[1])} si et seulement si`),
+      correct: clipWords(sentenceCase(iff[3]), 110),
+      explain,
     };
   }
-  const kw = keywords.find((k) => t.toLowerCase().includes(k.toLowerCase()));
-  if (kw) {
+
+  const ecrit = t.match(/^(.{8,90}?)\s+s['’]écrit\s+(.+)$/i);
+  if (ecrit && ecrit[2].trim().length >= 4) {
     return {
-      stem: `Que retenir sur « ${kw} » ?`,
-      correct: shortChoice(t),
+      kind: "ecrit",
+      stem: asQuestion(`Comment s'écrit ${subjectPhrase(ecrit[1])}`),
+      correct: clipWords(tidy(ecrit[2]).replace(/[.]$/, ""), 110),
+      explain,
     };
   }
+
+  const est = t.match(/^(.{6,70}?)\s+(?:est|désigne|signifie|correspond à)\s+(.{8,})$/i);
+  if (est && !/^(si|en)\b/i.test(est[1]) && est[1].split(/\s+/).length <= 14) {
+    return {
+      kind: "def",
+      stem: asQuestion(`Qu'est-ce que ${subjectPhrase(est[1])}`),
+      correct: clipWords(sentenceCase(est[2]), 120),
+      explain,
+    };
+  }
+
+  const labeled = t.match(/^(.{6,58}?)\s*[:：]\s+(.{8,})$/);
+  if (labeled && !labeled[1].includes(".")) {
+    const left = labeled[1].trim();
+    const notion = namedNotion(left);
+    const stem = /^(loi|relation|relations|théorème|theoreme|formule|règle|regle)\b/i.test(left)
+      ? asQuestion(notion.startsWith("les ") ? `Comment s'énoncent ${notion}` : `Comment s'énonce ${notion}`)
+      : asQuestion(`Que signifie « ${left.trim()} »`);
+    return {
+      kind: "label",
+      stem,
+      correct: clipWords(sentenceCase(labeled[2]), 120),
+      explain,
+    };
+  }
+
   return {
-    stem: "Lequel est exact ?",
-    correct: shortChoice(t),
+    kind: "fait",
+    stem: FAIT_STEMS[faitIndex % FAIT_STEMS.length],
+    correct: clipWords(t.replace(/[.]$/, ""), 120),
+    explain,
   };
 }
 
@@ -163,7 +260,26 @@ function splitSentences(s: string): string[] {
     .filter((p) => p.length > 22);
 }
 
-/** QCM d'assimilation : uniquement le contenu du chapitre, faux choix du même cours. */
+function pushFact(
+  out: QCMData[],
+  seen: Set<string>,
+  fact: ParsedFact,
+  wrongPool: string[],
+  chapterId: string,
+  matiere: string,
+) {
+  if (out.length >= 10) return false;
+  const key = `${fold(fact.stem)}|${fold(fact.correct)}`;
+  if (seen.has(key)) return false;
+  const q = mcq(`${chapterId}-q${out.length}`, fact.stem, fact.correct, wrongPool, matiere, fact.explain);
+  if (!q) return false;
+  seen.add(key);
+  seen.add(fold(fact.stem));
+  out.push({ ...q, id: `${chapterId}-${out.length + 1}` });
+  return true;
+}
+
+/** QCM d'assimilation : questions formulées à partir du cours, faux choix du même chapitre. */
 export function quizFromLesson(chapterId: string, classe?: string): QCMData[] {
   const fiche = ficheForChapter(chapterId, classe);
   const lesson = toLessonContent(fiche);
@@ -172,114 +288,86 @@ export function quizFromLesson(chapterId: string, classe?: string): QCMData[] {
   const puces = (fiche.pucesEssentiel?.length ? fiche.pucesEssentiel : essentialTextToPuces(lesson.essentialText))
     .map(cleanLine)
     .filter((p) => p.length > 16);
+  const extraParas = (fiche.sectionsDetaillees ?? [])
+    .flatMap((s) => s.paragraphes.flatMap(splitSentences))
+    .filter((p) => p.length > 24);
   const keywords = extractBracketKeywords(lesson.essentialText);
+
+  let faitIndex = 0;
+  const fromPuces = puces.map((p) => parseFact(p, faitIndex++)).filter((f): f is ParsedFact => Boolean(f));
+  const fromDetails = extraParas.map((p) => parseFact(p, faitIndex++)).filter((f): f is ParsedFact => Boolean(f));
+  const ranked = [
+    ...fromPuces.filter((f) => f.kind !== "fait"),
+    ...fromDetails.filter((f) => f.kind !== "fait"),
+    ...fromPuces.filter((f) => f.kind === "fait"),
+    ...fromDetails.filter((f) => f.kind === "fait"),
+  ];
+
   const out: QCMData[] = [];
+  const seen = new Set<string>();
+  let faits = 0;
 
-  puces.forEach((puce, i) => {
-    if (out.length >= 10) return;
-    const parsed = stemFromPuce(puce, keywords);
-    if (!parsed) return;
-    const wrongs = puces.filter((p) => p !== puce).map((p) => shortChoice(p));
-    const q = mcq(
-      `${chapterId}-p${i}`,
-      parsed.stem,
-      parsed.correct,
-      wrongs,
-      matiere,
-      parsed.correct,
-    );
-    if (q) out.push(q);
-  });
+  for (const fact of ranked) {
+    if (out.length >= 8) break;
+    if (fact.kind === "fait" && faits >= 3) continue;
+    if (seen.has(fold(fact.stem))) continue;
+    const sameKind = ranked.filter((f) => f !== fact && f.kind === fact.kind).map((f) => f.correct);
+    const others = ranked.filter((f) => f !== fact).map((f) => f.correct);
+    const added = pushFact(out, seen, fact, [...sameKind, ...others, ...puces, ...extraParas], chapterId, matiere);
+    if (added && fact.kind === "fait") faits += 1;
+  }
 
+  let blanks = 0;
   keywords.forEach((kw, i) => {
-    if (out.length >= 10) return;
+    if (out.length >= 10 || blanks >= 2) return;
     const line = splitAroundKeyword(lesson.essentialText, kw);
     if (!line) return;
-    const wrongs = keywords.filter((k) => k !== kw);
+    const stem = `Quel terme remplace les points de suspension : « ${clipWords(line.prompt, 110)} » ?`;
+    if (seen.has(fold(stem))) return;
     const q = mcq(
       `${chapterId}-k${i}`,
-      `Quel mot manque : « ${clip(line.prompt, 48)} » ?`,
+      stem,
       kw,
-      wrongs,
+      keywords.filter((k) => k !== kw),
       matiere,
-      `C’est « ${kw} ».`,
+      `Le terme attendu est « ${kw} ».`,
     );
-    if (q) out.push(q);
+    if (!q) return;
+    seen.add(fold(stem));
+    blanks += 1;
+    out.push({ ...q, id: `${chapterId}-${out.length + 1}` });
   });
 
   const ex = fiche.exempleResolu;
   if (out.length < 10 && ex?.reponseFinale?.trim() && ex.enonce?.trim()) {
-    const wrongs = [
-      ...(ex.etapes ?? []).map((e) => e.texte),
-      ...puces,
-    ];
-    const q = mcq(
-      `${chapterId}-ex`,
-      `Quelle conclusion ? ${clip(ex.enonce, 48)}`,
-      shortChoice(ex.reponseFinale),
-      wrongs,
-      matiere,
-      ex.reponseFinale,
-    );
-    if (q) out.push(q);
+    const finale = clipWords(tidy(cleanLine(ex.reponseFinale)).replace(/[.]$/, ""), 110);
+    const stem = asQuestion(`Quelle est la conclusion de cet exercice : ${clipWords(tidy(cleanLine(ex.enonce)), 80)}`);
+    if (!seen.has(`${fold(stem)}|${fold(finale)}`)) {
+      const q = mcq(
+        `${chapterId}-ex`,
+        stem,
+        finale,
+        [...(ex.etapes ?? []).map((e) => e.texte), ...puces],
+        matiere,
+        tidy(ex.reponseFinale),
+      );
+      if (q) out.push({ ...q, id: `${chapterId}-${out.length + 1}` });
+    }
   }
 
-  const sit = fiche.situationProbleme;
-  if (out.length < 10 && sit?.question?.trim() && puces[0]) {
-    const q = mcq(
-      `${chapterId}-sit`,
-      clip(sit.question, 88),
-      shortChoice(puces[0]),
-      puces.slice(1),
-      matiere,
-      sit.competenceVisee || puces[0],
-    );
-    if (q) out.push(q);
-  }
-
-  const unique: QCMData[] = [];
-  const seen = new Set<string>();
-  for (const q of out) {
-    const key = `${fold(q.enonceQuestion)}|${fold(q.optionsProposees[q.indexReponseCorrecte] ?? "")}`;
-    if (seen.has(key)) continue;
-    seen.add(key);
-    unique.push({ ...q, id: `${chapterId}-${unique.length + 1}` });
-    if (unique.length === 10) break;
-  }
-
-  const extraParas = (fiche.sectionsDetaillees ?? [])
-    .flatMap((s) => s.paragraphes.flatMap(splitSentences))
-    .filter((p) => p.length > 24);
-  extraParas.forEach((para, i) => {
-    if (unique.length >= 10) return;
-    const parsed = stemFromPuce(para, keywords);
-    if (!parsed) return;
-    if (seen.has(`${fold(parsed.stem)}|${fold(parsed.correct)}`)) return;
-    const q = mcq(
-      `${chapterId}-s${i}`,
-      parsed.stem,
-      parsed.correct,
-      extraParas.filter((p) => p !== para).concat(puces),
-      matiere,
-      parsed.correct,
-    );
-    if (!q) return;
-    seen.add(`${fold(q.enonceQuestion)}|${fold(q.optionsProposees[q.indexReponseCorrecte] ?? "")}`);
-    unique.push({ ...q, id: `${chapterId}-${unique.length + 1}` });
-  });
-
-  return unique.slice(0, 10);
-}
-
-function escapeRe(s: string) {
-  return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return out.slice(0, 10);
 }
 
 function splitAroundKeyword(text: string, kw: string): { prompt: string } | null {
-  const re = new RegExp(`(.{0,42})\\[${escapeRe(kw)}\\](.{0,42})`);
-  const m = text.replace(/\n+/g, " ").match(re);
-  if (!m) return null;
-  const prompt = `${m[1].trim()} […] ${m[2].trim()}`.replace(/\s+/g, " ").trim();
+  const line = text.split(/\n+/).find((l) => l.includes(`[${kw}]`));
+  if (!line) return null;
+  const prompt = line
+    .replace(`[${kw}]`, "…")
+    .replace(/\[([^\]]+)\]/g, "$1")
+    .replace(/^[•\-]\s+/, "")
+    .replace(/\s+/g, " ")
+    .trim();
+  if (prompt.length < 16 || prompt.includes("[") || prompt.includes("•")) return null;
   return { prompt };
 }
 

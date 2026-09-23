@@ -2,7 +2,7 @@ import InactivityBell from "@/components/InactivityBell";
 
 export default function TopBar({ title, email }: { title: string; email: string }) {
   return (
-    <header className="flex h-[72px] items-center justify-between border-b border-[#F0EFEE] bg-white/85 px-6 backdrop-blur-xl">
+    <header className="relative z-40 flex h-[72px] items-center justify-between border-b border-[#F0EFEE] bg-white/85 px-6 backdrop-blur-xl">
       <div>
         <p className="text-[11px] font-extrabold uppercase tracking-widest text-[#1677FF]">Back-office</p>
         <h1 className="text-lg font-black tracking-tight text-[#1C1917]">{title}</h1>

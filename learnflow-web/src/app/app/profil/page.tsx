@@ -4,12 +4,14 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Avatar from "@/components/Avatar";
 import AvatarPicker from "@/components/AvatarPicker";
+import ClassPicker from "@/components/ClassPicker";
 import Icon, { type IconName } from "@/components/Icon";
 import ParentPhoneCard from "@/components/ParentPhoneCard";
 import LeagueBadge from "@/components/LeagueBadge";
 import { AppBar, AppMain } from "@/components/ui";
-import { classLabel } from "@/data/mock";
+import { CLASSES, classLabel, normalizeClassId } from "@/data/classes";
 import { useLearnFlowStore } from "@/store/useLearnFlowStore";
+import type { ClasseAPC } from "@/types/learnflow";
 import { useAppTheme } from "@/theme/useAppTheme";
 
 const SETTINGS: { key: string; href?: string; action?: "logout"; icon: IconName; label: string; danger?: boolean }[] = [
@@ -45,6 +47,7 @@ export default function ProfilPage() {
   const enableMultiProfile = useLearnFlowStore((s) => s.enableMultiProfile);
   const updateProfileName = useLearnFlowStore((s) => s.updateProfileName);
   const updateProfileAvatar = useLearnFlowStore((s) => s.updateProfileAvatar);
+  const updateProfileClasse = useLearnFlowStore((s) => s.updateProfileClasse);
   const logout = useLearnFlowStore((s) => s.logout);
   const [editing, setEditing] = useState(false);
   const [pickerOpen, setPickerOpen] = useState(false);
@@ -54,6 +57,8 @@ export default function ProfilPage() {
   const [pinConfirm, setPinConfirm] = useState("");
   const [pinError, setPinError] = useState("");
   const [confirm, setConfirm] = useState<"logout" | null>(null);
+  const [classOpen, setClassOpen] = useState(false);
+  const [draftClasse, setDraftClasse] = useState<ClasseAPC | "">("");
 
   const grade = profile.gradeLabel ?? classLabel(profile.classe);
   const nextLigue =
@@ -71,6 +76,18 @@ export default function ProfilPage() {
     streak: `${profile.streak}j`,
     rang: `#${profile.rang}`,
     lessons: String(profile.lessonsDone),
+  };
+
+  const currentClasse = normalizeClassId(String(profile.classe));
+  const openClassEditor = () => {
+    const known = CLASSES.some((c) => c.id === currentClasse);
+    setDraftClasse((known ? currentClasse : "3eme") as ClasseAPC);
+    setClassOpen(true);
+  };
+  const saveClass = () => {
+    if (!draftClasse) return;
+    if (draftClasse !== currentClasse) updateProfileClasse(draftClasse);
+    setClassOpen(false);
   };
 
   const saveName = () => {
@@ -147,6 +164,61 @@ export default function ProfilPage() {
             </div>
           ))}
         </div>
+
+        <section className="mt-5 rounded-3xl border p-4" style={{ background: colors.white, borderColor: colors.border }}>
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0">
+              <h2 className="text-[18px] font-extrabold">Ma classe</h2>
+              <p className="mt-1 text-sm font-semibold leading-snug" style={{ color: colors.textSecondary }}>
+                Les cours, les quiz et le Blitz suivent cette classe. Tu peux la changer à tout moment.
+              </p>
+            </div>
+            <span
+              className="shrink-0 rounded-full border-2 px-3 py-1 text-[13px] font-extrabold"
+              style={{ borderColor: colors.mathsBorder, background: colors.mathsBg, color: colors.primary }}
+            >
+              {grade}
+            </span>
+          </div>
+          {classOpen ? (
+            <div className="mt-4">
+              <ClassPicker value={draftClasse} onChange={setDraftClasse} />
+              {draftClasse && draftClasse !== currentClasse ? (
+                <p className="mt-3 text-[13px] font-semibold leading-snug" style={{ color: colors.textMuted }}>
+                  Tu passeras en {classLabel(draftClasse)}. Le programme affiché changera tout de suite.
+                </p>
+              ) : null}
+              <div className="mt-4 flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setClassOpen(false)}
+                  className="flex-1 rounded-2xl py-3 text-sm font-extrabold"
+                  style={{ background: colors.surfaceAlt, color: colors.textDark }}
+                >
+                  Annuler
+                </button>
+                <button
+                  type="button"
+                  onClick={saveClass}
+                  disabled={!draftClasse || draftClasse === currentClasse}
+                  className="flex-1 rounded-2xl py-3 text-sm font-extrabold text-white disabled:opacity-45"
+                  style={{ background: colors.primary }}
+                >
+                  Enregistrer
+                </button>
+              </div>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={openClassEditor}
+              className="mt-4 w-full rounded-2xl py-3 text-sm font-extrabold text-white"
+              style={{ background: colors.primary }}
+            >
+              Changer de classe
+            </button>
+          )}
+        </section>
 
         <ParentPhoneCard />
 

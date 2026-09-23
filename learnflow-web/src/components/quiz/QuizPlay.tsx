@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
 import Icon from "@/components/Icon";
 import { useAppTheme } from "@/theme/useAppTheme";
 
@@ -58,8 +58,13 @@ export default function QuizPlay({
 }: QuizPlayProps) {
   const { colors } = useAppTheme();
   const answered = selected !== null;
+  const lock = useRef(false);
   const ok = answered && selected === correctIndex;
   const progress = Math.min(1, (current + (answered ? 1 : 0.35)) / total);
+
+  useEffect(() => {
+    lock.current = false;
+  }, [question, current]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -79,6 +84,8 @@ export default function QuizPlay({
       const idx = fromDigit >= 0 ? fromDigit : fromLetter;
       if (idx >= 0 && idx < options.length) {
         e.preventDefault();
+        if (lock.current) return;
+        lock.current = true;
         onPick(idx);
       }
     };
@@ -116,7 +123,7 @@ export default function QuizPlay({
             {kicker}
           </p>
         ) : null}
-        <h1 className="mt-2 text-[clamp(1.15rem,4vw+0.6rem,1.5rem)] font-extrabold leading-snug">{question}</h1>
+        <h1 className="mt-2 break-words text-[clamp(1.05rem,0.72rem+1.5vw,1.45rem)] font-extrabold leading-snug [overflow-wrap:anywhere]">{question}</h1>
 
         {!answered && hintAvailable && !freeHint && onRevealHint ? (
           <button
@@ -155,11 +162,11 @@ export default function QuizPlay({
                 key={`${i}-${opt}`}
                 type="button"
                 disabled={answered}
-                onPointerDown={(e) => {
-                  if (e.button !== 0 || answered) return;
+                onClick={() => {
+                  if (lock.current || answered) return;
+                  lock.current = true;
                   onPick(i);
                 }}
-                onClick={() => onPick(i)}
                 className={`flex w-full items-center gap-3 rounded-[18px] border-2 px-3.5 py-3.5 text-left transition-[transform,box-shadow,opacity] ${
                   kind === "correct" ? "lf-quiz-ok" : ""
                 }`}
@@ -177,7 +184,7 @@ export default function QuizPlay({
                 >
                   {kind === "correct" ? <Icon name="check" size={16} color="#fff" /> : kind === "wrong" ? <Icon name="x" size={16} color="#fff" /> : letter}
                 </span>
-                <span className="min-w-0 flex-1 text-[15px] font-bold leading-snug sm:text-[16px]">{opt}</span>
+                <span className="min-w-0 flex-1 break-words text-[clamp(0.9rem,0.82rem+0.25vw,1rem)] font-bold leading-snug [overflow-wrap:anywhere]">{opt}</span>
               </button>
             );
           })}
@@ -202,8 +209,8 @@ export default function QuizPlay({
               {ok ? "C’est ça !" : "Pas tout à fait"}
             </p>
             {explanation ? (
-              <p className="mt-1.5 text-[14px] font-medium leading-5" style={{ color: colors.textSecondary }}>
-                {explanation.length > 110 ? `${explanation.slice(0, 109).trim()}…` : explanation}
+              <p className="mt-1.5 max-h-28 overflow-y-auto text-[14px] font-medium leading-5" style={{ color: colors.textSecondary }}>
+                {explanation}
               </p>
             ) : null}
             {onReview && reviewLabel && !ok ? (

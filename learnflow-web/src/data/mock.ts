@@ -182,7 +182,7 @@ export const ASSIMILATION_QCM: QCMData[] = [
   },
   {
     id: "a5",
-    enonceQuestion: "Si Δ > 0, combien de racines réelles ?",
+    enonceQuestion: "Si Δ > 0, combien de racines réelles l'équation possède-t-elle ?",
     optionsProposees: ["0", "1", "2", "∞"],
     indexReponseCorrecte: 2,
     explicationPedagogique: "Δ > 0 ⇒ deux racines réelles distinctes.",
@@ -190,7 +190,7 @@ export const ASSIMILATION_QCM: QCMData[] = [
   },
   {
     id: "a6",
-    enonceQuestion: "Somme des racines (Viète) = ?",
+    enonceQuestion: "D'après les relations de Viète, quelle est la somme des racines ?",
     optionsProposees: ["c/a", "−b/a", "b/a", "−c/a"],
     indexReponseCorrecte: 1,
     explicationPedagogique: "x₁ + x₂ = −b/a.",
@@ -198,7 +198,7 @@ export const ASSIMILATION_QCM: QCMData[] = [
   },
   {
     id: "a7",
-    enonceQuestion: "Produit des racines (Viète) = ?",
+    enonceQuestion: "D'après les relations de Viète, quel est le produit des racines ?",
     optionsProposees: ["−b/a", "b/a", "c/a", "−c/a"],
     indexReponseCorrecte: 2,
     explicationPedagogique: "x₁ · x₂ = c/a.",
@@ -206,15 +206,15 @@ export const ASSIMILATION_QCM: QCMData[] = [
   },
   {
     id: "a8",
-    enonceQuestion: "Pour x² − 5x + 6 = 0, Δ vaut ?",
-    optionsProposees: ["1", "25", "1", "13"],
-    indexReponseCorrecte: 1,
-    explicationPedagogique: "Δ = 25 − 24 = 1… wait 25−24=1. Actually options: b²−4ac = 25−24 = 1. Fix: correct index for 1 is 0 or we use 25 as wrong. Let me use Δ=1.",
+    enonceQuestion: "Pour l'équation x² − 5x + 6 = 0, que vaut le discriminant Δ ?",
+    optionsProposees: ["1", "25", "11", "49"],
+    indexReponseCorrecte: 0,
+    explicationPedagogique: "Δ = (−5)² − 4·1·6 = 25 − 24 = 1.",
     ancreCours: "cas-positif",
   },
   {
     id: "a9",
-    enonceQuestion: "Racine double quand ?",
+    enonceQuestion: "Dans quel cas une équation du second degré a-t-elle une racine double ?",
     optionsProposees: ["Δ < 0", "Δ = 0", "Δ > 0", "a = 0"],
     indexReponseCorrecte: 1,
     explicationPedagogique: "Racine double uniquement si Δ = 0.",
@@ -222,7 +222,7 @@ export const ASSIMILATION_QCM: QCMData[] = [
   },
   {
     id: "a10",
-    enonceQuestion: "Forme des racines si Δ > 0 ?",
+    enonceQuestion: "Quelle est la formule des racines lorsque Δ > 0 ?",
     optionsProposees: ["−b/2a", "(−b ± √Δ)/2a", "√Δ / 2a", "b/2a"],
     indexReponseCorrecte: 1,
     explicationPedagogique: "x = (−b ± √Δ) / 2a.",
@@ -230,28 +230,18 @@ export const ASSIMILATION_QCM: QCMData[] = [
   },
 ];
 
-// Fix a8 explanation and options
-ASSIMILATION_QCM[7] = {
-  id: "a8",
-  enonceQuestion: "Pour x² − 5x + 6 = 0, Δ vaut ?",
-  optionsProposees: ["1", "25", "11", "49"],
-  indexReponseCorrecte: 0,
-  explicationPedagogique: "Δ = (−5)² − 4·1·6 = 25 − 24 = 1.",
-  ancreCours: "cas-positif",
-};
-
 export const GRAND_QUIZZ: QCMData[] = [
   ...ASSIMILATION_QCM,
   {
     id: "g11",
-    enonceQuestion: "Si a = 2, b = −4, c = 2, alors Δ = ?",
+    enonceQuestion: "Si a = 2, b = −4 et c = 2, que vaut le discriminant Δ ?",
     optionsProposees: ["0", "8", "16", "4"],
     indexReponseCorrecte: 0,
     explicationPedagogique: "Δ = 16 − 16 = 0 → racine double.",
   },
   {
     id: "g12",
-    enonceQuestion: "Une équation du 2nd degré a toujours des racines réelles ?",
+    enonceQuestion: "Une équation du second degré a-t-elle toujours des racines réelles ?",
     optionsProposees: ["Oui", "Non", "Seulement si a > 0", "Seulement si c = 0"],
     indexReponseCorrecte: 1,
     explicationPedagogique: "Non : si Δ < 0, pas de racines réelles.",
@@ -419,35 +409,35 @@ export const FLASHCARDS: FlashcardData[] = [
 ];
 
 export const BLITZ_QCM: QCMData[] = [
-  { id: "bf1", enonceQuestion: "b² − 4ac est la formule du ?", optionsProposees: ["Discriminant", "Périmètre", "Volume", "Gradient"], indexReponseCorrecte: 0, explicationPedagogique: "", matiere: "Maths", difficulte: "Facile" },
-  { id: "bf2", enonceQuestion: "La mitose produit combien de cellules filles ?", optionsProposees: ["1", "2", "4", "8"], indexReponseCorrecte: 1, explicationPedagogique: "", matiere: "SVT", difficulte: "Facile" },
-  { id: "bf3", enonceQuestion: "H₂O est la formule chimique de ?", optionsProposees: ["CO₂", "L'eau", "L'acide", "Le sel"], indexReponseCorrecte: 1, explicationPedagogique: "", matiere: "PCT", difficulte: "Facile" },
-  { id: "bf4", enonceQuestion: "La photosynthèse libère quel gaz ?", optionsProposees: ["CO₂", "H₂", "O₂", "N₂"], indexReponseCorrecte: 2, explicationPedagogique: "", matiere: "SVT", difficulte: "Facile" },
-  { id: "bf5", enonceQuestion: "cos²(x) + sin²(x) = ?", optionsProposees: ["0", "2", "1", "π"], indexReponseCorrecte: 2, explicationPedagogique: "", matiere: "Maths", difficulte: "Facile" },
-  { id: "bf6", enonceQuestion: "Capitale du Togo ?", optionsProposees: ["Kara", "Lomé", "Sokodé", "Atakpamé"], indexReponseCorrecte: 1, explicationPedagogique: "", matiere: "H-G", difficulte: "Facile" },
-  { id: "bf7", enonceQuestion: "Past simple de « go » ?", optionsProposees: ["goed", "gone", "went", "going"], indexReponseCorrecte: 2, explicationPedagogique: "", matiere: "Anglais", difficulte: "Facile" },
-  { id: "bf8", enonceQuestion: "Un acide a un pH…", optionsProposees: ["= 7", "> 7", "< 7", "= 14"], indexReponseCorrecte: 2, explicationPedagogique: "", matiere: "PCT", difficulte: "Facile" },
+  { id: "bf1", enonceQuestion: "Que calcule la formule b² − 4ac ?", optionsProposees: ["Le discriminant", "Le périmètre", "Le volume", "Le gradient"], indexReponseCorrecte: 0, explicationPedagogique: "b² − 4ac est le discriminant Δ.", matiere: "Maths", difficulte: "Facile" },
+  { id: "bf2", enonceQuestion: "Combien de cellules filles une mitose produit-elle ?", optionsProposees: ["1", "2", "4", "8"], indexReponseCorrecte: 1, explicationPedagogique: "La mitose produit deux cellules filles identiques.", matiere: "SVT", difficulte: "Facile" },
+  { id: "bf3", enonceQuestion: "H₂O est la formule chimique de quelle substance ?", optionsProposees: ["Le dioxyde de carbone", "L'eau", "Un acide", "Le sel"], indexReponseCorrecte: 1, explicationPedagogique: "H₂O est la formule de l'eau.", matiere: "PCT", difficulte: "Facile" },
+  { id: "bf4", enonceQuestion: "Quel gaz la photosynthèse libère-t-elle ?", optionsProposees: ["Le dioxyde de carbone", "Le dihydrogène", "Le dioxygène", "Le diazote"], indexReponseCorrecte: 2, explicationPedagogique: "La photosynthèse libère du dioxygène O₂.", matiere: "SVT", difficulte: "Facile" },
+  { id: "bf5", enonceQuestion: "Que vaut cos²(x) + sin²(x) ?", optionsProposees: ["0", "2", "1", "π"], indexReponseCorrecte: 2, explicationPedagogique: "Pour tout réel x, cos²(x) + sin²(x) = 1.", matiere: "Maths", difficulte: "Facile" },
+  { id: "bf6", enonceQuestion: "Quelle est la capitale du Togo ?", optionsProposees: ["Kara", "Lomé", "Sokodé", "Atakpamé"], indexReponseCorrecte: 1, explicationPedagogique: "Lomé est la capitale du Togo.", matiere: "H-G", difficulte: "Facile" },
+  { id: "bf7", enonceQuestion: "Quel est le prétérit (past simple) du verbe « go » ?", optionsProposees: ["goed", "gone", "went", "going"], indexReponseCorrecte: 2, explicationPedagogique: "Le prétérit de go est went.", matiere: "Anglais", difficulte: "Facile" },
+  { id: "bf8", enonceQuestion: "Comment se situe le pH d'une solution acide ?", optionsProposees: ["Il est égal à 7", "Il est supérieur à 7", "Il est inférieur à 7", "Il est égal à 14"], indexReponseCorrecte: 2, explicationPedagogique: "Un acide a un pH inférieur à 7.", matiere: "PCT", difficulte: "Facile" },
 
-  { id: "bm1", enonceQuestion: "'Present Perfect' = ?", optionsProposees: ["I go", "I have gone", "I went", "I going"], indexReponseCorrecte: 1, explicationPedagogique: "", matiere: "Anglais", difficulte: "Moyen" },
-  { id: "bm2", enonceQuestion: "L'indépendance du Togo : quelle année ?", optionsProposees: ["1958", "1960", "1962", "1965"], indexReponseCorrecte: 1, explicationPedagogique: "", matiere: "H-G", difficulte: "Moyen" },
-  { id: "bm3", enonceQuestion: "Δ > 0 signifie combien de racines réelles ?", optionsProposees: ["0", "1", "2", "∞"], indexReponseCorrecte: 2, explicationPedagogique: "", matiere: "Maths", difficulte: "Moyen" },
-  { id: "bm4", enonceQuestion: "La méiose produit combien de cellules ?", optionsProposees: ["2", "3", "4", "8"], indexReponseCorrecte: 2, explicationPedagogique: "", matiere: "SVT", difficulte: "Moyen" },
-  { id: "bm5", enonceQuestion: "Somme des racines (Viète) ?", optionsProposees: ["c/a", "−b/a", "b/a", "−c/a"], indexReponseCorrecte: 1, explicationPedagogique: "", matiere: "Maths", difficulte: "Moyen" },
-  { id: "bm6", enonceQuestion: "Quel organe produit la bile ?", optionsProposees: ["Pancréas", "Foie", "Estomac", "Rate"], indexReponseCorrecte: 1, explicationPedagogique: "", matiere: "SVT", difficulte: "Moyen" },
-  { id: "bm7", enonceQuestion: "H₂O₂ est…", optionsProposees: ["L'eau", "L'eau oxygénée", "Le dioxyde", "L'ozone"], indexReponseCorrecte: 1, explicationPedagogique: "", matiere: "PCT", difficulte: "Moyen" },
-  { id: "bm8", enonceQuestion: "Where does digestion of starch start?", optionsProposees: ["Stomach", "Mouth", "Liver", "Colon"], indexReponseCorrecte: 1, explicationPedagogique: "", matiere: "Anglais", difficulte: "Moyen" },
+  { id: "bm1", enonceQuestion: "Quelle phrase est au present perfect ?", optionsProposees: ["I go", "I have gone", "I went", "I going"], indexReponseCorrecte: 1, explicationPedagogique: "Le present perfect se forme avec have/has + participe passé.", matiere: "Anglais", difficulte: "Moyen" },
+  { id: "bm2", enonceQuestion: "En quelle année le Togo a-t-il accédé à l'indépendance ?", optionsProposees: ["1958", "1960", "1962", "1965"], indexReponseCorrecte: 1, explicationPedagogique: "Le Togo est indépendant depuis 1960.", matiere: "H-G", difficulte: "Moyen" },
+  { id: "bm3", enonceQuestion: "Si Δ > 0, combien de racines réelles l'équation possède-t-elle ?", optionsProposees: ["0", "1", "2", "Une infinité"], indexReponseCorrecte: 2, explicationPedagogique: "Δ > 0 donne deux racines réelles distinctes.", matiere: "Maths", difficulte: "Moyen" },
+  { id: "bm4", enonceQuestion: "Combien de cellules la méiose produit-elle ?", optionsProposees: ["2", "3", "4", "8"], indexReponseCorrecte: 2, explicationPedagogique: "La méiose produit quatre cellules haploïdes.", matiere: "SVT", difficulte: "Moyen" },
+  { id: "bm5", enonceQuestion: "D'après les relations de Viète, quelle est la somme des racines ?", optionsProposees: ["c/a", "−b/a", "b/a", "−c/a"], indexReponseCorrecte: 1, explicationPedagogique: "La somme des racines vaut −b/a.", matiere: "Maths", difficulte: "Moyen" },
+  { id: "bm6", enonceQuestion: "Quel organe produit la bile ?", optionsProposees: ["Le pancréas", "Le foie", "L'estomac", "La rate"], indexReponseCorrecte: 1, explicationPedagogique: "Le foie produit la bile.", matiere: "SVT", difficulte: "Moyen" },
+  { id: "bm7", enonceQuestion: "Que désigne la formule H₂O₂ ?", optionsProposees: ["L'eau", "L'eau oxygénée", "Le dioxyde de carbone", "L'ozone"], indexReponseCorrecte: 1, explicationPedagogique: "H₂O₂ est l'eau oxygénée, ou peroxyde d'hydrogène.", matiere: "PCT", difficulte: "Moyen" },
+  { id: "bm8", enonceQuestion: "Where does the chemical digestion of starch start?", optionsProposees: ["In the stomach", "In the mouth", "In the liver", "In the colon"], indexReponseCorrecte: 1, explicationPedagogique: "Starch digestion starts in the mouth, with salivary amylase.", matiere: "Anglais", difficulte: "Moyen" },
 
-  { id: "bd1", enonceQuestion: "Si Δ = 0, l'équation a…", optionsProposees: ["0 racine", "1 racine double", "2 racines", "∞ racines"], indexReponseCorrecte: 1, explicationPedagogique: "", matiere: "Maths", difficulte: "Difficile" },
-  { id: "bd2", enonceQuestion: "Produit des racines (Viète) ?", optionsProposees: ["−b/a", "c/a", "b/c", "−c/a"], indexReponseCorrecte: 1, explicationPedagogique: "", matiere: "Maths", difficulte: "Difficile" },
-  { id: "bd3", enonceQuestion: "Gaz consommé par la photosynthèse ?", optionsProposees: ["O₂", "N₂", "CO₂", "H₂"], indexReponseCorrecte: 2, explicationPedagogique: "", matiere: "SVT", difficulte: "Difficile" },
-  { id: "bd4", enonceQuestion: "Si Δ < 0, les racines réelles sont…", optionsProposees: ["Deux", "Une", "Aucune", "Complexes seulement"], indexReponseCorrecte: 2, explicationPedagogique: "", matiere: "Maths", difficulte: "Difficile" },
-  { id: "bd5", enonceQuestion: "Le Togo a d'abord été colonie…", optionsProposees: ["Anglaise", "Allemande", "Portugaise", "Belge"], indexReponseCorrecte: 1, explicationPedagogique: "", matiere: "H-G", difficulte: "Difficile" },
-  { id: "bd6", enonceQuestion: "pH = −log[H₃O⁺]. Si [H₃O⁺] = 10⁻³, pH = ?", optionsProposees: ["3", "7", "11", "−3"], indexReponseCorrecte: 0, explicationPedagogique: "", matiere: "PCT", difficulte: "Difficile" },
-  { id: "bd7", enonceQuestion: "Present Perfect vs preterite : action with present result?", optionsProposees: ["I saw him", "I have seen him", "I seeing him", "I seen him"], indexReponseCorrecte: 1, explicationPedagogique: "", matiere: "Anglais", difficulte: "Difficile" },
-  { id: "bd8", enonceQuestion: "L'absorption des nutriments se fait surtout dans…", optionsProposees: ["L'estomac", "Le gros intestin", "L'intestin grêle", "La bouche"], indexReponseCorrecte: 2, explicationPedagogique: "", matiere: "SVT", difficulte: "Difficile" },
-  { id: "bd9", enonceQuestion: "La paroi la plus épaisse du cœur est celle du…", optionsProposees: ["Ventricule droit", "Ventricule gauche", "Oreillette droite", "Oreillette gauche"], indexReponseCorrecte: 1, explicationPedagogique: "", matiere: "SVT", difficulte: "Difficile" },
-  { id: "bf9", enonceQuestion: "Dans l'ADN, A s'associe à…", optionsProposees: ["G", "C", "T", "U"], indexReponseCorrecte: 2, explicationPedagogique: "", matiere: "SVT", difficulte: "Facile" },
-  { id: "bm9", enonceQuestion: "La myéline sert à…", optionsProposees: ["Ralentir l'influx", "Accélérer l'influx", "Digérer l'amidon", "Filtrer l'urine"], indexReponseCorrecte: 1, explicationPedagogique: "", matiere: "SVT", difficulte: "Moyen" },
+  { id: "bd1", enonceQuestion: "Si Δ = 0, combien de racines réelles l'équation possède-t-elle ?", optionsProposees: ["Aucune", "Une racine double", "Deux racines distinctes", "Une infinité"], indexReponseCorrecte: 1, explicationPedagogique: "Δ = 0 donne une seule racine, dite double.", matiere: "Maths", difficulte: "Difficile" },
+  { id: "bd2", enonceQuestion: "D'après les relations de Viète, quel est le produit des racines ?", optionsProposees: ["−b/a", "c/a", "b/c", "−c/a"], indexReponseCorrecte: 1, explicationPedagogique: "Le produit des racines vaut c/a.", matiere: "Maths", difficulte: "Difficile" },
+  { id: "bd3", enonceQuestion: "Quel gaz la photosynthèse consomme-t-elle ?", optionsProposees: ["Le dioxygène", "Le diazote", "Le dioxyde de carbone", "Le dihydrogène"], indexReponseCorrecte: 2, explicationPedagogique: "La photosynthèse consomme du dioxyde de carbone.", matiere: "SVT", difficulte: "Difficile" },
+  { id: "bd4", enonceQuestion: "Si Δ < 0, que peut-on dire des racines réelles ?", optionsProposees: ["Il y en a deux", "Il y en a une", "Il n'y en a aucune", "Elles sont forcément complexes et réelles"], indexReponseCorrecte: 2, explicationPedagogique: "Si Δ < 0, l'équation n'a pas de racine réelle.", matiere: "Maths", difficulte: "Difficile" },
+  { id: "bd5", enonceQuestion: "De quelle puissance coloniale le Togo a-t-il d'abord dépendu ?", optionsProposees: ["L'Angleterre", "L'Allemagne", "Le Portugal", "La Belgique"], indexReponseCorrecte: 1, explicationPedagogique: "Le Togo a d'abord été une colonie allemande.", matiere: "H-G", difficulte: "Difficile" },
+  { id: "bd6", enonceQuestion: "Si pH = −log[H₃O⁺] et [H₃O⁺] = 10⁻³, que vaut le pH ?", optionsProposees: ["3", "7", "11", "−3"], indexReponseCorrecte: 0, explicationPedagogique: "−log(10⁻³) = 3.", matiere: "PCT", difficulte: "Difficile" },
+  { id: "bd7", enonceQuestion: "Which sentence shows a past action with a present result?", optionsProposees: ["I saw him", "I have seen him", "I seeing him", "I seen him"], indexReponseCorrecte: 1, explicationPedagogique: "The present perfect links a past action to the present.", matiere: "Anglais", difficulte: "Difficile" },
+  { id: "bd8", enonceQuestion: "Où se fait surtout l'absorption des nutriments ?", optionsProposees: ["Dans l'estomac", "Dans le gros intestin", "Dans l'intestin grêle", "Dans la bouche"], indexReponseCorrecte: 2, explicationPedagogique: "L'absorption se fait surtout dans l'intestin grêle.", matiere: "SVT", difficulte: "Difficile" },
+  { id: "bd9", enonceQuestion: "Quelle cavité du cœur a la paroi la plus épaisse ?", optionsProposees: ["Le ventricule droit", "Le ventricule gauche", "L'oreillette droite", "L'oreillette gauche"], indexReponseCorrecte: 1, explicationPedagogique: "Le ventricule gauche a la paroi la plus épaisse.", matiere: "SVT", difficulte: "Difficile" },
+  { id: "bf9", enonceQuestion: "Dans l'ADN, avec quelle base l'adénine (A) s'associe-t-elle ?", optionsProposees: ["La guanine (G)", "La cytosine (C)", "La thymine (T)", "L'uracile (U)"], indexReponseCorrecte: 2, explicationPedagogique: "Dans l'ADN, A s'associe à T.", matiere: "SVT", difficulte: "Facile" },
+  { id: "bm9", enonceQuestion: "À quoi sert la gaine de myéline ?", optionsProposees: ["À ralentir l'influx", "À accélérer l'influx", "À digérer l'amidon", "À filtrer l'urine"], indexReponseCorrecte: 1, explicationPedagogique: "La myéline accélère la conduction de l'influx nerveux.", matiere: "SVT", difficulte: "Moyen" },
 ];
 
 export type LeaguePlayer = {

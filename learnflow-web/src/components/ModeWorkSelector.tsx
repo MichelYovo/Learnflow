@@ -36,8 +36,6 @@ export default function ModeWorkSelector({ selectedMode, guideInactive, onSelect
           const selected = selectedMode === def.id;
           const surface = modeCardSurface(def.bg, def.border, def.color, darkMode);
           const label = def.label.replace("Mode ", "").replace(" 60s", "");
-          const depth = darkMode ? `${def.color}99` : def.depth;
-          const ground = darkMode ? `${def.color}33` : `${def.depth}33`;
 
           return (
             <button
@@ -60,8 +58,6 @@ export default function ModeWorkSelector({ selectedMode, guideInactive, onSelect
               } ${selected ? "lf-mode-btn--selected" : ""}`}
               style={{
                 background: surface.background,
-                borderColor: selected ? def.color : surface.border,
-                ["--lf-mode-depth" as string]: depth,
                 opacity: inactive ? 0.55 : 1,
               }}
             >
@@ -72,7 +68,7 @@ export default function ModeWorkSelector({ selectedMode, guideInactive, onSelect
               ) : null}
 
               <span className="lf-mode-btn__mascot flex min-h-0 w-full flex-1 items-end justify-center pb-1 pt-1">
-                <ModeMascot mode={def.id} size={112} groundColor={ground} />
+                <ModeMascot mode={def.id} size={112} />
               </span>
 
               <p

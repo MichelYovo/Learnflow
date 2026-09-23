@@ -52,6 +52,7 @@ import { createId, nowIso } from "@/lib/ids";
 import { AI_DAILY_QUOTA, remainingAiQuota, todayIsoDate } from "@/data/tutor";
 import { chapterActivityDone, findChapterMeta } from "@/data/programme";
 import { dueChapterIds, emptyWeeklyReview, isoWeekLome, withWeeklyReview, type WeeklyReviewState } from "@/data/weeklyReview";
+import { alignWeek, asActivityLog, bumpDay, emptyActivityLog, type ActivityLog } from "@/engine/activityLog";
 
 const LOCAL_PARENT_ID = "local-parent";
 
@@ -78,6 +79,7 @@ interface LearnFlowState {
   inboxesByProfile: Record<string, InboxNotification[]>;
   rewards: RewardsState;
   weeklyReview: WeeklyReviewState;
+  activityLog: ActivityLog;
 
   getActiveProfile: () => ProfileEleve;
   login: () => void;
@@ -176,6 +178,7 @@ interface LearnFlowState {
   clearLocalCache: () => void;
   updateProfileName: (nom: string) => void;
   updateProfileAvatar: (avatarId: string) => void;
+  updateProfileClasse: (classe: ClasseAPC) => void;
   setMultiProfileEnabled: (on: boolean) => void;
   enableMultiProfile: (pin: string) => void;
   completeOnboarding: () => void;
@@ -356,6 +359,7 @@ export const useLearnFlowStore = create<LearnFlowState>()(
       inboxesByProfile: {},
       rewards: emptyRewards(),
       weeklyReview: emptyWeeklyReview(),
+      activityLog: emptyActivityLog(),
       settings: DEFAULT_SETTINGS,
 
       getActiveProfile: () => {
@@ -536,11 +540,14 @@ export const useLearnFlowStore = create<LearnFlowState>()(
       accumulerXP: (amount, meta) => {
         if (amount <= 0) return;
         const { activeProfileId, profiles, ligue } = get();
+        const now = new Date();
+        const aligned = alignWeek(get().activityLog, now);
         set({
           profiles: profiles.map((p) =>
             p.id === activeProfileId ? { ...p, xpTotale: p.xpTotale + amount } : p
           ),
-          ligue: { ...ligue, scoreHebdo: ligue.scoreHebdo + amount },
+          ligue: { ...ligue, scoreHebdo: (aligned.rolled ? 0 : ligue.scoreHebdo) + amount },
+          activityLog: bumpDay(aligned.log, now, { xp: amount }),
         });
         const key = [
           "xp",
@@ -597,11 +604,20 @@ export const useLearnFlowStore = create<LearnFlowState>()(
         const profile = get().getActiveProfile();
         const gained = chapterActivityDone(next) - chapterActivityDone(prev);
         const studyAdd = part === "details" ? 12 * 60_000 : 8 * 60_000;
+        const finished = chapterActivityDone(next) >= 3 && chapterActivityDone(prev) < 3;
+        const now = new Date();
+        const aligned = alignWeek(get().activityLog, now);
         set({
           chapterProgress: {
             ...get().chapterProgress,
             [chapitreId]: next,
           },
+          activityLog: bumpDay(aligned.log, now, {
+            studyMs: studyAdd,
+            lessons: gained > 0 ? gained : 0,
+            chapterId: finished ? chapitreId : undefined,
+          }),
+          ligue: aligned.rolled ? { ...get().ligue, scoreHebdo: 0 } : get().ligue,
           profiles:
             profile
               ? get().profiles.map((p) =>
@@ -659,12 +675,21 @@ export const useLearnFlowStore = create<LearnFlowState>()(
           firstTryPerfect: challenger || prev.firstTryPerfect,
         };
         const gained = chapterActivityDone(next) - chapterActivityDone(prev);
+        const finished = chapterActivityDone(next) >= 3 && chapterActivityDone(prev) < 3;
+        const now = new Date();
+        const aligned = alignWeek(get().activityLog, now);
 
         set({
           chapterProgress: {
             ...get().chapterProgress,
             [chapitreId]: next,
           },
+          activityLog: bumpDay(aligned.log, now, {
+            studyMs: 5 * 60_000,
+            lessons: gained > 0 ? gained : 0,
+            chapterId: finished ? chapitreId : undefined,
+          }),
+          ligue: aligned.rolled ? { ...get().ligue, scoreHebdo: 0 } : get().ligue,
           profiles:
             profile
               ? get().profiles.map((p) =>
@@ -807,7 +832,11 @@ export const useLearnFlowStore = create<LearnFlowState>()(
         if (ms <= 0) return;
         const profile = get().getActiveProfile();
         if (!profile.id) return;
+        const now = new Date();
+        const aligned = alignWeek(get().activityLog, now);
         set({
+          activityLog: bumpDay(aligned.log, now, { studyMs: ms }),
+          ligue: aligned.rolled ? { ...get().ligue, scoreHebdo: 0 } : get().ligue,
           profiles: get().profiles.map((p) =>
             p.id === profile.id ? { ...p, studyMs: (p.studyMs ?? 0) + ms } : p,
           ),
@@ -1081,6 +1110,16 @@ export const useLearnFlowStore = create<LearnFlowState>()(
         void import("@/lib/progressSync").then((m) => m.requestProgressSync());
       },
 
+      updateProfileClasse: (classe) => {
+        const id = get().activeProfileId;
+        set({
+          profiles: get().profiles.map((p) =>
+            p.id === id ? { ...p, classe, gradeLabel: classLabel(classe) } : p
+          ),
+        });
+        void import("@/lib/progressSync").then((m) => m.requestProgressSync());
+      },
+
       setMultiProfileEnabled: (on) => {
         set({ settings: { ...get().settings, multiProfileEnabled: on } });
       },
@@ -1176,6 +1215,7 @@ export const useLearnFlowStore = create<LearnFlowState>()(
             inboxesByProfile,
             rewards: withDay(p.rewards),
             weeklyReview: withWeeklyReview(p.weeklyReview),
+            activityLog: asActivityLog(p.activityLog),
             settings: {
               ...DEFAULT_SETTINGS,
               ...settingsPatch,
@@ -1213,6 +1253,7 @@ export const useLearnFlowStore = create<LearnFlowState>()(
         inboxesByProfile: s.inboxesByProfile,
         rewards: s.rewards,
         weeklyReview: s.weeklyReview,
+        activityLog: s.activityLog,
         settings: s.settings,
       }),
     }

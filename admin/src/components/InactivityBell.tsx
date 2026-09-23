@@ -79,7 +79,7 @@ export default function InactivityBell() {
         ) : null}
       </button>
       {open ? (
-        <div className="absolute right-0 z-50 mt-2 w-[min(340px,calc(100vw-2rem))] overflow-hidden rounded-[22px] border-2 border-[#F0EFEE] bg-white shadow-xl">
+        <div className="absolute right-0 z-[60] mt-2 w-[min(340px,calc(100vw-2rem))] overflow-hidden rounded-[22px] border-2 border-[#F0EFEE] bg-white shadow-xl">
           <div className="border-b border-[#F0EFEE] px-4 py-3">
             <p className="text-sm font-extrabold text-[#1C1917]">À traiter</p>
             <p className="text-xs font-semibold text-[#64748B]">
